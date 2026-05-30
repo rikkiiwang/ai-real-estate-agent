@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package realestate.v1;
+
+option go_package = "github.com/airealestate/realestate/proto/gen/go/realestate/v1;realestatev1";
+
+// ── Valuation (the "Brain") ──────────────────────────────────────────────────
+
+// Valuation produces a real-time, source-cited home valuation.
+service Valuation {
+  rpc GetValuation(GetValuationRequest) returns (GetValuationResponse);
+}
+
+message GetValuationRequest {
+  string address = 1;
+}
+
+// A single fact backing a valuation, carrying provenance for citation by the
+// Critic/Lawyer layer. `source_id` references a row in the RAG source store.
+message SourceFact {
+  string source_id = 1;   // stable provenance id
+  string kind = 2;        // e.g. "tcad_appraisal", "gis_attribute", "comp_sale"
+  string description = 3; // human-readable fact
+  double contribution = 4; // feature contribution to the valuation, if any
+}
+
+message GetValuationResponse {
+  bool sufficient_data = 1;       // false => insufficient coverage for this address
+  double estimate = 2;            // point estimate (USD); 0 when sufficient_data == false
+  double low = 3;                 // uncertainty band low
+  double high = 4;                // uncertainty band high
+  repeated SourceFact facts = 5;  // source-backed features for citation
+}
+
+// ── Verification (the "Lawyer") ──────────────────────────────────────────────
+
+// Verification checks customer-facing claims against source data before send.
+service Verification {
+  rpc VerifyMessage(VerifyMessageRequest) returns (VerifyMessageResponse);
+}
+
+message VerifyMessageRequest {
+  string draft = 1;               // candidate customer-facing message
+  string context_address = 2;     // address scope for retrieval, optional
+}
+
+enum ClaimVerdict {
+  CLAIM_VERDICT_UNSPECIFIED = 0;
+  CLAIM_VERDICT_ENTAILED = 1;
+  CLAIM_VERDICT_CONTRADICTED = 2;
+  CLAIM_VERDICT_BASELESS = 3;
+}
+
+message VerifiedClaim {
+  string claim = 1;
+  ClaimVerdict verdict = 2;
+  string citation_source_id = 3;  // set when ENTAILED
+}
+
+message VerifyMessageResponse {
+  bool approved = 1;              // false => blocked / escalate
+  bool escalate = 2;             // true => route to human handoff
+  double confidence = 3;         // composite 0..1
+  string reason = 4;             // why blocked/escalated, if applicable
+  repeated VerifiedClaim claims = 5;
+}
+
+// ── Domain (the transaction/CRM core, served by Rails) ───────────────────────
+
+service Domain {
+  rpc CreateLead(CreateLeadRequest) returns (Lead);
+  rpc EnqueueHandoff(HandoffPacket) returns (EnqueueHandoffResponse);
+}
+
+message CreateLeadRequest {
+  string side = 1;   // "seller" | "buyer"
+  string address = 2;
+  string contact = 3;
+}
+
+message Lead {
+  string id = 1;
+  string side = 2;
+  string address = 3;
+  string intent = 4; // "high" | "low" | "unknown"
+}
+
+message HandoffPacket {
+  string lead_id = 1;
+  string trigger = 2;     // e.g. "low_confidence", "legal_complexity", "hostile"
+  double confidence = 3;
+  string reason = 4;
+  string transcript = 5;
+  string recommended_action = 6;
+}
+
+message EnqueueHandoffResponse {
+  string handoff_id = 1;
+}

@@ -1,0 +1,10 @@
+# Brain service (Python): valuation, vision, lawyer, RAG, orchestrator.
+FROM python:3.12-slim
+WORKDIR /app
+COPY services/brain/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY services/brain/src ./src
+ENV PYTHONPATH=/app/src
+ENV BRAIN_BIND="[::]:50051"
+EXPOSE 50051
+CMD ["python", "-m", "brain.server"]

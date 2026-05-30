@@ -1,0 +1,80 @@
+# Local dev orchestration for the AI Real Estate Agent.
+# Postgres carries the relational domain (Rails, U9) and the pgvector-backed
+# RAG source store (U5). Services are built from the shared monorepo context.
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: realestate
+      POSTGRES_PASSWORD: realestate
+      POSTGRES_DB: realestate
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U realestate"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  brain:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.brain
+    environment:
+      BRAIN_BIND: "[::]:50051"
+      DATABASE_URL: postgres://realestate:realestate@db:5432/realestate
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "50051:50051"
+
+  gateway:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.go
+      args:
+        SERVICE: gateway
+    environment:
+      GATEWAY_ADDR: ":8080"
+      BRAIN_ADDR: "brain:50051"
+    depends_on:
+      - brain
+    ports:
+      - "8080:8080"
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.go
+      args:
+        SERVICE: ingestion
+    environment:
+      INGESTION_ADDR: ":8081"
+      DATABASE_URL: postgres://realestate:realestate@db:5432/realestate
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+
+  voice:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.go
+      args:
+        SERVICE: voice
+    environment:
+      VOICE_ADDR: ":8082"
+      BRAIN_ADDR: "brain:50051"
+    depends_on:
+      - brain
+    ports:
+      - "8082:8082"
+
+  # domain (Rails) is added by U9 (rails new + gRPC domain service).
+
+volumes:
+  dbdata:

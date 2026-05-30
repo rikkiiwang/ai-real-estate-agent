@@ -1,0 +1,7 @@
+# Brain service (Python): agents, valuation, vision, lawyer, RAG.
+# U1 needs only gRPC + test tooling; heavier deps (lightgbm, langgraph,
+# pgvector, ragas, google-genai) are added by the units that introduce them.
+grpcio>=1.81
+grpcio-tools>=1.81
+protobuf>=5.27
+pytest>=8.0
