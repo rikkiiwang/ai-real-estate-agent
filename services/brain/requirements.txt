@@ -5,3 +5,6 @@ grpcio>=1.81
 grpcio-tools>=1.81
 protobuf>=5.27
 pytest>=8.0
+# U3 valuation engine: gradient-boosting AVM over a hermetic synthetic dataset.
+scikit-learn>=1.4
+numpy>=1.26
