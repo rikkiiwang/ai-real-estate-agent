@@ -8,3 +8,7 @@ pytest>=8.0
 # U3 valuation engine: gradient-boosting AVM over a hermetic synthetic dataset.
 scikit-learn>=1.4
 numpy>=1.26
+# U5 RAG source-of-truth store: pgvector-backed prod store (lazily-connecting;
+# tests use the in-memory store + a deterministic fake embedder, no DB needed).
+pgvector>=0.3
+psycopg[binary]>=3.1
