@@ -12,3 +12,7 @@ numpy>=1.26
 # tests use the in-memory store + a deterministic fake embedder, no DB needed).
 pgvector>=0.3
 psycopg[binary]>=3.1
+# U10 orchestrator: LangGraph state graph wiring generate -> critique -> rail ->
+# decide with a checkpointer for resumability. Tests use the in-process
+# MemorySaver (no DB); prod swaps in a PostgresSaver for restart-durable runs.
+langgraph>=0.2
