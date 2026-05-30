@@ -28,13 +28,40 @@ func main() {
 	addr := getenv("GATEWAY_ADDR", ":8080")
 	brainAddr := getenv("BRAIN_ADDR", "localhost:50051")
 
+	// U18 trust boundary: the gateway fails fast if the auth secret is absent so
+	// no protected route ever runs without a verifiable token.
+	auth, err := NewAuthenticatorFromEnv()
+	if err != nil {
+		log.Fatalf("gateway auth: %v", err)
+	}
+
+	// Dev convenience: `gateway -mint-token <subject> <role>` prints a signed
+	// token (used by scripts/smoke.sh and local testing) and exits.
+	if len(os.Args) > 1 && os.Args[1] == "-mint-token" {
+		subject, role := "dev", "user"
+		if len(os.Args) > 2 {
+			subject = os.Args[2]
+		}
+		if len(os.Args) > 3 {
+			role = os.Args[3]
+		}
+		tok, err := auth.Issue(subject, role, time.Hour)
+		if err != nil {
+			log.Fatalf("mint-token: %v", err)
+		}
+		os.Stdout.WriteString(tok + "\n")
+		return
+	}
+
 	mux := http.NewServeMux()
 
+	// /health stays open (no auth) for liveness probes.
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"service": "gateway", "status": "ok"})
 	})
 
-	mux.HandleFunc("/valuation", func(w http.ResponseWriter, r *http.Request) {
+	// /valuation is behind the auth middleware: a valid Bearer token is required.
+	mux.HandleFunc("/valuation", RequireAuth(auth, "", func(w http.ResponseWriter, r *http.Request) {
 		address := r.URL.Query().Get("address")
 		if address == "" {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "address required"})
@@ -43,7 +70,14 @@ func main() {
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
 
-		conn, err := grpc.NewClient(brainAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		// The gateway identifies itself to the brain with a signed service token,
+		// so the brain can reject unauthenticated peers (server interceptor).
+		conn, err := grpc.NewClient(brainAddr,
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+			grpc.WithUnaryInterceptor(ServiceTokenUnaryClientInterceptor(func() (string, error) {
+				return auth.Issue("gateway", "service", time.Minute)
+			})),
+		)
 		if err != nil {
 			writeJSON(w, http.StatusBadGateway, map[string]string{"error": "brain dial failed"})
 			return
@@ -57,7 +91,7 @@ func main() {
 			return
 		}
 		writeJSON(w, http.StatusOK, resp)
-	})
+	}))
 
 	log.Printf("gateway listening on %s (brain=%s)", addr, brainAddr)
 	if err := http.ListenAndServe(addr, mux); err != nil {

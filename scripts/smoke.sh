@@ -5,9 +5,13 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 export PATH="/opt/homebrew/bin:$PATH:$(go env GOPATH 2>/dev/null)/bin"
 
-BRAIN_BIND="[::]:50051"
-GATEWAY_ADDR=":8080"
-BRAIN_ADDR="localhost:50051"
+# Ports are overridable to avoid colliding with other local dev servers.
+BRAIN_PORT="${BRAIN_PORT:-50151}"
+GW_PORT="${GW_PORT:-18080}"
+BRAIN_BIND="[::]:${BRAIN_PORT}"
+GATEWAY_ADDR=":${GW_PORT}"
+BRAIN_ADDR="localhost:${BRAIN_PORT}"
+export GATEWAY_AUTH_SECRET="${GATEWAY_AUTH_SECRET:-dev-smoke-secret}"
 
 cleanup() {
   [[ -n "${BRAIN_PID:-}" ]] && kill "$BRAIN_PID" 2>/dev/null || true
@@ -25,15 +29,22 @@ GW_PID=$!
 
 # wait for gateway health
 for i in $(seq 1 30); do
-  if curl -sf http://localhost:8080/health >/dev/null 2>&1; then break; fi
+  if curl -sf http://localhost:${GW_PORT}/health >/dev/null 2>&1; then break; fi
   sleep 0.5
 done
 
 echo "→ gateway /health"
-curl -sf http://localhost:8080/health && echo
+curl -sf http://localhost:${GW_PORT}/health && echo
 
-echo "→ gateway /valuation (round-trips to brain over gRPC)"
-RESP=$(curl -sf "http://localhost:8080/valuation?address=123%20Congress%20Ave%20Austin%20TX")
+echo "→ minting auth token (U18)"
+TOKEN=$(GATEWAY_AUTH_SECRET="$GATEWAY_AUTH_SECRET" go run ./services/gateway -mint-token smoke user)
+
+echo "→ gateway /valuation without token (expect 401)"
+code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${GW_PORT}/valuation?address=x")
+[[ "$code" == "401" ]] && echo "✓ unauthenticated request rejected (401)" || { echo "FAIL: expected 401, got $code"; exit 1; }
+
+echo "→ gateway /valuation with token (round-trips to brain over gRPC)"
+RESP=$(curl -sf -H "Authorization: Bearer $TOKEN" "http://localhost:${GW_PORT}/valuation?address=123%20Congress%20Ave%20Austin%20TX")
 echo "$RESP"
 echo "$RESP" | grep -q '"sufficient_data":true' || { echo "FAIL: no valuation"; exit 1; }
 echo "✓ cross-language round-trip OK"

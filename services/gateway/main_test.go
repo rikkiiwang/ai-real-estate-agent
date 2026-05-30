@@ -47,12 +47,10 @@ func startFakeBrain(t *testing.T) string {
 	return lis.Addr().String()
 }
 
-func newGatewayMux(brainAddr string) http.Handler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, map[string]string{"service": "gateway", "status": "ok"})
-	})
-	mux.HandleFunc("/valuation", func(w http.ResponseWriter, r *http.Request) {
+// valuationHandler is the shared /valuation logic used by both the auth-optional
+// newGatewayMux (existing round-trip tests) and the authenticated mux.
+func valuationHandler(brainAddr string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		address := r.URL.Query().Get("address")
 		if address == "" {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "address required"})
@@ -70,7 +68,28 @@ func newGatewayMux(brainAddr string) http.Handler {
 			return
 		}
 		writeJSON(w, http.StatusOK, resp)
+	}
+}
+
+// newGatewayMux is the auth-optional mux retained so the existing health and
+// round-trip tests exercise the handler logic without minting tokens.
+func newGatewayMux(brainAddr string) http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, http.StatusOK, map[string]string{"service": "gateway", "status": "ok"})
 	})
+	mux.HandleFunc("/valuation", valuationHandler(brainAddr))
+	return mux
+}
+
+// newAuthGatewayMux mirrors main()'s wiring: /health open, /valuation behind the
+// auth middleware. requiredRole may be "" for any-authenticated.
+func newAuthGatewayMux(brainAddr string, auth *Authenticator, requiredRole string) http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, http.StatusOK, map[string]string{"service": "gateway", "status": "ok"})
+	})
+	mux.HandleFunc("/valuation", RequireAuth(auth, requiredRole, valuationHandler(brainAddr)))
 	return mux
 }
 

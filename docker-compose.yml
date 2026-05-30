@@ -34,12 +34,13 @@ services:
   gateway:
     build:
       context: .
-      dockerfile: deploy/Dockerfile.go
+      dockerfile: deploy/go.Dockerfile
       args:
         SERVICE: gateway
     environment:
       GATEWAY_ADDR: ":8080"
       BRAIN_ADDR: "brain:50051"
+      GATEWAY_AUTH_SECRET: "${GATEWAY_AUTH_SECRET:-dev-secret-change-me}"
     depends_on:
       - brain
     ports:
@@ -48,7 +49,7 @@ services:
   ingestion:
     build:
       context: .
-      dockerfile: deploy/Dockerfile.go
+      dockerfile: deploy/go.Dockerfile
       args:
         SERVICE: ingestion
     environment:
@@ -63,7 +64,7 @@ services:
   voice:
     build:
       context: .
-      dockerfile: deploy/Dockerfile.go
+      dockerfile: deploy/go.Dockerfile
       args:
         SERVICE: voice
     environment:
