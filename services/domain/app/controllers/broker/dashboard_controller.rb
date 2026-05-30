@@ -6,6 +6,7 @@ module Broker
     def show
       @handoffs = HandoffPacket.queue.includes(:lead)
       @offers = Offer.awaiting_broker_sign.includes(:lead, :property)
+      @time_to_offer = OfferMetric.summary
     end
   end
 end

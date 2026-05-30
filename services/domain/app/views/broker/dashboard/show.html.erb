@@ -1,5 +1,29 @@
 <h1>Broker Review Dashboard</h1>
 
+<section id="time-to-offer">
+  <h2>Time to offer</h2>
+  <table border="1" cellpadding="4">
+    <thead>
+      <tr>
+        <th>Side</th>
+        <th>Offers recorded</th>
+        <th>Average time to offer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @time_to_offer.each do |side, stats| %>
+        <tr class="time-to-offer" data-side="<%= side %>">
+          <td><%= side.capitalize %></td>
+          <td class="count"><%= stats[:count] %></td>
+          <td class="average">
+            <%= stats[:average_seconds] ? distance_of_time_in_words(stats[:average_seconds]) : "—" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</section>
+
 <section id="handoff-queue">
   <h2>Handoff queue (<%= @handoffs.size %>)</h2>
   <% if @handoffs.any? %>

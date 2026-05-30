@@ -6,6 +6,7 @@ class Offer < ApplicationRecord
   belongs_to :lead
   belongs_to :property, optional: true
   has_many :negotiations, dependent: :destroy
+  has_one :offer_metric, dependent: :destroy
 
   validates :side, presence: true, inclusion: { in: SIDES }
   validates :status, presence: true, inclusion: { in: STATUSES }
@@ -14,9 +15,13 @@ class Offer < ApplicationRecord
   # The broker-sign queue: offers a licensed human broker must review/sign.
   scope :awaiting_broker_sign, -> { where(status: "awaiting_broker").order(:created_at) }
 
-  # Move a drafted offer into the awaiting-broker-sign queue.
+  # Move a drafted offer into the awaiting-broker-sign queue. This is the
+  # canonical "offer drafted" moment, so it is where time-to-offer is stamped.
   def enqueue_for_broker!
-    update!(status: "awaiting_broker")
+    transaction do
+      update!(status: "awaiting_broker")
+      OfferMetric.record_for(self)
+    end
   end
 
   def sign!
