@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_30_022435) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_30_022436) do
   create_table "audit_events", force: :cascade do |t|
     t.text "claim"
     t.string "content_hash", null: false
@@ -23,6 +23,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_022435) do
     t.string "subject_id"
     t.string "subject_type"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "consents", force: :cascade do |t|
+    t.string "channel", null: false
+    t.datetime "created_at", null: false
+    t.boolean "dnc", default: false, null: false
+    t.integer "lead_id", null: false
+    t.boolean "opted_in", default: false, null: false
+    t.datetime "opted_out_at"
+    t.datetime "updated_at", null: false
+    t.index ["lead_id", "channel"], name: "index_consents_on_lead_id_and_channel", unique: true
+    t.index ["lead_id"], name: "index_consents_on_lead_id"
   end
 
   create_table "handoff_packets", force: :cascade do |t|
@@ -93,6 +105,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_022435) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "consents", "leads"
   add_foreign_key "handoff_packets", "leads"
   add_foreign_key "negotiations", "offers"
   add_foreign_key "offer_metrics", "leads"

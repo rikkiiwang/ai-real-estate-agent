@@ -10,6 +10,9 @@
 //	POST /session                — start a new conversation, returns the session.
 //	POST /session/{id}/message   — add a seller turn (+ optional neutral fields),
 //	                               returns the updated thread + qualification.
+//	GET  /disclosure?channel=    — AI-disclosure copy + whether it's mandatory
+//	                               for the channel (voice|chat|sms); see
+//	                               disclosure.go (U17, R10).
 package main
 
 import (
@@ -106,6 +109,39 @@ func parseMessagePath(path string) (string, bool) {
 	return id, true
 }
 
+// disclosureResponse is returned from GET /disclosure: the AI-disclosure copy
+// for a channel plus whether that channel hard-requires it before substantive
+// conversation (voice) or treats it as voluntary (chat/sms).
+type disclosureResponse struct {
+	Channel   Channel `json:"channel"`
+	Text      string  `json:"text"`
+	Mandatory bool    `json:"mandatory"`
+}
+
+// handleDisclosure returns the AI-disclosure copy for a channel. GET
+// /disclosure?channel=voice|chat|sms (defaults to voice — the stricter rule).
+func (s *server) handleDisclosure(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+		return
+	}
+	ch := Channel(r.URL.Query().Get("channel"))
+	switch ch {
+	case ChannelVoice, ChannelChat, ChannelSMS:
+		// recognized
+	case "":
+		ch = ChannelVoice // default to the strictest channel
+	default:
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "unknown channel"})
+		return
+	}
+	writeJSON(w, http.StatusOK, disclosureResponse{
+		Channel:   ch,
+		Text:      DisclosureText(ch),
+		Mandatory: MandatoryDisclosure(ch),
+	})
+}
+
 // newMux builds the HTTP routing for the conversation API plus /health.
 func newMux(s *server) *http.ServeMux {
 	mux := http.NewServeMux()
@@ -115,6 +151,7 @@ func newMux(s *server) *http.ServeMux {
 	mux.HandleFunc("/session", s.handleSession)
 	// Subtree pattern; parseMessagePath validates the exact shape.
 	mux.HandleFunc("/session/", s.handleMessage)
+	mux.HandleFunc("/disclosure", s.handleDisclosure)
 	return mux
 }
 

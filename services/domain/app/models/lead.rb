@@ -4,6 +4,7 @@ class Lead < ApplicationRecord
 
   has_many :offers, dependent: :destroy
   has_many :handoff_packets, dependent: :destroy
+  has_many :consents, dependent: :destroy
 
   validates :side, presence: true, inclusion: { in: SIDES }
   validates :address, presence: true
