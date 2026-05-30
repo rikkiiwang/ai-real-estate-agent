@@ -61,6 +61,9 @@ def build_server(address: str) -> grpc.Server:
 
 def main() -> None:
     address = os.environ.get("BRAIN_BIND", "[::]:50051")
+    # Warm the AVM (trains the gradient-boosting model once) before serving so
+    # the first GetValuation call isn't slow enough to trip client timeouts.
+    estimate_value("warmup")
     server = build_server(address)
     server.start()
     print(f"brain listening on {address}", flush=True)

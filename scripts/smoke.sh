@@ -44,7 +44,13 @@ code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${GW_PORT}/valua
 [[ "$code" == "401" ]] && echo "✓ unauthenticated request rejected (401)" || { echo "FAIL: expected 401, got $code"; exit 1; }
 
 echo "→ gateway /valuation with token (round-trips to brain over gRPC)"
-RESP=$(curl -sf -H "Authorization: Bearer $TOKEN" "http://localhost:${GW_PORT}/valuation?address=123%20Congress%20Ave%20Austin%20TX")
+# The brain warms its AVM before serving; retry until it's ready.
+RESP=""
+for i in $(seq 1 30); do
+  RESP=$(curl -sf -H "Authorization: Bearer $TOKEN" "http://localhost:${GW_PORT}/valuation?address=123%20Congress%20Ave%20Austin%20TX" 2>/dev/null) && \
+    echo "$RESP" | grep -q '"sufficient_data":true' && break
+  sleep 1
+done
 echo "$RESP"
 echo "$RESP" | grep -q '"sufficient_data":true' || { echo "FAIL: no valuation"; exit 1; }
 echo "✓ cross-language round-trip OK"

@@ -67,7 +67,7 @@ func main() {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "address required"})
 			return
 		}
-		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 		defer cancel()
 
 		// The gateway identifies itself to the brain with a signed service token,
