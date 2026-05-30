@@ -1,0 +1,24 @@
+{
+  "features": [
+    {
+      "attributes": {
+        "PROP_ID": "123456",
+        "SITUS": "1100 Congress Ave, Austin, TX 78701"
+      },
+      "geometry": { "x": -97.7404, "y": 30.2747 }
+    },
+    {
+      "attributes": {
+        "PROP_ID": 789012,
+        "SITUS": "2200 Guadalupe St, Austin, TX 78705"
+      },
+      "geometry": { "x": -97.7421, "y": 30.2899 }
+    },
+    {
+      "attributes": {
+        "SITUS": "No parcel id here, should be skipped"
+      },
+      "geometry": { "x": -97.7500, "y": 30.2600 }
+    }
+  ]
+}

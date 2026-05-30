@@ -1,0 +1,23 @@
+[
+  {
+    "account_number": "123456",
+    "land_value": "150000",
+    "improvement_value": "475000",
+    "appraised_value": "625000",
+    "year_built": "1998",
+    "living_area": "2150"
+  },
+  {
+    "property_number": "555000",
+    "land_value": "90000",
+    "improvement_value": "260000",
+    "appraised_value": "350000",
+    "year_built": "1975",
+    "living_area": "1400"
+  },
+  {
+    "land_value": "1",
+    "appraised_value": "1",
+    "note": "no account number, should be skipped"
+  }
+]
