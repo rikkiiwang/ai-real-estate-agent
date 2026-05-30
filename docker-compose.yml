@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: realestate
       POSTGRES_DB: realestate
     ports:
-      - "5432:5432"
+      - "5434:5432"   # host 5434 -> container 5432 (5432/5433 used by other local pg)
     volumes:
       - dbdata:/var/lib/postgresql/data
     healthcheck:
@@ -25,6 +25,7 @@ services:
     environment:
       BRAIN_BIND: "[::]:50051"
       DATABASE_URL: postgres://realestate:realestate@db:5432/realestate
+      DOMAIN_GRPC_ADDR: "domain-grpc:50052"
     depends_on:
       db:
         condition: service_healthy
@@ -75,7 +76,46 @@ services:
     ports:
       - "8082:8082"
 
-  # domain (Rails) is added by U9 (rails new + gRPC domain service).
+  # Rails domain: the broker web dashboard (puma) and the Domain gRPC server,
+  # both from one image. Uses its own database on the shared Postgres.
+  domain:
+    build:
+      context: .
+      dockerfile: deploy/domain.Dockerfile
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgres://realestate:realestate@db:5432/domain_development
+      RAILS_MAX_THREADS: "5"
+      RUN_MIGRATIONS: "1"   # the web service owns schema setup (single migrator)
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    command: ["bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:3000/up || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  domain-grpc:
+    build:
+      context: .
+      dockerfile: deploy/domain.Dockerfile
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgres://realestate:realestate@db:5432/domain_development
+      DOMAIN_GRPC_PORT: "50052"
+      RUN_MIGRATIONS: "0"   # waits for the web service to migrate first
+    depends_on:
+      db:
+        condition: service_healthy
+      domain:
+        condition: service_healthy
+    ports:
+      - "50052:50052"
+    command: ["bin/grpc_server"]
 
 volumes:
   dbdata:

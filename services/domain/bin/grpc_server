@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Runner that exposes the realestate.v1.Domain gRPC service (DomainServer) over
+# the wire. The handler + service objects are tested without a socket; this
+# process is what compose/production boot to make the domain reachable from the
+# brain (CreateLead, EnqueueHandoff).
+require_relative "../config/environment"
+require "grpc"
+
+port = ENV.fetch("DOMAIN_GRPC_PORT", "50052")
+addr = "0.0.0.0:#{port}"
+
+server = GRPC::RpcServer.new
+server.add_http2_port(addr, :this_port_is_insecure)
+server.handle(DomainServer)
+
+Rails.logger.info("domain gRPC server listening on #{addr}")
+puts "domain gRPC server listening on #{addr}"
+$stdout.flush
+
+server.run_till_terminated_or_interrupted(["INT", "TERM"])
