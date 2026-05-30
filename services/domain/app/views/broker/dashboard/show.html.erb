@@ -1,0 +1,61 @@
+<h1>Broker Review Dashboard</h1>
+
+<section id="handoff-queue">
+  <h2>Handoff queue (<%= @handoffs.size %>)</h2>
+  <% if @handoffs.any? %>
+    <table border="1" cellpadding="4">
+      <thead>
+        <tr>
+          <th>Lead</th>
+          <th>Trigger</th>
+          <th>Confidence</th>
+          <th>Reason</th>
+          <th>Recommended action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @handoffs.each do |packet| %>
+          <tr class="handoff">
+            <td><%= packet.lead.address %> (<%= packet.lead.side %>)</td>
+            <td><%= packet.trigger %></td>
+            <td><%= packet.confidence %></td>
+            <td><%= packet.reason %></td>
+            <td><%= packet.recommended_action %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty">No pending handoffs.</p>
+  <% end %>
+</section>
+
+<section id="offers-awaiting-sign">
+  <h2>Offers awaiting broker sign (<%= @offers.size %>)</h2>
+  <% if @offers.any? %>
+    <table border="1" cellpadding="4">
+      <thead>
+        <tr>
+          <th>Lead</th>
+          <th>Side</th>
+          <th>Property</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @offers.each do |offer| %>
+          <tr class="offer">
+            <td><%= offer.lead.address %></td>
+            <td><%= offer.side %></td>
+            <td><%= offer.property&.address || "—" %></td>
+            <td><%= number_to_currency(offer.amount) if offer.amount %></td>
+            <td><%= offer.status %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty">No offers awaiting signature.</p>
+  <% end %>
+</section>
