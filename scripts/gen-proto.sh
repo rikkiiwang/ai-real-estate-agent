@@ -30,4 +30,18 @@ if [[ "$(uname)" == "Darwin" ]]; then SED=(sed -i ''); else SED=(sed -i); fi
 find "$PY_OUT" -name '*_pb2_grpc.py' -exec "${SED[@]}" \
   -E 's/^from realestate/from genproto.realestate/' {} +
 
+echo "→ Ruby stubs (Rails domain)"
+# Generated via the domain app's bundled grpc-tools so the Ruby runtime matches.
+# Skipped automatically where the Ruby toolchain isn't set up (CI Go/Python job).
+RUBY_OUT=services/domain/lib/grpc
+if command -v rbenv >/dev/null 2>&1; then eval "$(rbenv init - bash 2>/dev/null)" || true; fi
+if (cd services/domain && bundle exec grpc_tools_ruby_protoc --version >/dev/null 2>&1); then
+  mkdir -p "$RUBY_OUT"
+  (cd services/domain && bundle exec grpc_tools_ruby_protoc \
+    -I ../../proto --ruby_out=lib/grpc --grpc_out=lib/grpc \
+    $(cd ../.. && find proto -name '*.proto' | sed 's#^#../../#'))
+else
+  echo "  (skipped: domain Ruby toolchain not available here)"
+fi
+
 echo "✓ proto stubs generated"

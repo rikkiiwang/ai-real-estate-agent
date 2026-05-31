@@ -208,6 +208,11 @@ class DomainStub(object):
                 request_serializer=realestate_dot_v1_dot_realestate__pb2.HandoffPacket.SerializeToString,
                 response_deserializer=realestate_dot_v1_dot_realestate__pb2.EnqueueHandoffResponse.FromString,
                 _registered_method=True)
+        self.CreateOffer = channel.unary_unary(
+                '/realestate.v1.Domain/CreateOffer',
+                request_serializer=realestate_dot_v1_dot_realestate__pb2.CreateOfferRequest.SerializeToString,
+                response_deserializer=realestate_dot_v1_dot_realestate__pb2.Offer.FromString,
+                _registered_method=True)
 
 
 class DomainServicer(object):
@@ -227,6 +232,15 @@ class DomainServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateOffer(self, request, context):
+        """CreateOffer lands a drafted cash/purchase offer in the broker-sign queue
+        (status awaiting_broker). A licensed human broker reviews and signs; the
+        agent never signs.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DomainServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -239,6 +253,11 @@ def add_DomainServicer_to_server(servicer, server):
                     servicer.EnqueueHandoff,
                     request_deserializer=realestate_dot_v1_dot_realestate__pb2.HandoffPacket.FromString,
                     response_serializer=realestate_dot_v1_dot_realestate__pb2.EnqueueHandoffResponse.SerializeToString,
+            ),
+            'CreateOffer': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateOffer,
+                    request_deserializer=realestate_dot_v1_dot_realestate__pb2.CreateOfferRequest.FromString,
+                    response_serializer=realestate_dot_v1_dot_realestate__pb2.Offer.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -297,6 +316,33 @@ class Domain(object):
             '/realestate.v1.Domain/EnqueueHandoff',
             realestate_dot_v1_dot_realestate__pb2.HandoffPacket.SerializeToString,
             realestate_dot_v1_dot_realestate__pb2.EnqueueHandoffResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateOffer(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/realestate.v1.Domain/CreateOffer',
+            realestate_dot_v1_dot_realestate__pb2.CreateOfferRequest.SerializeToString,
+            realestate_dot_v1_dot_realestate__pb2.Offer.FromString,
             options,
             channel_credentials,
             insecure,

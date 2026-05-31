@@ -707,6 +707,161 @@ func (x *EnqueueHandoffResponse) GetHandoffId() string {
 	return ""
 }
 
+type CreateOfferRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	LeadId          string                 `protobuf:"bytes,1,opt,name=lead_id,json=leadId,proto3" json:"lead_id,omitempty"`
+	Side            string                 `protobuf:"bytes,2,opt,name=side,proto3" json:"side,omitempty"`       // "seller" | "buyer"
+	Amount          float64                `protobuf:"fixed64,3,opt,name=amount,proto3" json:"amount,omitempty"` // offered cash/purchase price (in-band by construction)
+	PropertyAddress string                 `protobuf:"bytes,4,opt,name=property_address,json=propertyAddress,proto3" json:"property_address,omitempty"`
+	// Filled promulgated-TREC-form blanks (factual only) + selected contingencies,
+	// serialized as JSON. The agent fills blanks/selects enumerated options only;
+	// no clause language is authored (UPL boundary upstream).
+	FormJson      string `protobuf:"bytes,5,opt,name=form_json,json=formJson,proto3" json:"form_json,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateOfferRequest) Reset() {
+	*x = CreateOfferRequest{}
+	mi := &file_realestate_v1_realestate_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateOfferRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateOfferRequest) ProtoMessage() {}
+
+func (x *CreateOfferRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_realestate_v1_realestate_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateOfferRequest.ProtoReflect.Descriptor instead.
+func (*CreateOfferRequest) Descriptor() ([]byte, []int) {
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CreateOfferRequest) GetLeadId() string {
+	if x != nil {
+		return x.LeadId
+	}
+	return ""
+}
+
+func (x *CreateOfferRequest) GetSide() string {
+	if x != nil {
+		return x.Side
+	}
+	return ""
+}
+
+func (x *CreateOfferRequest) GetAmount() float64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *CreateOfferRequest) GetPropertyAddress() string {
+	if x != nil {
+		return x.PropertyAddress
+	}
+	return ""
+}
+
+func (x *CreateOfferRequest) GetFormJson() string {
+	if x != nil {
+		return x.FormJson
+	}
+	return ""
+}
+
+type Offer struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	LeadId        string                 `protobuf:"bytes,2,opt,name=lead_id,json=leadId,proto3" json:"lead_id,omitempty"`
+	Side          string                 `protobuf:"bytes,3,opt,name=side,proto3" json:"side,omitempty"`
+	Amount        float64                `protobuf:"fixed64,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"` // always "awaiting_broker" on create (never signed)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Offer) Reset() {
+	*x = Offer{}
+	mi := &file_realestate_v1_realestate_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Offer) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Offer) ProtoMessage() {}
+
+func (x *Offer) ProtoReflect() protoreflect.Message {
+	mi := &file_realestate_v1_realestate_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Offer.ProtoReflect.Descriptor instead.
+func (*Offer) Descriptor() ([]byte, []int) {
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *Offer) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Offer) GetLeadId() string {
+	if x != nil {
+		return x.LeadId
+	}
+	return ""
+}
+
+func (x *Offer) GetSide() string {
+	if x != nil {
+		return x.Side
+	}
+	return ""
+}
+
+func (x *Offer) GetAmount() float64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *Offer) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
 var File_realestate_v1_realestate_proto protoreflect.FileDescriptor
 
 const file_realestate_v1_realestate_proto_rawDesc = "" +
@@ -763,7 +918,19 @@ const file_realestate_v1_realestate_proto_rawDesc = "" +
 	"\x12recommended_action\x18\x06 \x01(\tR\x11recommendedAction\"7\n" +
 	"\x16EnqueueHandoffResponse\x12\x1d\n" +
 	"\n" +
-	"handoff_id\x18\x01 \x01(\tR\thandoffId*\x85\x01\n" +
+	"handoff_id\x18\x01 \x01(\tR\thandoffId\"\xa1\x01\n" +
+	"\x12CreateOfferRequest\x12\x17\n" +
+	"\alead_id\x18\x01 \x01(\tR\x06leadId\x12\x12\n" +
+	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
+	"\x06amount\x18\x03 \x01(\x01R\x06amount\x12)\n" +
+	"\x10property_address\x18\x04 \x01(\tR\x0fpropertyAddress\x12\x1b\n" +
+	"\tform_json\x18\x05 \x01(\tR\bformJson\"t\n" +
+	"\x05Offer\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\alead_id\x18\x02 \x01(\tR\x06leadId\x12\x12\n" +
+	"\x04side\x18\x03 \x01(\tR\x04side\x12\x16\n" +
+	"\x06amount\x18\x04 \x01(\x01R\x06amount\x12\x16\n" +
+	"\x06status\x18\x05 \x01(\tR\x06status*\x85\x01\n" +
 	"\fClaimVerdict\x12\x1d\n" +
 	"\x19CLAIM_VERDICT_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16CLAIM_VERDICT_ENTAILED\x10\x01\x12\x1e\n" +
@@ -772,11 +939,12 @@ const file_realestate_v1_realestate_proto_rawDesc = "" +
 	"\tValuation\x12W\n" +
 	"\fGetValuation\x12\".realestate.v1.GetValuationRequest\x1a#.realestate.v1.GetValuationResponse2j\n" +
 	"\fVerification\x12Z\n" +
-	"\rVerifyMessage\x12#.realestate.v1.VerifyMessageRequest\x1a$.realestate.v1.VerifyMessageResponse2\xa4\x01\n" +
+	"\rVerifyMessage\x12#.realestate.v1.VerifyMessageRequest\x1a$.realestate.v1.VerifyMessageResponse2\xec\x01\n" +
 	"\x06Domain\x12C\n" +
 	"\n" +
 	"CreateLead\x12 .realestate.v1.CreateLeadRequest\x1a\x13.realestate.v1.Lead\x12U\n" +
-	"\x0eEnqueueHandoff\x12\x1c.realestate.v1.HandoffPacket\x1a%.realestate.v1.EnqueueHandoffResponseBLZJgithub.com/airealestate/realestate/proto/gen/go/realestate/v1;realestatev1b\x06proto3"
+	"\x0eEnqueueHandoff\x12\x1c.realestate.v1.HandoffPacket\x1a%.realestate.v1.EnqueueHandoffResponse\x12F\n" +
+	"\vCreateOffer\x12!.realestate.v1.CreateOfferRequest\x1a\x14.realestate.v1.OfferBLZJgithub.com/airealestate/realestate/proto/gen/go/realestate/v1;realestatev1b\x06proto3"
 
 var (
 	file_realestate_v1_realestate_proto_rawDescOnce sync.Once
@@ -791,7 +959,7 @@ func file_realestate_v1_realestate_proto_rawDescGZIP() []byte {
 }
 
 var file_realestate_v1_realestate_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_realestate_v1_realestate_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_realestate_v1_realestate_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_realestate_v1_realestate_proto_goTypes = []any{
 	(ClaimVerdict)(0),              // 0: realestate.v1.ClaimVerdict
 	(*GetValuationRequest)(nil),    // 1: realestate.v1.GetValuationRequest
@@ -804,6 +972,8 @@ var file_realestate_v1_realestate_proto_goTypes = []any{
 	(*Lead)(nil),                   // 8: realestate.v1.Lead
 	(*HandoffPacket)(nil),          // 9: realestate.v1.HandoffPacket
 	(*EnqueueHandoffResponse)(nil), // 10: realestate.v1.EnqueueHandoffResponse
+	(*CreateOfferRequest)(nil),     // 11: realestate.v1.CreateOfferRequest
+	(*Offer)(nil),                  // 12: realestate.v1.Offer
 }
 var file_realestate_v1_realestate_proto_depIdxs = []int32{
 	2,  // 0: realestate.v1.GetValuationResponse.facts:type_name -> realestate.v1.SourceFact
@@ -813,12 +983,14 @@ var file_realestate_v1_realestate_proto_depIdxs = []int32{
 	4,  // 4: realestate.v1.Verification.VerifyMessage:input_type -> realestate.v1.VerifyMessageRequest
 	7,  // 5: realestate.v1.Domain.CreateLead:input_type -> realestate.v1.CreateLeadRequest
 	9,  // 6: realestate.v1.Domain.EnqueueHandoff:input_type -> realestate.v1.HandoffPacket
-	3,  // 7: realestate.v1.Valuation.GetValuation:output_type -> realestate.v1.GetValuationResponse
-	6,  // 8: realestate.v1.Verification.VerifyMessage:output_type -> realestate.v1.VerifyMessageResponse
-	8,  // 9: realestate.v1.Domain.CreateLead:output_type -> realestate.v1.Lead
-	10, // 10: realestate.v1.Domain.EnqueueHandoff:output_type -> realestate.v1.EnqueueHandoffResponse
-	7,  // [7:11] is the sub-list for method output_type
-	3,  // [3:7] is the sub-list for method input_type
+	11, // 7: realestate.v1.Domain.CreateOffer:input_type -> realestate.v1.CreateOfferRequest
+	3,  // 8: realestate.v1.Valuation.GetValuation:output_type -> realestate.v1.GetValuationResponse
+	6,  // 9: realestate.v1.Verification.VerifyMessage:output_type -> realestate.v1.VerifyMessageResponse
+	8,  // 10: realestate.v1.Domain.CreateLead:output_type -> realestate.v1.Lead
+	10, // 11: realestate.v1.Domain.EnqueueHandoff:output_type -> realestate.v1.EnqueueHandoffResponse
+	12, // 12: realestate.v1.Domain.CreateOffer:output_type -> realestate.v1.Offer
+	8,  // [8:13] is the sub-list for method output_type
+	3,  // [3:8] is the sub-list for method input_type
 	3,  // [3:3] is the sub-list for extension type_name
 	3,  // [3:3] is the sub-list for extension extendee
 	0,  // [0:3] is the sub-list for field type_name
@@ -835,7 +1007,7 @@ func file_realestate_v1_realestate_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_realestate_v1_realestate_proto_rawDesc), len(file_realestate_v1_realestate_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   3,
 		},

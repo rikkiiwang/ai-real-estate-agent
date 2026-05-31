@@ -70,6 +70,10 @@ message VerifyMessageResponse {
 service Domain {
   rpc CreateLead(CreateLeadRequest) returns (Lead);
   rpc EnqueueHandoff(HandoffPacket) returns (EnqueueHandoffResponse);
+  // CreateOffer lands a drafted cash/purchase offer in the broker-sign queue
+  // (status awaiting_broker). A licensed human broker reviews and signs; the
+  // agent never signs.
+  rpc CreateOffer(CreateOfferRequest) returns (Offer);
 }
 
 message CreateLeadRequest {
@@ -96,4 +100,23 @@ message HandoffPacket {
 
 message EnqueueHandoffResponse {
   string handoff_id = 1;
+}
+
+message CreateOfferRequest {
+  string lead_id = 1;
+  string side = 2;            // "seller" | "buyer"
+  double amount = 3;          // offered cash/purchase price (in-band by construction)
+  string property_address = 4;
+  // Filled promulgated-TREC-form blanks (factual only) + selected contingencies,
+  // serialized as JSON. The agent fills blanks/selects enumerated options only;
+  // no clause language is authored (UPL boundary upstream).
+  string form_json = 5;
+}
+
+message Offer {
+  string id = 1;
+  string lead_id = 2;
+  string side = 3;
+  double amount = 4;
+  string status = 5;          // always "awaiting_broker" on create (never signed)
 }

@@ -235,17 +235,35 @@ def test_ceiling_is_in_band_just_above_is_not():
 
 
 # --------------------------------------------------------------------------- #
-# DomainOfferSink seam — import-safe, connection-free, unbound (documented).
+# DomainOfferSink — import-safe, connection-free, maps to the CreateOffer RPC.
 # --------------------------------------------------------------------------- #
 def test_domain_offer_sink_constructs_without_connecting():
-    sink = DomainOfferSink(target="localhost:50051")
+    sink = DomainOfferSink(target="localhost:50052")
     assert sink._channel is None
     assert sink._stub is None
 
 
-def test_domain_offer_sink_emit_is_an_explicit_unbound_seam():
+def test_domain_offer_sink_emit_maps_offer_to_create_offer_rpc():
+    """emit() builds a CreateOfferRequest from the offer and returns the id from
+    the stub — verified with a fake stub so no socket is opened."""
     closer = _closer()
     result = _draft(closer, price=480_000.0)
+
+    captured = {}
+
+    class _FakeStub:
+        def CreateOffer(self, request):  # noqa: N802 - gRPC stub method name
+            captured["request"] = request
+            return type("Resp", (), {"id": "rails-offer-7"})()
+
     sink = DomainOfferSink()
-    with pytest.raises(NotImplementedError):
-        sink.emit(result.offer)
+    sink._stub = _FakeStub()  # inject so _ensure_stub skips real grpc
+
+    offer_id = sink.emit(result.offer)
+
+    assert offer_id == "rails-offer-7"
+    req = captured["request"]
+    assert req.lead_id == result.offer.lead_id
+    assert req.side == "seller"
+    assert abs(req.amount - 480_000.0) < 0.01
+    assert req.form_json  # filled-form blanks travel as JSON

@@ -233,6 +233,7 @@ var Verification_ServiceDesc = grpc.ServiceDesc{
 const (
 	Domain_CreateLead_FullMethodName     = "/realestate.v1.Domain/CreateLead"
 	Domain_EnqueueHandoff_FullMethodName = "/realestate.v1.Domain/EnqueueHandoff"
+	Domain_CreateOffer_FullMethodName    = "/realestate.v1.Domain/CreateOffer"
 )
 
 // DomainClient is the client API for Domain service.
@@ -241,6 +242,10 @@ const (
 type DomainClient interface {
 	CreateLead(ctx context.Context, in *CreateLeadRequest, opts ...grpc.CallOption) (*Lead, error)
 	EnqueueHandoff(ctx context.Context, in *HandoffPacket, opts ...grpc.CallOption) (*EnqueueHandoffResponse, error)
+	// CreateOffer lands a drafted cash/purchase offer in the broker-sign queue
+	// (status awaiting_broker). A licensed human broker reviews and signs; the
+	// agent never signs.
+	CreateOffer(ctx context.Context, in *CreateOfferRequest, opts ...grpc.CallOption) (*Offer, error)
 }
 
 type domainClient struct {
@@ -271,12 +276,26 @@ func (c *domainClient) EnqueueHandoff(ctx context.Context, in *HandoffPacket, op
 	return out, nil
 }
 
+func (c *domainClient) CreateOffer(ctx context.Context, in *CreateOfferRequest, opts ...grpc.CallOption) (*Offer, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Offer)
+	err := c.cc.Invoke(ctx, Domain_CreateOffer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DomainServer is the server API for Domain service.
 // All implementations must embed UnimplementedDomainServer
 // for forward compatibility.
 type DomainServer interface {
 	CreateLead(context.Context, *CreateLeadRequest) (*Lead, error)
 	EnqueueHandoff(context.Context, *HandoffPacket) (*EnqueueHandoffResponse, error)
+	// CreateOffer lands a drafted cash/purchase offer in the broker-sign queue
+	// (status awaiting_broker). A licensed human broker reviews and signs; the
+	// agent never signs.
+	CreateOffer(context.Context, *CreateOfferRequest) (*Offer, error)
 	mustEmbedUnimplementedDomainServer()
 }
 
@@ -292,6 +311,9 @@ func (UnimplementedDomainServer) CreateLead(context.Context, *CreateLeadRequest)
 }
 func (UnimplementedDomainServer) EnqueueHandoff(context.Context, *HandoffPacket) (*EnqueueHandoffResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method EnqueueHandoff not implemented")
+}
+func (UnimplementedDomainServer) CreateOffer(context.Context, *CreateOfferRequest) (*Offer, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateOffer not implemented")
 }
 func (UnimplementedDomainServer) mustEmbedUnimplementedDomainServer() {}
 func (UnimplementedDomainServer) testEmbeddedByValue()                {}
@@ -350,6 +372,24 @@ func _Domain_EnqueueHandoff_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Domain_CreateOffer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateOfferRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DomainServer).CreateOffer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Domain_CreateOffer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DomainServer).CreateOffer(ctx, req.(*CreateOfferRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Domain_ServiceDesc is the grpc.ServiceDesc for Domain service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -364,6 +404,10 @@ var Domain_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "EnqueueHandoff",
 			Handler:    _Domain_EnqueueHandoff_Handler,
+		},
+		{
+			MethodName: "CreateOffer",
+			Handler:    _Domain_CreateOffer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

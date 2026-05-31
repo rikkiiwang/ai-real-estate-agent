@@ -120,7 +120,8 @@ class DraftedOffer:
     ``lead_id`` ties it to the CRM lead. ``price`` is the offered cash amount
     (in-band by construction). ``form`` is the filled promulgated TREC form
     (blanks only). ``status`` is ALWAYS ``AWAITING_BROKER`` — never signed.
-    ``band`` records the guardrail the price was checked against.
+    ``band`` records the guardrail the price was checked against. ``side`` is
+    "seller" (cash acquisition) or "buyer" (purchase offer).
     """
 
     lead_id: str
@@ -128,6 +129,7 @@ class DraftedOffer:
     form: FilledForm
     band: AuthorizedBand
     status: OfferStatus = OfferStatus.AWAITING_BROKER
+    side: str = "seller"
 
     @property
     def signed(self) -> bool:
@@ -139,6 +141,7 @@ class DraftedOffer:
         return {
             "lead_id": self.lead_id,
             "price": self.price,
+            "side": self.side,
             "status": self.status.value,
             "signed": self.signed,
             "band": {"open_price": self.band.open_price, "ceiling": self.band.ceiling},
@@ -175,39 +178,61 @@ class FakeOfferSink:
 
 
 class DomainOfferSink:
-    """Emit drafted offers to Rails' awaiting-broker queue over gRPC (U9) — SEAM.
+    """Emit drafted offers to Rails' awaiting-broker queue via ``Domain.CreateOffer``.
 
-    DOCUMENTED FOLLOW-UP, NOT WIRED HERE. The thin binding is: map
-    :class:`DraftedOffer` to the proto ``Offer`` (lead_id, price, the filled-form
-    blanks + selected contingencies, status ``awaiting_broker``) and call
-    ``Domain.CreateOffer``, which lands it in the Rails Offer model's
-    awaiting-broker-sign queue where a licensed broker reviews and signs.
+    Maps a :class:`DraftedOffer` to the proto ``CreateOfferRequest`` (lead_id,
+    side, amount, property address, and the filled-form blanks/contingencies as
+    JSON) and calls the Rails Domain gRPC service, which lands it in the Offer
+    model's awaiting-broker-sign queue where a licensed broker reviews and signs.
 
     Mirrors :class:`brain.lawyer.handoff.DomainGrpcHandoffSink`: IMPORT-SAFE and
-    connection-free at construction — the channel/stub would be created lazily on
-    first :meth:`emit`. The actual ``CreateOffer`` proto RPC is a deliberate
-    thin follow-up (do NOT add the RPC or touch Rails in this unit), so calling
-    :meth:`emit` raises to make the unbound seam explicit rather than silently
-    no-op.
+    connection-free at construction — the channel and stub are created LAZILY on
+    the first :meth:`emit`, never at import or in ``__init__``. The default
+    target is the Rails domain gRPC service (``domain-grpc:50052`` in compose).
     """
 
-    def __init__(self, target: str = "localhost:50051") -> None:
+    def __init__(self, target: str = "localhost:50052") -> None:
         """Store the dial ``target`` only; do NOT open a channel here."""
         self._target = target
-        self._channel = None  # lazily created grpc.Channel (follow-up)
-        self._stub = None  # lazily created DomainStub (follow-up)
+        self._channel = None  # lazily created grpc.Channel
+        self._stub = None  # lazily created DomainStub
+
+    def _ensure_stub(self):
+        """Create the channel + stub on first use (lazy connect)."""
+        if self._stub is None:
+            import grpc  # imported lazily so importing this module needs no grpc
+
+            from genproto.realestate.v1 import realestate_pb2_grpc
+
+            self._channel = grpc.insecure_channel(self._target)
+            self._stub = realestate_pb2_grpc.DomainStub(self._channel)
+        return self._stub
 
     def emit(self, offer: DraftedOffer) -> str:
-        """Documented seam: the ``Domain.CreateOffer`` RPC is a thin follow-up.
+        """Map ``offer`` to the proto and call ``CreateOffer``; return the offer id.
 
-        Intentionally unbound in this unit (no proto RPC added, no Rails touched).
-        Raising — rather than silently dropping the offer — keeps the gate honest.
+        The Closer hands the offer over ``awaiting_broker`` and never signs;
+        Rails enqueues it for a licensed broker. The filled-form blanks +
+        selected contingencies travel as JSON in ``form_json``; the property
+        address is read from the TREC form's blanks.
         """
-        raise NotImplementedError(
-            "DomainOfferSink is a documented seam: bind Domain.CreateOffer "
-            "(awaiting-broker queue, U9) as a thin follow-up. Use FakeOfferSink "
-            "for tests/dry runs."
+        import json
+
+        from genproto.realestate.v1 import realestate_pb2
+
+        assert offer.status is OfferStatus.AWAITING_BROKER, "offers are never auto-signed"
+        form = offer.form.to_dict()
+        property_address = str(form.get("blanks", {}).get("property_address", ""))
+
+        stub = self._ensure_stub()
+        request = realestate_pb2.CreateOfferRequest(
+            lead_id=offer.lead_id,
+            side=offer.side,
+            amount=offer.price,
+            property_address=property_address,
+            form_json=json.dumps(form),
         )
+        return stub.CreateOffer(request).id
 
 
 # --------------------------------------------------------------------------- #
@@ -277,6 +302,7 @@ class Closer:
     offer_sink: OfferSink
     handoff_sink: HandoffSink
     buyer_name: str = "Acme Home Buyers, LLC (licensed broker entity)"
+    side: str = "seller"  # "seller" cash acquisition; "buyer" purchase offer
 
     def draft_offer(
         self,
@@ -382,6 +408,7 @@ class Closer:
             form=form,
             band=band,
             status=OfferStatus.AWAITING_BROKER,
+            side=self.side,
         )
         self.offer_sink.emit(offer)
         return CloseResult(

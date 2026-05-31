@@ -28,4 +28,19 @@ class DomainServerTest < ActiveSupport::TestCase
     assert_equal "low_confidence", packet.trigger
     assert_includes HandoffPacket.queue, packet
   end
+
+  test "CreateOffer handler lands an awaiting-broker Offer and returns the proto" do
+    lead = Lead.create!(side: "seller", address: "123 Congress Ave", contact: "s@x.com")
+    request = Realestate::V1::CreateOfferRequest.new(
+      lead_id: lead.id.to_s, side: "seller", amount: 470_000.0,
+      property_address: "", form_json: "{}"
+    )
+    response = @server.create_offer(request)
+
+    assert_kind_of Realestate::V1::Offer, response
+    assert_equal "awaiting_broker", response.status
+    assert_equal lead.id.to_s, response.lead_id
+    assert_in_delta 470_000.0, response.amount, 0.01
+    assert_includes Offer.awaiting_broker_sign, Offer.find(response.id.to_i)
+  end
 end

@@ -53,6 +53,10 @@ module Realestate
 
         rpc :CreateLead, ::Realestate::V1::CreateLeadRequest, ::Realestate::V1::Lead
         rpc :EnqueueHandoff, ::Realestate::V1::HandoffPacket, ::Realestate::V1::EnqueueHandoffResponse
+        # CreateOffer lands a drafted cash/purchase offer in the broker-sign queue
+        # (status awaiting_broker). A licensed human broker reviews and signs; the
+        # agent never signs.
+        rpc :CreateOffer, ::Realestate::V1::CreateOfferRequest, ::Realestate::V1::Offer
       end
 
       Stub = Service.rpc_stub_class

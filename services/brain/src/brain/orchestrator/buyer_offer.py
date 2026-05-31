@@ -232,6 +232,7 @@ def draft_buyer_offer(
         offer_sink=sinks_offer,
         handoff_sink=sinks_handoff,
         buyer_name=buyer_name,
+        side="buyer",
     )
     result: CloseResult = closer.draft_offer(
         subject,  # duck-typed: Closer only reads `.address`

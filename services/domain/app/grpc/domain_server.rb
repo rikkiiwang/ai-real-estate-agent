@@ -37,4 +37,24 @@ class DomainServer < Realestate::V1::Domain::Service
 
     Realestate::V1::EnqueueHandoffResponse.new(handoff_id: packet.id.to_s)
   end
+
+  def create_offer(request, _call = nil)
+    lead = Lead.find(request.lead_id)
+
+    offer = CreateOffer.call(
+      lead: lead,
+      side: request.side,
+      amount: request.amount,
+      property_address: request.property_address,
+      form_json: request.form_json
+    )
+
+    Realestate::V1::Offer.new(
+      id: offer.id.to_s,
+      lead_id: offer.lead_id.to_s,
+      side: offer.side,
+      amount: offer.amount.to_f,
+      status: offer.status
+    )
+  end
 end

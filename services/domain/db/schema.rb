@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_30_022436) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_31_192651) do
   create_table "audit_events", force: :cascade do |t|
     t.text "claim"
     t.string "content_hash", null: false
@@ -88,6 +88,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_022436) do
   create_table "offers", force: :cascade do |t|
     t.decimal "amount", precision: 12, scale: 2
     t.datetime "created_at", null: false
+    t.text "form_json"
     t.integer "lead_id", null: false
     t.integer "property_id"
     t.string "side", null: false
