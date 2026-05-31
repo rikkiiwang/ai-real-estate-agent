@@ -21,6 +21,21 @@ class Broker::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "section#offers-awaiting-sign p.empty"
   end
 
+  test "requires HTTP basic auth when broker credentials are configured" do
+    ENV["BROKER_DASHBOARD_USER"] = "broker"
+    ENV["BROKER_DASHBOARD_PASSWORD"] = "s3cret"
+
+    get broker_dashboard_path
+    assert_response :unauthorized
+
+    creds = ActionController::HttpAuthentication::Basic.encode_credentials("broker", "s3cret")
+    get broker_dashboard_path, headers: { "Authorization" => creds }
+    assert_response :success
+  ensure
+    ENV.delete("BROKER_DASHBOARD_USER")
+    ENV.delete("BROKER_DASHBOARD_PASSWORD")
+  end
+
   test "surfaces time-to-offer per side and aggregate" do
     seller = Lead.create!(side: "seller", address: "12 Cedar", intent: "high")
     buyer = Lead.create!(side: "buyer", address: "9 Pecan", intent: "high")
