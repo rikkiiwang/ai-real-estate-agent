@@ -1,12 +1,13 @@
 # Deploying to Fly.io
 
-The AI Real Estate Agent deploys as **7 Fly apps** sharing one private network.
-Only the gateway is public; everything else is reachable internally over
-`<app>.flycast`.
+The AI Real Estate Agent deploys as **8 Fly apps** sharing one private network.
+Two apps are public — the REST gateway and the consumer chat app; everything
+else is reachable internally over `<app>.flycast`.
 
 | App | Role | Exposure | Internal address |
 |---|---|---|---|
 | `are-gateway` | Public REST edge (auth'd) | **public** | — |
+| `are-chat` | Standalone consumer chat UI (the "glass box" agent) | **public** | — |
 | `are-brain` | Python gRPC (valuation, lawyer, RAG, orchestrator) | private | `are-brain.flycast:50051` |
 | `are-domain` | Rails broker dashboard + migrations | private | `are-domain.flycast` |
 | `are-domain-grpc` | Rails Domain gRPC (CreateLead/Offer/Handoff) | private | `are-domain-grpc.flycast:50052` |
@@ -17,7 +18,9 @@ Only the gateway is public; everything else is reachable internally over
 ```mermaid
 flowchart LR
   Internet -->|HTTPS| GW[are-gateway]
+  Internet -->|HTTPS| CHAT[are-chat]
   GW -->|gRPC| BRAIN[are-brain]
+  CHAT -->|gRPC Orchestrate| BRAIN
   BRAIN -->|gRPC CreateOffer| DG[are-domain-grpc]
   BRAIN -->|SQL| DB[(are-db pgvector)]
   DG -->|SQL| DB

@@ -187,6 +187,96 @@ class Verification(object):
             _registered_method=True)
 
 
+class ConversationStub(object):
+    """── Conversation (the agent loop: generate→critique→fair-housing→decide) ─────
+
+    Conversation runs one turn of the LangGraph orchestrator end to end and
+    returns the full reasoning trace (draft, per-claim verdicts, citations,
+    confidence sub-signals, Fair Housing decision, handoff trigger) so a UI can
+    SHOW the agent reasoning over live data, not just the final answer.
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.Orchestrate = channel.unary_unary(
+                '/realestate.v1.Conversation/Orchestrate',
+                request_serializer=realestate_dot_v1_dot_realestate__pb2.OrchestrateRequest.SerializeToString,
+                response_deserializer=realestate_dot_v1_dot_realestate__pb2.OrchestrateResponse.FromString,
+                _registered_method=True)
+
+
+class ConversationServicer(object):
+    """── Conversation (the agent loop: generate→critique→fair-housing→decide) ─────
+
+    Conversation runs one turn of the LangGraph orchestrator end to end and
+    returns the full reasoning trace (draft, per-claim verdicts, citations,
+    confidence sub-signals, Fair Housing decision, handoff trigger) so a UI can
+    SHOW the agent reasoning over live data, not just the final answer.
+    """
+
+    def Orchestrate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_ConversationServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'Orchestrate': grpc.unary_unary_rpc_method_handler(
+                    servicer.Orchestrate,
+                    request_deserializer=realestate_dot_v1_dot_realestate__pb2.OrchestrateRequest.FromString,
+                    response_serializer=realestate_dot_v1_dot_realestate__pb2.OrchestrateResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'realestate.v1.Conversation', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('realestate.v1.Conversation', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Conversation(object):
+    """── Conversation (the agent loop: generate→critique→fair-housing→decide) ─────
+
+    Conversation runs one turn of the LangGraph orchestrator end to end and
+    returns the full reasoning trace (draft, per-claim verdicts, citations,
+    confidence sub-signals, Fair Housing decision, handoff trigger) so a UI can
+    SHOW the agent reasoning over live data, not just the final answer.
+    """
+
+    @staticmethod
+    def Orchestrate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/realestate.v1.Conversation/Orchestrate',
+            realestate_dot_v1_dot_realestate__pb2.OrchestrateRequest.SerializeToString,
+            realestate_dot_v1_dot_realestate__pb2.OrchestrateResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
 class DomainStub(object):
     """── Domain (the transaction/CRM core, served by Rails) ───────────────────────
 

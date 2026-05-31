@@ -451,6 +451,429 @@ func (x *VerifyMessageResponse) GetClaims() []*VerifiedClaim {
 	return nil
 }
 
+type OrchestrateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Address       string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`                   // property the turn is about (scopes RAG retrieval)
+	Query         string                 `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`                       // the customer-facing question
+	ThreadId      string                 `protobuf:"bytes,3,opt,name=thread_id,json=threadId,proto3" json:"thread_id,omitempty"` // resumable run key (optional)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OrchestrateRequest) Reset() {
+	*x = OrchestrateRequest{}
+	mi := &file_realestate_v1_realestate_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrchestrateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrchestrateRequest) ProtoMessage() {}
+
+func (x *OrchestrateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_realestate_v1_realestate_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrchestrateRequest.ProtoReflect.Descriptor instead.
+func (*OrchestrateRequest) Descriptor() ([]byte, []int) {
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *OrchestrateRequest) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *OrchestrateRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *OrchestrateRequest) GetThreadId() string {
+	if x != nil {
+		return x.ThreadId
+	}
+	return ""
+}
+
+// One atomic claim the Critic verified, with its bound citation.
+type ReasoningClaim struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Claim            string                 `protobuf:"bytes,1,opt,name=claim,proto3" json:"claim,omitempty"`
+	Label            string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`                                                 // "entailed" | "contradicted" | "baseless"
+	Score            float64                `protobuf:"fixed64,3,opt,name=score,proto3" json:"score,omitempty"`                                               // entailment confidence 0..1
+	CitationSourceId string                 `protobuf:"bytes,4,opt,name=citation_source_id,json=citationSourceId,proto3" json:"citation_source_id,omitempty"` // set when entailed
+	SourceKind       string                 `protobuf:"bytes,5,opt,name=source_kind,json=sourceKind,proto3" json:"source_kind,omitempty"`                     // provenance kind of the cited source
+	Supported        bool                   `protobuf:"varint,6,opt,name=supported,proto3" json:"supported,omitempty"`                                        // entailed AND cited (sendable)
+	Reason           string                 `protobuf:"bytes,7,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *ReasoningClaim) Reset() {
+	*x = ReasoningClaim{}
+	mi := &file_realestate_v1_realestate_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReasoningClaim) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReasoningClaim) ProtoMessage() {}
+
+func (x *ReasoningClaim) ProtoReflect() protoreflect.Message {
+	mi := &file_realestate_v1_realestate_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReasoningClaim.ProtoReflect.Descriptor instead.
+func (*ReasoningClaim) Descriptor() ([]byte, []int) {
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ReasoningClaim) GetClaim() string {
+	if x != nil {
+		return x.Claim
+	}
+	return ""
+}
+
+func (x *ReasoningClaim) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
+}
+
+func (x *ReasoningClaim) GetScore() float64 {
+	if x != nil {
+		return x.Score
+	}
+	return 0
+}
+
+func (x *ReasoningClaim) GetCitationSourceId() string {
+	if x != nil {
+		return x.CitationSourceId
+	}
+	return ""
+}
+
+func (x *ReasoningClaim) GetSourceKind() string {
+	if x != nil {
+		return x.SourceKind
+	}
+	return ""
+}
+
+func (x *ReasoningClaim) GetSupported() bool {
+	if x != nil {
+		return x.Supported
+	}
+	return false
+}
+
+func (x *ReasoningClaim) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+// One node in the agent loop — the UI renders these as a reasoning timeline.
+type ReasoningStep struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Node          string                 `protobuf:"bytes,1,opt,name=node,proto3" json:"node,omitempty"`     // "generate" | "critique" | "fair_housing" | "decide"
+	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`   // short label
+	Detail        string                 `protobuf:"bytes,3,opt,name=detail,proto3" json:"detail,omitempty"` // human-readable summary of what happened
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"` // "ok" | "warn" | "block"
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReasoningStep) Reset() {
+	*x = ReasoningStep{}
+	mi := &file_realestate_v1_realestate_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReasoningStep) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReasoningStep) ProtoMessage() {}
+
+func (x *ReasoningStep) ProtoReflect() protoreflect.Message {
+	mi := &file_realestate_v1_realestate_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReasoningStep.ProtoReflect.Descriptor instead.
+func (*ReasoningStep) Descriptor() ([]byte, []int) {
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ReasoningStep) GetNode() string {
+	if x != nil {
+		return x.Node
+	}
+	return ""
+}
+
+func (x *ReasoningStep) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *ReasoningStep) GetDetail() string {
+	if x != nil {
+		return x.Detail
+	}
+	return ""
+}
+
+func (x *ReasoningStep) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type OrchestrateResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Outcome        string                 `protobuf:"bytes,1,opt,name=outcome,proto3" json:"outcome,omitempty"` // "send" | "handoff"
+	Escalated      bool                   `protobuf:"varint,2,opt,name=escalated,proto3" json:"escalated,omitempty"`
+	FinalMessage   string                 `protobuf:"bytes,3,opt,name=final_message,json=finalMessage,proto3" json:"final_message,omitempty"` // grounded, cited reply (empty on handoff)
+	Draft          string                 `protobuf:"bytes,4,opt,name=draft,proto3" json:"draft,omitempty"`                                   // raw generated draft (pre-verification)
+	SufficientData bool                   `protobuf:"varint,5,opt,name=sufficient_data,json=sufficientData,proto3" json:"sufficient_data,omitempty"`
+	Attempts       int32                  `protobuf:"varint,6,opt,name=attempts,proto3" json:"attempts,omitempty"`
+	Confidence     float64                `protobuf:"fixed64,7,opt,name=confidence,proto3" json:"confidence,omitempty"` // composite 0..1
+	// Critic (U6)
+	VerificationReason string            `protobuf:"bytes,8,opt,name=verification_reason,json=verificationReason,proto3" json:"verification_reason,omitempty"`
+	Claims             []*ReasoningClaim `protobuf:"bytes,9,rep,name=claims,proto3" json:"claims,omitempty"`
+	Citations          []string          `protobuf:"bytes,10,rep,name=citations,proto3" json:"citations,omitempty"`
+	// Composite-confidence sub-signals (U8)
+	Coverage        float64 `protobuf:"fixed64,11,opt,name=coverage,proto3" json:"coverage,omitempty"`
+	Agreement       float64 `protobuf:"fixed64,12,opt,name=agreement,proto3" json:"agreement,omitempty"`
+	SelfConsistency float64 `protobuf:"fixed64,13,opt,name=self_consistency,json=selfConsistency,proto3" json:"self_consistency,omitempty"`
+	// Fair Housing wording rail (U7)
+	FairHousingAllowed bool   `protobuf:"varint,14,opt,name=fair_housing_allowed,json=fairHousingAllowed,proto3" json:"fair_housing_allowed,omitempty"`
+	FairHousingReason  string `protobuf:"bytes,15,opt,name=fair_housing_reason,json=fairHousingReason,proto3" json:"fair_housing_reason,omitempty"`
+	// Handoff (U8) — populated when escalated
+	HandoffTrigger           string `protobuf:"bytes,16,opt,name=handoff_trigger,json=handoffTrigger,proto3" json:"handoff_trigger,omitempty"`
+	HandoffReason            string `protobuf:"bytes,17,opt,name=handoff_reason,json=handoffReason,proto3" json:"handoff_reason,omitempty"`
+	HandoffRecommendedAction string `protobuf:"bytes,18,opt,name=handoff_recommended_action,json=handoffRecommendedAction,proto3" json:"handoff_recommended_action,omitempty"`
+	HardTrigger              bool   `protobuf:"varint,19,opt,name=hard_trigger,json=hardTrigger,proto3" json:"hard_trigger,omitempty"`
+	// Pre-built reasoning timeline for the UI.
+	Steps         []*ReasoningStep `protobuf:"bytes,20,rep,name=steps,proto3" json:"steps,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OrchestrateResponse) Reset() {
+	*x = OrchestrateResponse{}
+	mi := &file_realestate_v1_realestate_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrchestrateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrchestrateResponse) ProtoMessage() {}
+
+func (x *OrchestrateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_realestate_v1_realestate_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrchestrateResponse.ProtoReflect.Descriptor instead.
+func (*OrchestrateResponse) Descriptor() ([]byte, []int) {
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *OrchestrateResponse) GetOutcome() string {
+	if x != nil {
+		return x.Outcome
+	}
+	return ""
+}
+
+func (x *OrchestrateResponse) GetEscalated() bool {
+	if x != nil {
+		return x.Escalated
+	}
+	return false
+}
+
+func (x *OrchestrateResponse) GetFinalMessage() string {
+	if x != nil {
+		return x.FinalMessage
+	}
+	return ""
+}
+
+func (x *OrchestrateResponse) GetDraft() string {
+	if x != nil {
+		return x.Draft
+	}
+	return ""
+}
+
+func (x *OrchestrateResponse) GetSufficientData() bool {
+	if x != nil {
+		return x.SufficientData
+	}
+	return false
+}
+
+func (x *OrchestrateResponse) GetAttempts() int32 {
+	if x != nil {
+		return x.Attempts
+	}
+	return 0
+}
+
+func (x *OrchestrateResponse) GetConfidence() float64 {
+	if x != nil {
+		return x.Confidence
+	}
+	return 0
+}
+
+func (x *OrchestrateResponse) GetVerificationReason() string {
+	if x != nil {
+		return x.VerificationReason
+	}
+	return ""
+}
+
+func (x *OrchestrateResponse) GetClaims() []*ReasoningClaim {
+	if x != nil {
+		return x.Claims
+	}
+	return nil
+}
+
+func (x *OrchestrateResponse) GetCitations() []string {
+	if x != nil {
+		return x.Citations
+	}
+	return nil
+}
+
+func (x *OrchestrateResponse) GetCoverage() float64 {
+	if x != nil {
+		return x.Coverage
+	}
+	return 0
+}
+
+func (x *OrchestrateResponse) GetAgreement() float64 {
+	if x != nil {
+		return x.Agreement
+	}
+	return 0
+}
+
+func (x *OrchestrateResponse) GetSelfConsistency() float64 {
+	if x != nil {
+		return x.SelfConsistency
+	}
+	return 0
+}
+
+func (x *OrchestrateResponse) GetFairHousingAllowed() bool {
+	if x != nil {
+		return x.FairHousingAllowed
+	}
+	return false
+}
+
+func (x *OrchestrateResponse) GetFairHousingReason() string {
+	if x != nil {
+		return x.FairHousingReason
+	}
+	return ""
+}
+
+func (x *OrchestrateResponse) GetHandoffTrigger() string {
+	if x != nil {
+		return x.HandoffTrigger
+	}
+	return ""
+}
+
+func (x *OrchestrateResponse) GetHandoffReason() string {
+	if x != nil {
+		return x.HandoffReason
+	}
+	return ""
+}
+
+func (x *OrchestrateResponse) GetHandoffRecommendedAction() string {
+	if x != nil {
+		return x.HandoffRecommendedAction
+	}
+	return ""
+}
+
+func (x *OrchestrateResponse) GetHardTrigger() bool {
+	if x != nil {
+		return x.HardTrigger
+	}
+	return false
+}
+
+func (x *OrchestrateResponse) GetSteps() []*ReasoningStep {
+	if x != nil {
+		return x.Steps
+	}
+	return nil
+}
+
 type CreateLeadRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Side          string                 `protobuf:"bytes,1,opt,name=side,proto3" json:"side,omitempty"` // "seller" | "buyer"
@@ -462,7 +885,7 @@ type CreateLeadRequest struct {
 
 func (x *CreateLeadRequest) Reset() {
 	*x = CreateLeadRequest{}
-	mi := &file_realestate_v1_realestate_proto_msgTypes[6]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -474,7 +897,7 @@ func (x *CreateLeadRequest) String() string {
 func (*CreateLeadRequest) ProtoMessage() {}
 
 func (x *CreateLeadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_realestate_v1_realestate_proto_msgTypes[6]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -487,7 +910,7 @@ func (x *CreateLeadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateLeadRequest.ProtoReflect.Descriptor instead.
 func (*CreateLeadRequest) Descriptor() ([]byte, []int) {
-	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{6}
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *CreateLeadRequest) GetSide() string {
@@ -523,7 +946,7 @@ type Lead struct {
 
 func (x *Lead) Reset() {
 	*x = Lead{}
-	mi := &file_realestate_v1_realestate_proto_msgTypes[7]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -535,7 +958,7 @@ func (x *Lead) String() string {
 func (*Lead) ProtoMessage() {}
 
 func (x *Lead) ProtoReflect() protoreflect.Message {
-	mi := &file_realestate_v1_realestate_proto_msgTypes[7]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -548,7 +971,7 @@ func (x *Lead) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Lead.ProtoReflect.Descriptor instead.
 func (*Lead) Descriptor() ([]byte, []int) {
-	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{7}
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *Lead) GetId() string {
@@ -593,7 +1016,7 @@ type HandoffPacket struct {
 
 func (x *HandoffPacket) Reset() {
 	*x = HandoffPacket{}
-	mi := &file_realestate_v1_realestate_proto_msgTypes[8]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -605,7 +1028,7 @@ func (x *HandoffPacket) String() string {
 func (*HandoffPacket) ProtoMessage() {}
 
 func (x *HandoffPacket) ProtoReflect() protoreflect.Message {
-	mi := &file_realestate_v1_realestate_proto_msgTypes[8]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -618,7 +1041,7 @@ func (x *HandoffPacket) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HandoffPacket.ProtoReflect.Descriptor instead.
 func (*HandoffPacket) Descriptor() ([]byte, []int) {
-	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{8}
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *HandoffPacket) GetLeadId() string {
@@ -672,7 +1095,7 @@ type EnqueueHandoffResponse struct {
 
 func (x *EnqueueHandoffResponse) Reset() {
 	*x = EnqueueHandoffResponse{}
-	mi := &file_realestate_v1_realestate_proto_msgTypes[9]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -684,7 +1107,7 @@ func (x *EnqueueHandoffResponse) String() string {
 func (*EnqueueHandoffResponse) ProtoMessage() {}
 
 func (x *EnqueueHandoffResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_realestate_v1_realestate_proto_msgTypes[9]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -697,7 +1120,7 @@ func (x *EnqueueHandoffResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnqueueHandoffResponse.ProtoReflect.Descriptor instead.
 func (*EnqueueHandoffResponse) Descriptor() ([]byte, []int) {
-	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{9}
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *EnqueueHandoffResponse) GetHandoffId() string {
@@ -723,7 +1146,7 @@ type CreateOfferRequest struct {
 
 func (x *CreateOfferRequest) Reset() {
 	*x = CreateOfferRequest{}
-	mi := &file_realestate_v1_realestate_proto_msgTypes[10]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -735,7 +1158,7 @@ func (x *CreateOfferRequest) String() string {
 func (*CreateOfferRequest) ProtoMessage() {}
 
 func (x *CreateOfferRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_realestate_v1_realestate_proto_msgTypes[10]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -748,7 +1171,7 @@ func (x *CreateOfferRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOfferRequest.ProtoReflect.Descriptor instead.
 func (*CreateOfferRequest) Descriptor() ([]byte, []int) {
-	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{10}
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CreateOfferRequest) GetLeadId() string {
@@ -799,7 +1222,7 @@ type Offer struct {
 
 func (x *Offer) Reset() {
 	*x = Offer{}
-	mi := &file_realestate_v1_realestate_proto_msgTypes[11]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -811,7 +1234,7 @@ func (x *Offer) String() string {
 func (*Offer) ProtoMessage() {}
 
 func (x *Offer) ProtoReflect() protoreflect.Message {
-	mi := &file_realestate_v1_realestate_proto_msgTypes[11]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -824,7 +1247,7 @@ func (x *Offer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Offer.ProtoReflect.Descriptor instead.
 func (*Offer) Descriptor() ([]byte, []int) {
-	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{11}
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *Offer) GetId() string {
@@ -895,7 +1318,49 @@ const file_realestate_v1_realestate_proto_rawDesc = "" +
 	"confidence\x18\x03 \x01(\x01R\n" +
 	"confidence\x12\x16\n" +
 	"\x06reason\x18\x04 \x01(\tR\x06reason\x124\n" +
-	"\x06claims\x18\x05 \x03(\v2\x1c.realestate.v1.VerifiedClaimR\x06claims\"[\n" +
+	"\x06claims\x18\x05 \x03(\v2\x1c.realestate.v1.VerifiedClaimR\x06claims\"a\n" +
+	"\x12OrchestrateRequest\x12\x18\n" +
+	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x14\n" +
+	"\x05query\x18\x02 \x01(\tR\x05query\x12\x1b\n" +
+	"\tthread_id\x18\x03 \x01(\tR\bthreadId\"\xd7\x01\n" +
+	"\x0eReasoningClaim\x12\x14\n" +
+	"\x05claim\x18\x01 \x01(\tR\x05claim\x12\x14\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\x12\x14\n" +
+	"\x05score\x18\x03 \x01(\x01R\x05score\x12,\n" +
+	"\x12citation_source_id\x18\x04 \x01(\tR\x10citationSourceId\x12\x1f\n" +
+	"\vsource_kind\x18\x05 \x01(\tR\n" +
+	"sourceKind\x12\x1c\n" +
+	"\tsupported\x18\x06 \x01(\bR\tsupported\x12\x16\n" +
+	"\x06reason\x18\a \x01(\tR\x06reason\"i\n" +
+	"\rReasoningStep\x12\x12\n" +
+	"\x04node\x18\x01 \x01(\tR\x04node\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x16\n" +
+	"\x06detail\x18\x03 \x01(\tR\x06detail\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\"\x9f\x06\n" +
+	"\x13OrchestrateResponse\x12\x18\n" +
+	"\aoutcome\x18\x01 \x01(\tR\aoutcome\x12\x1c\n" +
+	"\tescalated\x18\x02 \x01(\bR\tescalated\x12#\n" +
+	"\rfinal_message\x18\x03 \x01(\tR\ffinalMessage\x12\x14\n" +
+	"\x05draft\x18\x04 \x01(\tR\x05draft\x12'\n" +
+	"\x0fsufficient_data\x18\x05 \x01(\bR\x0esufficientData\x12\x1a\n" +
+	"\battempts\x18\x06 \x01(\x05R\battempts\x12\x1e\n" +
+	"\n" +
+	"confidence\x18\a \x01(\x01R\n" +
+	"confidence\x12/\n" +
+	"\x13verification_reason\x18\b \x01(\tR\x12verificationReason\x125\n" +
+	"\x06claims\x18\t \x03(\v2\x1d.realestate.v1.ReasoningClaimR\x06claims\x12\x1c\n" +
+	"\tcitations\x18\n" +
+	" \x03(\tR\tcitations\x12\x1a\n" +
+	"\bcoverage\x18\v \x01(\x01R\bcoverage\x12\x1c\n" +
+	"\tagreement\x18\f \x01(\x01R\tagreement\x12)\n" +
+	"\x10self_consistency\x18\r \x01(\x01R\x0fselfConsistency\x120\n" +
+	"\x14fair_housing_allowed\x18\x0e \x01(\bR\x12fairHousingAllowed\x12.\n" +
+	"\x13fair_housing_reason\x18\x0f \x01(\tR\x11fairHousingReason\x12'\n" +
+	"\x0fhandoff_trigger\x18\x10 \x01(\tR\x0ehandoffTrigger\x12%\n" +
+	"\x0ehandoff_reason\x18\x11 \x01(\tR\rhandoffReason\x12<\n" +
+	"\x1ahandoff_recommended_action\x18\x12 \x01(\tR\x18handoffRecommendedAction\x12!\n" +
+	"\fhard_trigger\x18\x13 \x01(\bR\vhardTrigger\x122\n" +
+	"\x05steps\x18\x14 \x03(\v2\x1c.realestate.v1.ReasoningStepR\x05steps\"[\n" +
 	"\x11CreateLeadRequest\x12\x12\n" +
 	"\x04side\x18\x01 \x01(\tR\x04side\x12\x18\n" +
 	"\aaddress\x18\x02 \x01(\tR\aaddress\x12\x18\n" +
@@ -939,7 +1404,9 @@ const file_realestate_v1_realestate_proto_rawDesc = "" +
 	"\tValuation\x12W\n" +
 	"\fGetValuation\x12\".realestate.v1.GetValuationRequest\x1a#.realestate.v1.GetValuationResponse2j\n" +
 	"\fVerification\x12Z\n" +
-	"\rVerifyMessage\x12#.realestate.v1.VerifyMessageRequest\x1a$.realestate.v1.VerifyMessageResponse2\xec\x01\n" +
+	"\rVerifyMessage\x12#.realestate.v1.VerifyMessageRequest\x1a$.realestate.v1.VerifyMessageResponse2d\n" +
+	"\fConversation\x12T\n" +
+	"\vOrchestrate\x12!.realestate.v1.OrchestrateRequest\x1a\".realestate.v1.OrchestrateResponse2\xec\x01\n" +
 	"\x06Domain\x12C\n" +
 	"\n" +
 	"CreateLead\x12 .realestate.v1.CreateLeadRequest\x1a\x13.realestate.v1.Lead\x12U\n" +
@@ -959,7 +1426,7 @@ func file_realestate_v1_realestate_proto_rawDescGZIP() []byte {
 }
 
 var file_realestate_v1_realestate_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_realestate_v1_realestate_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_realestate_v1_realestate_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_realestate_v1_realestate_proto_goTypes = []any{
 	(ClaimVerdict)(0),              // 0: realestate.v1.ClaimVerdict
 	(*GetValuationRequest)(nil),    // 1: realestate.v1.GetValuationRequest
@@ -968,32 +1435,40 @@ var file_realestate_v1_realestate_proto_goTypes = []any{
 	(*VerifyMessageRequest)(nil),   // 4: realestate.v1.VerifyMessageRequest
 	(*VerifiedClaim)(nil),          // 5: realestate.v1.VerifiedClaim
 	(*VerifyMessageResponse)(nil),  // 6: realestate.v1.VerifyMessageResponse
-	(*CreateLeadRequest)(nil),      // 7: realestate.v1.CreateLeadRequest
-	(*Lead)(nil),                   // 8: realestate.v1.Lead
-	(*HandoffPacket)(nil),          // 9: realestate.v1.HandoffPacket
-	(*EnqueueHandoffResponse)(nil), // 10: realestate.v1.EnqueueHandoffResponse
-	(*CreateOfferRequest)(nil),     // 11: realestate.v1.CreateOfferRequest
-	(*Offer)(nil),                  // 12: realestate.v1.Offer
+	(*OrchestrateRequest)(nil),     // 7: realestate.v1.OrchestrateRequest
+	(*ReasoningClaim)(nil),         // 8: realestate.v1.ReasoningClaim
+	(*ReasoningStep)(nil),          // 9: realestate.v1.ReasoningStep
+	(*OrchestrateResponse)(nil),    // 10: realestate.v1.OrchestrateResponse
+	(*CreateLeadRequest)(nil),      // 11: realestate.v1.CreateLeadRequest
+	(*Lead)(nil),                   // 12: realestate.v1.Lead
+	(*HandoffPacket)(nil),          // 13: realestate.v1.HandoffPacket
+	(*EnqueueHandoffResponse)(nil), // 14: realestate.v1.EnqueueHandoffResponse
+	(*CreateOfferRequest)(nil),     // 15: realestate.v1.CreateOfferRequest
+	(*Offer)(nil),                  // 16: realestate.v1.Offer
 }
 var file_realestate_v1_realestate_proto_depIdxs = []int32{
 	2,  // 0: realestate.v1.GetValuationResponse.facts:type_name -> realestate.v1.SourceFact
 	0,  // 1: realestate.v1.VerifiedClaim.verdict:type_name -> realestate.v1.ClaimVerdict
 	5,  // 2: realestate.v1.VerifyMessageResponse.claims:type_name -> realestate.v1.VerifiedClaim
-	1,  // 3: realestate.v1.Valuation.GetValuation:input_type -> realestate.v1.GetValuationRequest
-	4,  // 4: realestate.v1.Verification.VerifyMessage:input_type -> realestate.v1.VerifyMessageRequest
-	7,  // 5: realestate.v1.Domain.CreateLead:input_type -> realestate.v1.CreateLeadRequest
-	9,  // 6: realestate.v1.Domain.EnqueueHandoff:input_type -> realestate.v1.HandoffPacket
-	11, // 7: realestate.v1.Domain.CreateOffer:input_type -> realestate.v1.CreateOfferRequest
-	3,  // 8: realestate.v1.Valuation.GetValuation:output_type -> realestate.v1.GetValuationResponse
-	6,  // 9: realestate.v1.Verification.VerifyMessage:output_type -> realestate.v1.VerifyMessageResponse
-	8,  // 10: realestate.v1.Domain.CreateLead:output_type -> realestate.v1.Lead
-	10, // 11: realestate.v1.Domain.EnqueueHandoff:output_type -> realestate.v1.EnqueueHandoffResponse
-	12, // 12: realestate.v1.Domain.CreateOffer:output_type -> realestate.v1.Offer
-	8,  // [8:13] is the sub-list for method output_type
-	3,  // [3:8] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	8,  // 3: realestate.v1.OrchestrateResponse.claims:type_name -> realestate.v1.ReasoningClaim
+	9,  // 4: realestate.v1.OrchestrateResponse.steps:type_name -> realestate.v1.ReasoningStep
+	1,  // 5: realestate.v1.Valuation.GetValuation:input_type -> realestate.v1.GetValuationRequest
+	4,  // 6: realestate.v1.Verification.VerifyMessage:input_type -> realestate.v1.VerifyMessageRequest
+	7,  // 7: realestate.v1.Conversation.Orchestrate:input_type -> realestate.v1.OrchestrateRequest
+	11, // 8: realestate.v1.Domain.CreateLead:input_type -> realestate.v1.CreateLeadRequest
+	13, // 9: realestate.v1.Domain.EnqueueHandoff:input_type -> realestate.v1.HandoffPacket
+	15, // 10: realestate.v1.Domain.CreateOffer:input_type -> realestate.v1.CreateOfferRequest
+	3,  // 11: realestate.v1.Valuation.GetValuation:output_type -> realestate.v1.GetValuationResponse
+	6,  // 12: realestate.v1.Verification.VerifyMessage:output_type -> realestate.v1.VerifyMessageResponse
+	10, // 13: realestate.v1.Conversation.Orchestrate:output_type -> realestate.v1.OrchestrateResponse
+	12, // 14: realestate.v1.Domain.CreateLead:output_type -> realestate.v1.Lead
+	14, // 15: realestate.v1.Domain.EnqueueHandoff:output_type -> realestate.v1.EnqueueHandoffResponse
+	16, // 16: realestate.v1.Domain.CreateOffer:output_type -> realestate.v1.Offer
+	11, // [11:17] is the sub-list for method output_type
+	5,  // [5:11] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_realestate_v1_realestate_proto_init() }
@@ -1007,9 +1482,9 @@ func file_realestate_v1_realestate_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_realestate_v1_realestate_proto_rawDesc), len(file_realestate_v1_realestate_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   12,
+			NumMessages:   16,
 			NumExtensions: 0,
-			NumServices:   3,
+			NumServices:   4,
 		},
 		GoTypes:           file_realestate_v1_realestate_proto_goTypes,
 		DependencyIndexes: file_realestate_v1_realestate_proto_depIdxs,

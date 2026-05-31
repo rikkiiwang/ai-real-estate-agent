@@ -24,8 +24,8 @@ FLY_DIR="deploy/fly"
 REGION="${REGION:-dfw}"
 ORG="${ORG:-personal}"
 
-ALL_APPS=(are-db are-domain are-domain-grpc are-brain are-gateway are-ingestion are-voice)
-CORE=(db domain domain-grpc brain gateway)
+ALL_APPS=(are-db are-domain are-domain-grpc are-brain are-gateway are-chat are-ingestion are-voice)
+CORE=(db domain domain-grpc brain gateway chat)
 
 # Which services to deploy (positional args, else the core stack).
 TARGETS=("$@")
@@ -36,7 +36,7 @@ require() { [ -n "${!1:-}" ] || { echo "ERROR: \$$1 is required (see DEPLOY.md)"
 fly_app() { # app name for a service key
   case "$1" in
     db) echo are-db;; domain) echo are-domain;; domain-grpc) echo are-domain-grpc;;
-    brain) echo are-brain;; gateway) echo are-gateway;;
+    brain) echo are-brain;; gateway) echo are-gateway;; chat) echo are-chat;;
     ingestion) echo are-ingestion;; voice) echo are-voice;;
     *) echo "unknown service: $1" >&2; exit 1;;
   esac
@@ -55,10 +55,13 @@ for app in are-db are-brain are-domain are-domain-grpc are-ingestion are-voice; 
   fly ips list --app "$app" 2>/dev/null | grep -qi private \
     || fly ips allocate-v6 --private --app "$app" >/dev/null 2>&1 || true
 done
-# Public shared IP for the gateway only.
-fly ips list --app are-gateway 2>/dev/null | grep -qiE "v4|global" \
-  || { fly ips allocate-v4 --shared --app are-gateway >/dev/null 2>&1 || true; \
-       fly ips allocate-v6 --app are-gateway >/dev/null 2>&1 || true; }
+# Public shared IPs for the two consumer-facing apps: the REST gateway and the
+# standalone chat web app. Everything else stays private over flycast.
+for app in are-gateway are-chat; do
+  fly ips list --app "$app" 2>/dev/null | grep -qiE "v4|global" \
+    || { fly ips allocate-v4 --shared --app "$app" >/dev/null 2>&1 || true; \
+         fly ips allocate-v6 --app "$app" >/dev/null 2>&1 || true; }
+done
 
 echo "→ Staging secrets"
 require POSTGRES_PASSWORD
@@ -74,6 +77,7 @@ for svc in "${TARGETS[@]}"; do
     domain-grpc) require RAILS_MASTER_KEY; stage are-domain-grpc RAILS_MASTER_KEY="$RAILS_MASTER_KEY" DATABASE_URL="$DB_DOMAIN";;
     brain)       stage are-brain DATABASE_URL="$DB_RAG" ${GEMINI_API_KEY:+GEMINI_API_KEY="$GEMINI_API_KEY"};;
     gateway)     require GATEWAY_AUTH_SECRET; stage are-gateway GATEWAY_AUTH_SECRET="$GATEWAY_AUTH_SECRET";;
+    chat)        : ;; # talks to the brain over the private mesh; no secrets
     ingestion)   stage are-ingestion DATABASE_URL="$DB_RAG";;
     voice)       : ;; # no secrets
   esac
@@ -92,11 +96,13 @@ deploy() {
   fly deploy "$context" --config "$config" --yes
 }
 
-ORDER=(db domain domain-grpc brain gateway ingestion voice)
+ORDER=(db domain domain-grpc brain gateway chat ingestion voice)
 for svc in "${ORDER[@]}"; do
   for t in "${TARGETS[@]}"; do
     [ "$svc" = "$t" ] && deploy "$svc"
   done
 done
 
-echo "✓ Done. Public gateway: https://are-gateway.fly.dev  (verify: curl https://are-gateway.fly.dev/health)"
+echo "✓ Done."
+echo "  Public gateway (REST API): https://are-gateway.fly.dev  (verify: curl https://are-gateway.fly.dev/health)"
+echo "  Consumer chat app:         https://are-chat.fly.dev      (the 'glass box' agent UI)"
