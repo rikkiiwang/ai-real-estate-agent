@@ -1,0 +1,33 @@
+# Chat — the standalone consumer-facing web app (the "glass box" agent UI).
+# Public, but holds no secrets: it serves the SPA and calls the brain's
+# Conversation.Orchestrate over the private flycast network, exactly as the
+# gateway calls the brain. Build context is the repo root; SERVICE selects the
+# Go binary and the //go:embed bundles services/chat/static into it.
+app = "are-chat"
+primary_region = "dfw"
+
+[build]
+  dockerfile = "../go.Dockerfile"
+  [build.args]
+    SERVICE = "chat"
+
+[env]
+  PORT = "8080"
+  BRAIN_ADDR = "are-brain.flycast:50051"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/health"
+    interval = "15s"
+    timeout = "2s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

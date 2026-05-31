@@ -65,6 +65,74 @@ message VerifyMessageResponse {
   repeated VerifiedClaim claims = 5;
 }
 
+// ── Conversation (the agent loop: generate→critique→fair-housing→decide) ─────
+
+// Conversation runs one turn of the LangGraph orchestrator end to end and
+// returns the full reasoning trace (draft, per-claim verdicts, citations,
+// confidence sub-signals, Fair Housing decision, handoff trigger) so a UI can
+// SHOW the agent reasoning over live data, not just the final answer.
+service Conversation {
+  rpc Orchestrate(OrchestrateRequest) returns (OrchestrateResponse);
+}
+
+message OrchestrateRequest {
+  string address = 1;    // property the turn is about (scopes RAG retrieval)
+  string query = 2;      // the customer-facing question
+  string thread_id = 3;  // resumable run key (optional)
+}
+
+// One atomic claim the Critic verified, with its bound citation.
+message ReasoningClaim {
+  string claim = 1;
+  string label = 2;               // "entailed" | "contradicted" | "baseless"
+  double score = 3;               // entailment confidence 0..1
+  string citation_source_id = 4;  // set when entailed
+  string source_kind = 5;         // provenance kind of the cited source
+  bool supported = 6;             // entailed AND cited (sendable)
+  string reason = 7;
+}
+
+// One node in the agent loop — the UI renders these as a reasoning timeline.
+message ReasoningStep {
+  string node = 1;    // "generate" | "critique" | "fair_housing" | "decide"
+  string title = 2;   // short label
+  string detail = 3;  // human-readable summary of what happened
+  string status = 4;  // "ok" | "warn" | "block"
+}
+
+message OrchestrateResponse {
+  string outcome = 1;        // "send" | "handoff"
+  bool escalated = 2;
+  string final_message = 3;  // grounded, cited reply (empty on handoff)
+  string draft = 4;          // raw generated draft (pre-verification)
+  bool sufficient_data = 5;
+  int32 attempts = 6;
+  double confidence = 7;     // composite 0..1
+
+  // Critic (U6)
+  string verification_reason = 8;
+  repeated ReasoningClaim claims = 9;
+  repeated string citations = 10;
+
+  // Composite-confidence sub-signals (U8)
+  double coverage = 11;
+  double agreement = 12;
+  double self_consistency = 13;
+
+  // Fair Housing wording rail (U7)
+  bool fair_housing_allowed = 14;
+  string fair_housing_reason = 15;
+
+  // Handoff (U8) — populated when escalated
+  string handoff_trigger = 16;
+  string handoff_reason = 17;
+  string handoff_recommended_action = 18;
+  bool hard_trigger = 19;
+
+  // Pre-built reasoning timeline for the UI.
+  repeated ReasoningStep steps = 20;
+}
+
 // ── Domain (the transaction/CRM core, served by Rails) ───────────────────────
 
 service Domain {
