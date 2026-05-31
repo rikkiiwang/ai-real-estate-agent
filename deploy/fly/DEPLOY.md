@@ -44,6 +44,7 @@ Generate and export these before deploying. They are staged with
 | `RAILS_MASTER_KEY` | domain, domain-grpc | `cat services/domain/config/master.key` |
 | `GATEWAY_AUTH_SECRET` | gateway | `openssl rand -hex 32` |
 | `GEMINI_API_KEY` | brain (optional) | from Google AI Studio; omit to keep vision on the fake model |
+| `BROKER_DASHBOARD_USER` / `BROKER_DASHBOARD_PASSWORD` | domain (required only if exposing the dashboard publicly) | any user + `openssl rand -hex 16`; when unset the dashboard has no login (keep it private) |
 
 `DATABASE_URL` values are derived by `deploy.sh` from `POSTGRES_PASSWORD`
 (RAG db `realestate`, Rails db `domain_production`) — do not set them by hand.
@@ -106,6 +107,9 @@ fly proxy 3000:80 --app are-domain
   stays warm; the gateway's request timeout is 30s to cover a cold first call.
 - **Cost**: ~6 shared-cpu-1x machines + one 3GB volume. Stop everything with
   `for a in are-db are-brain are-domain are-domain-grpc are-gateway are-ingestion are-voice; do fly scale count 0 --app $a --yes; done`.
-- **Exposing the broker dashboard publicly**: allocate IPs for `are-domain`
-  (`fly ips allocate-v4 --shared --app are-domain`) — it already has Rails
-  health checks and force_https. Put it behind real broker auth first.
+- **Exposing the broker dashboard publicly**: set `BROKER_DASHBOARD_USER` /
+  `BROKER_DASHBOARD_PASSWORD` first (the dashboard enforces HTTP basic auth when
+  they are present; `/up` stays open for health checks), then allocate IPs:
+  `fly ips allocate-v4 --shared --app are-domain && fly ips allocate-v6 --app are-domain`.
+  Without those secrets the dashboard has no login — keep it private (reach it
+  via `fly proxy 8080:8080 --app are-domain`).
