@@ -55,6 +55,23 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	// Root: a small API index so the bare URL is informative rather than a bare
+	// 404. Unknown paths still 404 (this is an API, not a website).
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			writeJSON(w, http.StatusNotFound, map[string]string{"error": "not found"})
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{
+			"service":     "ai-real-estate-agent gateway",
+			"description": "Public REST edge for the AI Real Estate Agent (Austin).",
+			"endpoints": map[string]string{
+				"GET /health":             "liveness (open)",
+				"GET /valuation?address=": "real-time home valuation (requires Bearer token)",
+			},
+		})
+	})
+
 	// /health stays open (no auth) for liveness probes.
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"service": "gateway", "status": "ok"})
