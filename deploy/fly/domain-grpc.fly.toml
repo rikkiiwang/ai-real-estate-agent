@@ -7,7 +7,7 @@ app = "are-domain-grpc"
 primary_region = "dfw"
 
 [build]
-  dockerfile = "Dockerfile"   # services/domain/Dockerfile (context = services/domain)
+  dockerfile = "../../services/domain/Dockerfile"   # services/domain/Dockerfile (context = services/domain)
 
 [env]
   RAILS_ENV = "production"

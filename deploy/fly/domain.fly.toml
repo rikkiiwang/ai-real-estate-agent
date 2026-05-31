@@ -7,17 +7,18 @@ app = "are-domain"
 primary_region = "dfw"
 
 [build]
-  dockerfile = "Dockerfile"   # services/domain/Dockerfile (context = services/domain)
+  dockerfile = "../../services/domain/Dockerfile"   # services/domain/Dockerfile (context = services/domain)
 
 [deploy]
   release_command = "bin/rails db:prepare"
 
 [env]
   RAILS_ENV = "production"
+  HTTP_PORT = "8080"            # Thruster listens here; uid 1000 cannot bind :80
   # RAILS_MASTER_KEY and DATABASE_URL (domain_production) set via `fly secrets set`.
 
 [http_service]
-  internal_port = 80          # Thruster listens on 80 in the prod image
+  internal_port = 8080          # matches Thruster's HTTP_PORT (non-privileged)
   force_https = true
   auto_stop_machines = "stop"
   auto_start_machines = true

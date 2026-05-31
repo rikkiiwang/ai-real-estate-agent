@@ -82,14 +82,14 @@ done
 # Deploy order: db first, then the migrator (domain), then everything else.
 deploy() {
   local svc="$1" app context config
-  app="$(fly_app "$svc")"; config="$FLY_DIR/${svc}.fly.toml"
+  app="$(fly_app "$svc")"; config="$REPO_ROOT/$FLY_DIR/${svc}.fly.toml"
   case "$svc" in
     db)                 context="$FLY_DIR";;
     domain|domain-grpc) context="services/domain";;
     *)                  context=".";;          # brain + Go services build from repo root
   esac
   echo "→ Deploying $app (context=$context)"
-  fly deploy "$context" --config "$config" --region "$REGION" --yes
+  fly deploy "$context" --config "$config" --yes
 }
 
 ORDER=(db domain domain-grpc brain gateway ingestion voice)

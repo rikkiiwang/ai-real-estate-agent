@@ -6,7 +6,7 @@ app = "are-ingestion"
 primary_region = "dfw"
 
 [build]
-  dockerfile = "deploy/go.Dockerfile"
+  dockerfile = "../go.Dockerfile"
   [build.args]
     SERVICE = "ingestion"
 

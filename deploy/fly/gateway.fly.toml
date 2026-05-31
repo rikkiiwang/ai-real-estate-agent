@@ -5,7 +5,7 @@ app = "are-gateway"
 primary_region = "dfw"
 
 [build]
-  dockerfile = "deploy/go.Dockerfile"
+  dockerfile = "../go.Dockerfile"
   [build.args]
     SERVICE = "gateway"
 

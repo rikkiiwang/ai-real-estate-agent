@@ -5,7 +5,7 @@ app = "are-brain"
 primary_region = "dfw"
 
 [build]
-  dockerfile = "deploy/Dockerfile.brain"
+  dockerfile = "../Dockerfile.brain"
 
 [env]
   BRAIN_BIND = "[::]:50051"
