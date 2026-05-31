@@ -1,0 +1,32 @@
+# Gateway — the public REST edge (the ONLY app with a public IP). Authenticates
+# callers (HMAC bearer) and fans out to the brain over the private network.
+# Build context is the repo root; SERVICE selects which Go binary to build.
+app = "are-gateway"
+primary_region = "dfw"
+
+[build]
+  dockerfile = "deploy/go.Dockerfile"
+  [build.args]
+    SERVICE = "gateway"
+
+[env]
+  GATEWAY_ADDR = ":8080"
+  BRAIN_ADDR = "are-brain.flycast:50051"
+  # GATEWAY_AUTH_SECRET is set via `fly secrets set`.
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/health"
+    interval = "15s"
+    timeout = "2s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

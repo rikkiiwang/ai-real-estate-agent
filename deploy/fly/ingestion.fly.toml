@@ -1,0 +1,29 @@
+# Ingestion — Go worker (Travis County GIS + TCAD loaders, synthetic listings).
+# Internal-only; exposes a health endpoint at are-ingestion.flycast:8081.
+# Optional for a first pilot (the demo path is valuation + offer); include it
+# when wiring real data loads.
+app = "are-ingestion"
+primary_region = "dfw"
+
+[build]
+  dockerfile = "deploy/go.Dockerfile"
+  [build.args]
+    SERVICE = "ingestion"
+
+[env]
+  INGESTION_ADDR = ":8081"
+  # DATABASE_URL is set via `fly secrets set` when real ingestion is wired.
+
+[[services]]
+  internal_port = 8081
+  protocol = "tcp"
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[services.ports]]
+    port = 8081
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

@@ -51,10 +51,23 @@ Migration runs on boot (the `domain` web service is the single migrator; the
 
 The brain warms its AVM at startup; the first request may take a few seconds.
 
+## Deploy to Fly.io
+
+Per-service configs, a deploy script, and a full runbook live in `deploy/fly/`.
+
+```bash
+export POSTGRES_PASSWORD=$(openssl rand -hex 24)
+export RAILS_MASTER_KEY=$(cat services/domain/config/master.key)
+export GATEWAY_AUTH_SECRET=$(openssl rand -hex 32)
+deploy/fly/deploy.sh        # gateway public; brain/domain/db internal over flycast
+```
+
+See [`deploy/fly/DEPLOY.md`](deploy/fly/DEPLOY.md) for the topology, every secret,
+and verification.
+
 ## Status
 
 Full two-sided MVP built (19 plan units) and verified across Go/Python/Rails.
-The compose stack boots end-to-end — a live `CreateLead` call reaches the Rails
-domain over gRPC and persists. See `docs/plans/` for the plan and the deferred
-seams (e.g. the `CreateOffer` RPC binding the Python Closer to the Rails offer
-queue).
+The compose stack boots end-to-end and a drafted offer persists to the Rails
+broker queue over gRPC (`CreateOffer`). Fly.io deploy configs are in
+`deploy/fly/`. See `docs/plans/` for the plan and remaining deferred seams.

@@ -1,0 +1,36 @@
+# Domain gRPC — the Rails Domain service (CreateLead, EnqueueHandoff,
+# CreateOffer) over gRPC. Same production image as are-domain, with the start
+# command overridden to bin/grpc_server via a process group. Internal-only:
+# the brain dials are-domain-grpc.flycast:50052. Does NOT migrate (are-domain's
+# release_command owns schema); it waits for the schema to exist.
+app = "are-domain-grpc"
+primary_region = "dfw"
+
+[build]
+  dockerfile = "Dockerfile"   # services/domain/Dockerfile (context = services/domain)
+
+[env]
+  RAILS_ENV = "production"
+  DOMAIN_GRPC_PORT = "50052"
+  # RAILS_MASTER_KEY and DATABASE_URL (domain_production) set via `fly secrets set`.
+
+# Override the image CMD: run the gRPC server instead of the web server. The
+# Rails docker-entrypoint execs this, and only migrates on `rails server`, so
+# this process never runs migrations.
+[processes]
+  grpc = "bin/grpc_server"
+
+[[services]]
+  processes = ["grpc"]
+  internal_port = 50052
+  protocol = "tcp"
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 50052
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

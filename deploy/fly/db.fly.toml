@@ -1,0 +1,35 @@
+# Postgres + pgvector — internal-only (reachable at are-db.flycast:5432).
+# Single always-on machine with a persistent volume. Not a Fly Managed Postgres;
+# a plain container so the pgvector extension and the two databases are
+# guaranteed (see db.Dockerfile + db-initdb/).
+app = "are-db"
+primary_region = "dfw"
+
+[build]
+  dockerfile = "db.Dockerfile"
+
+[env]
+  POSTGRES_USER = "realestate"
+  POSTGRES_DB = "realestate"
+  # PGDATA lives under the mounted volume so data persists across deploys.
+  PGDATA = "/var/lib/postgresql/data/pgdata"
+  # POSTGRES_PASSWORD is set via `fly secrets set` (see DEPLOY.md).
+
+[[mounts]]
+  source = "pgdata"
+  destination = "/var/lib/postgresql/data"
+
+# Raw TCP on 5432, no public IP — internal services dial are-db.flycast:5432.
+[[services]]
+  internal_port = 5432
+  protocol = "tcp"
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 5432
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"

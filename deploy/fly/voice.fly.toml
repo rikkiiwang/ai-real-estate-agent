@@ -1,0 +1,29 @@
+# Voice — Go single-channel conversation transport (seller/buyer intake,
+# qualification, AI disclosure). Internal-only by default
+# (are-voice.flycast:8082); make it public later if consumers hit it directly
+# rather than through the gateway.
+app = "are-voice"
+primary_region = "dfw"
+
+[build]
+  dockerfile = "deploy/go.Dockerfile"
+  [build.args]
+    SERVICE = "voice"
+
+[env]
+  VOICE_ADDR = ":8082"
+  BRAIN_ADDR = "are-brain.flycast:50051"
+
+[[services]]
+  internal_port = 8082
+  protocol = "tcp"
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[services.ports]]
+    port = 8082
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
