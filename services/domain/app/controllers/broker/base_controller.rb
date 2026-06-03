@@ -5,6 +5,7 @@ module Broker
   # unaffected. The Rails health endpoint (/up) lives on Rails::HealthController,
   # not here, so it stays open for Fly health checks.
   class BaseController < ApplicationController
+    layout "broker"
     before_action :authenticate_broker!
 
     private

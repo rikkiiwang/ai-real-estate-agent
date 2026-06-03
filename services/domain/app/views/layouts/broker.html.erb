@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Broker console — Atlas" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <%= stylesheet_link_tag "marketplace", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="mk mk--broker">
+    <header class="mk-masthead">
+      <span class="mk-brand">
+        <span class="mk-brand-mark">▲</span> Atlas
+        <span class="mk-brand-sub">Broker console</span>
+      </span>
+      <span class="mk-broker-tag">Internal review · licensed broker</span>
+    </header>
+
+    <% if flash.any? %>
+      <div class="mk-flash-wrap">
+        <% flash.each do |kind, message| %>
+          <div class="mk-flash mk-flash--<%= kind %>"><%= message %></div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="mk-shell">
+      <main class="mk-main"><%= yield %></main>
+    </div>
+  </body>
+</html>

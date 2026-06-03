@@ -1,8 +1,13 @@
-<h1>Broker Review Dashboard</h1>
+<% content_for :title, "Broker console — Atlas" %>
 
-<section id="time-to-offer">
+<div class="mk-results-head">
+  <h1>Review dashboard</h1>
+  <span class="mk-count">The human-in-the-loop: nothing is signed until a licensed broker approves it.</span>
+</div>
+
+<section id="time-to-offer" class="mk-card-section">
   <h2>Time to offer</h2>
-  <table border="1" cellpadding="4">
+  <table class="mk-table">
     <thead>
       <tr>
         <th>Side</th>
@@ -24,10 +29,10 @@
   </table>
 </section>
 
-<section id="handoff-queue">
-  <h2>Handoff queue (<%= @handoffs.size %>)</h2>
+<section id="handoff-queue" class="mk-card-section">
+  <h2>Handoff queue <span class="mk-badge mk-badge--warn"><%= @handoffs.size %></span></h2>
   <% if @handoffs.any? %>
-    <table border="1" cellpadding="4">
+    <table class="mk-table">
       <thead>
         <tr>
           <th>Lead</th>
@@ -50,14 +55,14 @@
       </tbody>
     </table>
   <% else %>
-    <p class="empty">No pending handoffs.</p>
+    <p class="empty mk-muted">No pending handoffs.</p>
   <% end %>
 </section>
 
-<section id="offers-awaiting-sign">
-  <h2>Offers awaiting broker sign (<%= @offers.size %>)</h2>
+<section id="offers-awaiting-sign" class="mk-card-section">
+  <h2>Offers awaiting broker sign <span class="mk-badge mk-badge--good"><%= @offers.size %></span></h2>
   <% if @offers.any? %>
-    <table border="1" cellpadding="4">
+    <table class="mk-table">
       <thead>
         <tr>
           <th>Lead</th>
@@ -75,13 +80,13 @@
             <td><%= offer.side %></td>
             <td><%= offer.property&.address || "—" %></td>
             <td><%= number_to_currency(offer.amount) if offer.amount %></td>
-            <td><%= offer.status %></td>
-            <td><%= button_to "Sign & deliver contract", sign_broker_offer_path(offer), method: :post %></td>
+            <td><span class="mk-badge mk-badge--warn"><%= offer.status %></span></td>
+            <td><%= button_to "Sign & deliver contract", sign_broker_offer_path(offer), method: :post, class: "mk-btn" %></td>
           </tr>
         <% end %>
       </tbody>
     </table>
   <% else %>
-    <p class="empty">No offers awaiting signature.</p>
+    <p class="empty mk-muted">No offers awaiting signature.</p>
   <% end %>
 </section>
