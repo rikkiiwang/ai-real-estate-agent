@@ -69,6 +69,26 @@ class Agent::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :bad_request
   end
 
+  test "a search request surfaces matching listings into the catalog (AE4), no brain call" do
+    Property.create!(address: "10 Mueller Ct", state: "listed", region: "Mueller", list_price: 650_000, beds: 3, photo_urls: ["x"])
+    Property.create!(address: "20 Tarry Ln", state: "listed", region: "Tarrytown", list_price: 1_500_000, beds: 4, photo_urls: ["x"])
+
+    # No client_factory set: if the controller tried to reach the brain it would
+    # use the real client; assert it did NOT by checking the search response.
+    post agent_messages_path, params: { query: "show me 3-bed homes under $700k in Mueller" }, as: :turbo_stream
+    assert_response :success
+    assert_match "10 Mueller Ct", @response.body      # surfaced into the grid
+    assert_no_match(/20 Tarry Ln/, @response.body)    # filtered out
+    assert_match(/turbo-stream action=\"replace\" target=\"catalog\"/, @response.body)
+  end
+
+  test "a non-search question does not replace the catalog" do
+    use_client(FakeClient.new(grounded)) do
+      post agent_messages_path, params: { query: "is this a good deal?" }, as: :turbo_stream
+    end
+    assert_no_match(/target=\"catalog\"/, @response.body)
+  end
+
   test "a degraded (brain-unavailable) result still renders a friendly message, not a 500" do
     degraded = BrainConversationClient::Result.new(
       outcome: "handoff", escalated: false, error: "agent_unavailable",

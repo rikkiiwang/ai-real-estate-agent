@@ -12,14 +12,22 @@ module Agent
       @address = resolved_address
       return head(:bad_request) if @query.blank?
 
-      @result = brain_client.orchestrate(
-        query: @query,
-        address: @address,
-        thread_id: agent_thread_id
-      )
+      # A browse request ("3-bed under $700k in Mueller") is answered Rails-side
+      # by surfacing matching listings into the catalog — fast and reliable, no
+      # brain round-trip. Everything else is a grounded orchestrator turn.
+      @intent = SearchIntent.detect(@query)
+      if @intent
+        @listings = ListingSearch.new(**@intent.to_search_params).results
+      else
+        @result = brain_client.orchestrate(
+          query: @query,
+          address: @address,
+          thread_id: agent_thread_id
+        )
+      end
 
       respond_to do |format|
-        format.turbo_stream
+        format.turbo_stream { render @intent ? "search" : "create" }
         format.html { redirect_back fallback_location: root_path }
       end
     end
