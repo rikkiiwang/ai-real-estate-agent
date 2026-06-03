@@ -1,0 +1,49 @@
+<%# One agent reply: the message plus a collapsed-by-default reasoning panel
+    (progressive disclosure — calm first, evidence on demand). %>
+<div class="agent-msg agent-msg--bot">
+  <div class="agent-bubble">
+    <%= simple_format(result.message) %>
+
+    <% if result.handoff? && result.handoff %>
+      <div class="agent-handoff">
+        <div class="agent-handoff-head">🤝 Bringing in a licensed broker</div>
+        <div class="agent-handoff-why">
+          <%= result.handoff.hard ? "This needs a human" : "Low confidence" %> —
+          <%= result.handoff.reason.presence || result.handoff.trigger.to_s.tr("_", " ") %>.
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <% if result.ok? && (result.claims.any? || result.confidence.to_f.positive?) %>
+    <details class="agent-reasoning">
+      <summary>
+        How Atlas reached this
+        <% if result.confidence.to_f.positive? %>
+          <span class="agent-conf">· <%= confidence_pct(result.confidence) %> confidence</span>
+        <% end %>
+      </summary>
+
+      <% if result.claims.any? %>
+        <ul class="agent-claims">
+          <% result.claims.each do |c| %>
+            <li>
+              <span class="mk-badge <%= claim_badge_class(c.label) %>"><%= c.label %></span>
+              <span class="agent-claim-text"><%= c.claim %></span>
+              <% if c.supported && c.source_kind.present? %>
+                <span class="agent-cite">— <%= source_label(c.source_kind) %></span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+
+      <div class="agent-signals">
+        <span title="how much of the answer is backed by sources">coverage <%= confidence_pct(result.coverage) %></span>
+        <span title="agreement between verifier passes">agreement <%= confidence_pct(result.agreement) %></span>
+        <span title="consistency across attempts">consistency <%= confidence_pct(result.self_consistency) %></span>
+      </div>
+      <p class="agent-caveat">Confidence is uncalibrated. Atlas blocks claims it can't source.</p>
+    </details>
+  <% end %>
+</div>

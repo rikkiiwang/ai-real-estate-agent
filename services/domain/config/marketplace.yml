@@ -1,0 +1,20 @@
+# Static, dated market reference values used by the buyer decision bundle.
+# Every figure the agent surfaces carries a source + as-of date (no live API).
+# Update the values and `as_of` when refreshing the sample.
+
+shared:
+  mortgage_rate:
+    # 30-year fixed, percent annual.
+    value: 6.83
+    source: "Freddie Mac PMMS (30-yr fixed)"
+    source_url: "https://www.freddiemac.com/pmms"
+    as_of: "2026-05-29"
+  property_tax_rate:
+    # Effective annual property tax rate for Travis County, percent.
+    value: 1.81
+    source: "Travis County / TCAD effective rate"
+    source_url: "https://traviscad.org"
+    as_of: "2026-01-01"
+  default_assumptions:
+    down_payment_pct: 20
+    term_years: 30

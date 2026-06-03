@@ -1,0 +1,58 @@
+require "test_helper"
+
+class Buyer::ListingsControllerTest < ActionDispatch::IntegrationTest
+  def setup
+    @mueller = Property.create!(address: "100 Mueller Blvd", state: "listed", region: "Mueller",
+                               list_price: 700_000, beds: 3, baths: 2.0, sqft: 1800,
+                               photo_urls: ["https://example.test/a.jpg"], source_name: "Sample",
+                               captured_at: Time.current)
+    @tarry = Property.create!(address: "200 Tarry Ln", state: "listed", region: "Tarrytown",
+                             list_price: 1_500_000, beds: 4, photo_urls: ["https://example.test/b.jpg"])
+    @acquired = Property.create!(address: "300 Hidden St", state: "acquired", list_price: 500_000)
+    Comp.create!(property: @mueller, region: "Mueller", address: "9 Comp", sale_price: 690_000, sale_date: Date.new(2026, 3, 1), source_name: "TCAD")
+  end
+
+  test "index is reachable without any login (public front door)" do
+    get buyer_listings_path
+    assert_response :success
+    assert_select ".mk-card", minimum: 1
+  end
+
+  test "index shows browsable listings but not acquired inventory" do
+    get buyer_listings_path
+    assert_match @mueller.address, @response.body
+    assert_no_match(/300 Hidden St/, @response.body)
+  end
+
+  test "filtering by region narrows results" do
+    get buyer_listings_path, params: { region: "Mueller" }
+    assert_response :success
+    assert_match @mueller.address, @response.body
+    assert_no_match(/200 Tarry Ln/, @response.body)
+  end
+
+  test "price filter respects inclusive bounds" do
+    get buyer_listings_path, params: { price_min: 700_000, price_max: 700_000 }
+    assert_match @mueller.address, @response.body
+    assert_no_match(/200 Tarry Ln/, @response.body)
+  end
+
+  test "empty result renders an empty state, not an error" do
+    get buyer_listings_path, params: { region: "Nowhere" }
+    assert_response :success
+    assert_select ".mk-empty"
+  end
+
+  test "detail page renders photos, facts, comps and provenance" do
+    get buyer_listing_path(@mueller)
+    assert_response :success
+    assert_match @mueller.address, @response.body
+    assert_match "Recent nearby sales", @response.body
+    assert_match "Sample", @response.body # provenance label
+  end
+
+  test "detail 404s for non-browsable properties" do
+    get buyer_listing_path(@acquired)
+    assert_response :not_found
+  end
+end

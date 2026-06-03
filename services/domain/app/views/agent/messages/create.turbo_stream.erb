@@ -1,0 +1,11 @@
+<%# Append the visitor's question, then the agent's grounded reply. %>
+<%= turbo_stream.append "agent-messages" do %>
+  <div class="agent-msg agent-msg--user">
+    <div class="agent-bubble"><%= @query %></div>
+    <% if @address.present? %><div class="agent-ctx">about <%= @address %></div><% end %>
+  </div>
+<% end %>
+
+<%= turbo_stream.append "agent-messages" do %>
+  <%= render "agent/messages/reply", result: @result %>
+<% end %>

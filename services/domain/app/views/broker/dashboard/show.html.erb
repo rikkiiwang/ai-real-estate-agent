@@ -65,6 +65,7 @@
           <th>Property</th>
           <th>Amount</th>
           <th>Status</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -75,6 +76,7 @@
             <td><%= offer.property&.address || "—" %></td>
             <td><%= number_to_currency(offer.amount) if offer.amount %></td>
             <td><%= offer.status %></td>
+            <td><%= button_to "Sign & deliver contract", sign_broker_offer_path(offer), method: :post %></td>
           </tr>
         <% end %>
       </tbody>

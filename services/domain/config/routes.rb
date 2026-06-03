@@ -12,8 +12,36 @@ Rails.application.routes.draw do
   # Broker review/handoff dashboard.
   namespace :broker do
     get "dashboard", to: "dashboard#show"
+    resources :offers, only: [] do
+      post :sign, on: :member
+    end
   end
 
-  # Defines the root path route ("/")
-  root "broker/dashboard#show"
+  # A signed-in visitor's delivered contract drafts.
+  resources :contracts, only: %i[index show], controller: "consumer/contracts"
+
+  # Lightweight consumer login (name + email, no password).
+  resource :session, only: %i[new create destroy]
+
+  # Consumer marketplace: browsable listings (buyer workspace).
+  namespace :buyer do
+    resources :listings, only: %i[index show] do
+      resource :offer, only: %i[new create]
+    end
+  end
+
+  # Seller workspace (requires a signed-in visitor).
+  namespace :seller do
+    get "home", to: "home#show"
+    resources :valuations, only: %i[create]
+  end
+
+  # Agent sidebar: one orchestrator turn per posted message.
+  namespace :agent do
+    resources :messages, only: %i[create]
+  end
+
+  # The consumer marketplace is the public front door; the broker dashboard
+  # remains reachable at /broker/dashboard.
+  root "buyer/listings#index"
 end

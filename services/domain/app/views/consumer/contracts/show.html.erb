@@ -1,0 +1,41 @@
+<% content_for :title, "#{@contract.title} — Atlas" %>
+<% blanks = @contract.blanks %>
+
+<p><%= link_to "← Your documents", contracts_path, class: "mk-nav-link" %></p>
+
+<div class="mk-card-section">
+  <div class="mk-detail-head">
+    <div>
+      <h2 style="margin:0;"><%= @contract.title %></h2>
+      <div class="mk-muted"><%= @contract.form_id %></div>
+    </div>
+    <span class="mk-badge mk-badge--warn">draft for review</span>
+  </div>
+
+  <p class="mk-muted" style="margin-top:8px;">
+    This is a promulgated TREC form with its factual blanks filled — a draft for
+    your review, not a signed or binding agreement. No clauses are authored by
+    the agent. Review with your broker before signing.
+  </p>
+
+  <table class="mk-contract-table">
+    <tbody>
+      <% {
+        "Property" => blanks["property_address"],
+        "Buyer" => blanks["buyer_name"],
+        "Seller" => blanks["seller_name"],
+        "Sales price" => (number_to_currency(blanks["sales_price"], precision: 0) if blanks["sales_price"]),
+        "Earnest money" => (number_to_currency(blanks["earnest_money"], precision: 0) if blanks["earnest_money"]),
+        "Effective date" => blanks["effective_date"],
+        "Closing date" => blanks["closing_date"]
+      }.each do |label, value| %>
+        <tr><th><%= label %></th><td><%= value %></td></tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <p class="mk-source">
+    Prepared <%= @contract.source == "closer" ? "by the Atlas Closer (promulgated TREC fill)" : "from the offer on file" %>.
+    Delivered to both parties <%= @contract.delivered_at&.strftime("%b %-d, %Y") %>.
+  </p>
+</div>

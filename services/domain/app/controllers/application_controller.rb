@@ -5,23 +5,20 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  # Gate the broker dashboard behind HTTP basic auth. Credentials come from env
-  # (set as Fly secrets in production). When unset (dev/test), auth is skipped so
-  # local work and the hermetic test suite are unaffected. The Rails health
-  # endpoint (/up) lives on Rails::HealthController, not this base class, so it
-  # stays open for Fly health checks.
-  before_action :authenticate_broker!
+  # NOTE: broker HTTP basic auth now lives on Broker::BaseController, not here,
+  # so the consumer marketplace (open browsing + lightweight visitor login) is
+  # never gated behind broker credentials. Consumer login lives in
+  # Consumer::BaseController (require_login).
+
+  helper_method :current_visitor, :signed_in?
 
   private
 
-  def authenticate_broker!
-    user = ENV["BROKER_DASHBOARD_USER"]
-    pass = ENV["BROKER_DASHBOARD_PASSWORD"]
-    return if user.blank? || pass.blank? # auth not configured -> open (dev/test)
+  def current_visitor
+    @current_visitor ||= Visitor.find_by(id: session[:visitor_id]) if session[:visitor_id]
+  end
 
-    authenticate_or_request_with_http_basic("Broker Dashboard") do |u, p|
-      ActiveSupport::SecurityUtils.secure_compare(u, user) &
-        ActiveSupport::SecurityUtils.secure_compare(p, pass)
-    end
+  def signed_in?
+    current_visitor.present?
   end
 end

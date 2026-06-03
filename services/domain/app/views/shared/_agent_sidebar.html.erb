@@ -1,0 +1,33 @@
+<%# Persistent agent sidebar. data-turbo-permanent keeps the conversation across
+    navigation; the Stimulus controller syncs the current page context (a listing
+    address) into the hidden fields on every Turbo visit. %>
+<div id="agent-sidebar" data-turbo-permanent data-controller="agent-sidebar" class="agent">
+  <div class="agent-head">
+    <div class="agent-title">▲ Ask Atlas</div>
+    <div class="agent-sub">Grounded answers — every number cited. Atlas brings in a licensed broker when it should.</div>
+  </div>
+
+  <div id="agent-messages" class="agent-messages" data-agent-sidebar-target="messages">
+    <div class="agent-msg agent-msg--bot">
+      <div class="agent-bubble">
+        Hi — I'm Atlas. Ask me about a neighborhood, a price, or whether a home is a good deal.
+        Open a listing and I'll know which home you mean.
+      </div>
+    </div>
+  </div>
+
+  <div class="agent-thinking" data-agent-sidebar-target="thinking" hidden>
+    <span class="agent-dot"></span><span class="agent-dot"></span><span class="agent-dot"></span>
+  </div>
+
+  <%= form_with url: agent_messages_path, method: :post,
+                data: { controller: nil, agent_sidebar_target: "form",
+                        action: "turbo:submit-start->agent-sidebar#start turbo:submit-end->agent-sidebar#end" },
+                class: "agent-composer" do |f| %>
+    <%= hidden_field_tag :address, "", data: { agent_sidebar_target: "address" } %>
+    <%= hidden_field_tag :listing_id, "", data: { agent_sidebar_target: "listingId" } %>
+    <%= text_area_tag :query, nil, rows: 2, placeholder: "Ask about a home or area…",
+          data: { agent_sidebar_target: "input", action: "keydown.enter->agent-sidebar#enter" } %>
+    <%= f.submit "Ask", class: "mk-btn agent-send" %>
+  <% end %>
+</div>

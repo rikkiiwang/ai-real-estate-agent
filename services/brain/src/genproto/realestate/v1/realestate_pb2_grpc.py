@@ -442,3 +442,93 @@ class Domain(object):
             timeout,
             metadata,
             _registered_method=True)
+
+
+class CloserStub(object):
+    """── Closer (TREC paperwork, blanks-only — served by the brain) ───────────────
+
+    Makes the previously-unreachable Closer reachable: fills a PROMULGATED TREC
+    form (factual blanks only) via brain.lawyer.trec_form.fill_trec_form. A
+    request for a custom clause / non-standard term is REFUSED (UplViolation) and
+    surfaced as a handoff — the agent never authors clause language (UPL line).
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.GenerateContract = channel.unary_unary(
+                '/realestate.v1.Closer/GenerateContract',
+                request_serializer=realestate_dot_v1_dot_realestate__pb2.GenerateContractRequest.SerializeToString,
+                response_deserializer=realestate_dot_v1_dot_realestate__pb2.GenerateContractResponse.FromString,
+                _registered_method=True)
+
+
+class CloserServicer(object):
+    """── Closer (TREC paperwork, blanks-only — served by the brain) ───────────────
+
+    Makes the previously-unreachable Closer reachable: fills a PROMULGATED TREC
+    form (factual blanks only) via brain.lawyer.trec_form.fill_trec_form. A
+    request for a custom clause / non-standard term is REFUSED (UplViolation) and
+    surfaced as a handoff — the agent never authors clause language (UPL line).
+    """
+
+    def GenerateContract(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_CloserServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'GenerateContract': grpc.unary_unary_rpc_method_handler(
+                    servicer.GenerateContract,
+                    request_deserializer=realestate_dot_v1_dot_realestate__pb2.GenerateContractRequest.FromString,
+                    response_serializer=realestate_dot_v1_dot_realestate__pb2.GenerateContractResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'realestate.v1.Closer', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('realestate.v1.Closer', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Closer(object):
+    """── Closer (TREC paperwork, blanks-only — served by the brain) ───────────────
+
+    Makes the previously-unreachable Closer reachable: fills a PROMULGATED TREC
+    form (factual blanks only) via brain.lawyer.trec_form.fill_trec_form. A
+    request for a custom clause / non-standard term is REFUSED (UplViolation) and
+    surfaced as a handoff — the agent never authors clause language (UPL line).
+    """
+
+    @staticmethod
+    def GenerateContract(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/realestate.v1.Closer/GenerateContract',
+            realestate_dot_v1_dot_realestate__pb2.GenerateContractRequest.SerializeToString,
+            realestate_dot_v1_dot_realestate__pb2.GenerateContractResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)

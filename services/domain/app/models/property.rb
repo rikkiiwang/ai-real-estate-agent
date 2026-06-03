@@ -12,9 +12,24 @@ class Property < ApplicationRecord
   }.freeze
 
   has_many :offers, dependent: :nullify
+  has_many :comps, dependent: :nullify
 
   validates :address, presence: true
   validates :state, presence: true, inclusion: { in: STATES }
+  validates :list_price, numericality: { greater_than: 0 }, allow_nil: true
+
+  # Listings a consumer can browse and offer on: listed state with a real
+  # asking price (the internal acquire->list lifecycle may have no price yet).
+  scope :listed, -> { where(state: "listed") }
+  scope :browsable, -> { listed.where.not(list_price: nil) }
+  scope :in_region, ->(region) { region.present? ? where(region: region) : all }
+  scope :priced_between, lambda { |min, max|
+    rel = all
+    rel = rel.where("list_price >= ?", min) if min.present?
+    rel = rel.where("list_price <= ?", max) if max.present?
+    rel
+  }
+  scope :min_beds, ->(beds) { beds.present? ? where("beds >= ?", beds) : all }
 
   class IllegalTransition < StandardError; end
 

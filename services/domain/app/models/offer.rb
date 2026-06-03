@@ -7,6 +7,7 @@ class Offer < ApplicationRecord
   belongs_to :property, optional: true
   has_many :negotiations, dependent: :destroy
   has_one :offer_metric, dependent: :destroy
+  has_one :contract, dependent: :destroy
 
   validates :side, presence: true, inclusion: { in: SIDES }
   validates :status, presence: true, inclusion: { in: STATUSES }

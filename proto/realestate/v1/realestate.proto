@@ -188,3 +188,36 @@ message Offer {
   double amount = 4;
   string status = 5;          // always "awaiting_broker" on create (never signed)
 }
+
+// ── Closer (TREC paperwork, blanks-only — served by the brain) ───────────────
+//
+// Makes the previously-unreachable Closer reachable: fills a PROMULGATED TREC
+// form (factual blanks only) via brain.lawyer.trec_form.fill_trec_form. A
+// request for a custom clause / non-standard term is REFUSED (UplViolation) and
+// surfaced as a handoff — the agent never authors clause language (UPL line).
+service Closer {
+  rpc GenerateContract(GenerateContractRequest) returns (GenerateContractResponse);
+}
+
+message GenerateContractRequest {
+  string property_address = 1;
+  string buyer_name = 2;
+  string seller_name = 3;
+  double sales_price = 4;
+  double earnest_money = 5;        // optional; 0 -> default fraction applied
+  string effective_date = 6;
+  string closing_date = 7;
+  // Pass-through for a consumer's non-standard ask. If set, the fill REFUSES
+  // (UPL) and the response escalates rather than authoring the clause.
+  string custom_clause_request = 8;
+}
+
+message GenerateContractResponse {
+  bool drafted = 1;
+  string form_id = 2;
+  string title = 3;
+  string form_json = 4;            // filled factual blanks, serialized JSON
+  string status = 5;               // "awaiting_broker" when drafted
+  bool upl_blocked = 6;            // true when a custom clause was requested
+  string handoff_reason = 7;       // why it escalated (UPL or invalid facts)
+}

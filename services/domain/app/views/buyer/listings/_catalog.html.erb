@@ -1,0 +1,17 @@
+<%= turbo_frame_tag "catalog" do %>
+  <div class="mk-results-head">
+    <h1>Austin homes</h1>
+    <span class="mk-count"><%= pluralize(listings.count, "home") %><%= " · filtered" if search.filtered? %></span>
+  </div>
+
+  <% if listings.any? %>
+    <div class="mk-grid">
+      <%= render partial: "buyer/listings/card", collection: listings, as: :listing %>
+    </div>
+  <% else %>
+    <div class="mk-empty">
+      <p>No homes match these filters.</p>
+      <%= link_to "Clear filters", buyer_listings_path, class: "mk-btn mk-btn--ghost", data: { turbo_frame: "catalog" } %>
+    </div>
+  <% end %>
+<% end %>

@@ -1,0 +1,226 @@
+# Curated static sample of Austin listings for the consumer marketplace.
+# These are sample data captured once for demo purposes (not a live feed).
+# Addresses use real Austin streets/neighborhoods; photos are sample imagery
+# from Unsplash (verified reachable). Provenance is labeled on every row.
+#
+# source_name / source_url describe where the sample was curated from.
+# captured_at is set at seed time.
+
+photos: &photos
+  - "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=900&q=70"
+  - "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=70"
+  - "https://images.unsplash.com/photo-1576941089067-2de3c901e126?w=900&q=70"
+  - "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=900&q=70"
+  - "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=900&q=70"
+  - "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=70"
+  - "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=900&q=70"
+  - "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=900&q=70"
+  - "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=900&q=70"
+  - "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=70"
+
+listings:
+  - address: "1900 Robert Browning St, Austin, TX 78757"
+    region: "Crestview"
+    list_price: 615000
+    beds: 3
+    baths: 2.0
+    sqft: 1620
+    year_built: 1955
+    description: "Updated mid-century bungalow on a quiet Crestview street, walkable to Brentwood Park and Crestview Station."
+  - address: "4604 Caswell Ave, Austin, TX 78751"
+    region: "Hyde Park"
+    list_price: 985000
+    beds: 4
+    baths: 3.0
+    sqft: 2480
+    year_built: 1924
+    description: "Classic Hyde Park two-story with a wraparound porch, original hardwoods, and a detached studio."
+  - address: "2104 Goodrich Ave, Austin, TX 78704"
+    region: "Zilker"
+    list_price: 1175000
+    beds: 4
+    baths: 3.5
+    sqft: 2710
+    year_built: 2016
+    description: "Modern Zilker build minutes from Barton Springs, with an open kitchen and rooftop deck."
+  - address: "1607 Kenwood Ave, Austin, TX 78704"
+    region: "Travis Heights"
+    list_price: 1325000
+    beds: 4
+    baths: 3.0
+    sqft: 2950
+    year_built: 1939
+    description: "Elegant Travis Heights home under heritage oaks, blocks from South Congress."
+  - address: "3208 Glenview Ave, Austin, TX 78703"
+    region: "Tarrytown"
+    list_price: 1690000
+    beds: 5
+    baths: 4.0
+    sqft: 3640
+    year_built: 1998
+    description: "Spacious Tarrytown residence near Lake Austin with a pool and mature landscaping."
+  - address: "2611 E 5th St, Austin, TX 78702"
+    region: "East Austin"
+    list_price: 745000
+    beds: 3
+    baths: 2.5
+    sqft: 1780
+    year_built: 2018
+    description: "Sleek East Austin row home with a flex office and walkable access to Cesar Chavez eateries."
+  - address: "4401 Red River St, Austin, TX 78751"
+    region: "Hancock"
+    list_price: 829000
+    beds: 3
+    baths: 2.0
+    sqft: 1910
+    year_built: 1948
+    description: "Charming Hancock cottage near Hancock Golf Course and the Triangle."
+  - address: "1205 Brentwood St, Austin, TX 78757"
+    region: "Brentwood"
+    list_price: 689000
+    beds: 3
+    baths: 2.0
+    sqft: 1685
+    year_built: 1960
+    description: "Renovated Brentwood ranch with a large pecan-shaded backyard."
+  - address: "907 W 12th St, Austin, TX 78703"
+    region: "Clarksville"
+    list_price: 1120000
+    beds: 3
+    baths: 2.5
+    sqft: 2240
+    year_built: 2009
+    description: "Walkable Clarksville home steps from Jeffrey's and Cafe Medici."
+  - address: "2310 Quarry Rd, Austin, TX 78703"
+    region: "Bryker Woods"
+    list_price: 1395000
+    beds: 4
+    baths: 3.0
+    sqft: 2860
+    year_built: 1950
+    description: "Updated Bryker Woods classic zoned to Casis Elementary."
+  - address: "3504 Robinson Ave, Austin, TX 78722"
+    region: "Cherrywood"
+    list_price: 712000
+    beds: 3
+    baths: 2.0
+    sqft: 1560
+    year_built: 1946
+    description: "Cheerful Cherrywood bungalow near Mueller and the Manor Rd corridor."
+  - address: "1916 E M Franklin Ave, Austin, TX 78723"
+    region: "Mueller"
+    list_price: 798000
+    beds: 4
+    baths: 3.0
+    sqft: 2200
+    year_built: 2014
+    description: "Energy-efficient Mueller home facing a greenbelt, walkable to the weekly farmers market."
+  - address: "4209 Eck Ln, Austin, TX 78734"
+    region: "Lake Austin"
+    list_price: 2150000
+    beds: 5
+    baths: 4.5
+    sqft: 4120
+    year_built: 2005
+    description: "Waterfront retreat with a private dock and panoramic Lake Austin views."
+  - address: "5710 Joe Sayers Ave, Austin, TX 78756"
+    region: "Rosedale"
+    list_price: 935000
+    beds: 3
+    baths: 2.0
+    sqft: 1840
+    year_built: 1952
+    description: "Sought-after Rosedale location near Ramsey Park and Burnet Rd."
+  - address: "1103 Justin Ln, Austin, TX 78757"
+    region: "Allandale"
+    list_price: 655000
+    beds: 3
+    baths: 2.0
+    sqft: 1570
+    year_built: 1958
+    description: "Move-in ready Allandale ranch with an updated kitchen and xeriscaped yard."
+  - address: "2007 Goodrich Ave, Austin, TX 78704"
+    region: "Bouldin Creek"
+    list_price: 1080000
+    beds: 3
+    baths: 2.5
+    sqft: 2080
+    year_built: 2012
+    description: "Bouldin Creek modern with a rooftop terrace and downtown skyline views."
+  - address: "4710 Eilers Ave, Austin, TX 78751"
+    region: "North Loop"
+    list_price: 749000
+    beds: 3
+    baths: 2.0
+    sqft: 1640
+    year_built: 1951
+    description: "Funky North Loop bungalow near Foreign & Domestic and Antonelli's."
+  - address: "1402 Alguno Rd, Austin, TX 78757"
+    region: "Crestview"
+    list_price: 575000
+    beds: 2
+    baths: 1.0
+    sqft: 1180
+    year_built: 1950
+    description: "Affordable Crestview entry with a deep lot and room to expand."
+  - address: "3300 Glenview Ave, Austin, TX 78703"
+    region: "Tarrytown"
+    list_price: 1540000
+    beds: 4
+    baths: 3.5
+    sqft: 3180
+    year_built: 2003
+    description: "Refined Tarrytown home with a chef's kitchen and covered patio."
+  - address: "6705 Manchaca Rd, Austin, TX 78745"
+    region: "South Austin"
+    list_price: 525000
+    beds: 3
+    baths: 2.0
+    sqft: 1480
+    year_built: 1978
+    description: "Practical South Austin home near Garrison Park with quick access to MoPac."
+
+comps:
+  Crestview:
+    - { address: "1808 Karen Ave", sale_price: 598000, sale_date: "2026-03-12", distance_mi: 0.4 }
+    - { address: "2105 Cullen Ave", sale_price: 632000, sale_date: "2026-02-02", distance_mi: 0.6 }
+  "Hyde Park":
+    - { address: "4302 Avenue G", sale_price: 1012000, sale_date: "2026-04-01", distance_mi: 0.3 }
+    - { address: "201 E 39th St", sale_price: 955000, sale_date: "2026-01-20", distance_mi: 0.5 }
+  Zilker:
+    - { address: "2001 Bluebonnet Ln", sale_price: 1140000, sale_date: "2026-03-22", distance_mi: 0.7 }
+    - { address: "1810 Vailco Ln", sale_price: 1210000, sale_date: "2026-02-15", distance_mi: 0.5 }
+  "Travis Heights":
+    - { address: "1500 Alta Vista Ave", sale_price: 1290000, sale_date: "2026-03-05", distance_mi: 0.4 }
+    - { address: "1704 Newning Ave", sale_price: 1360000, sale_date: "2026-01-28", distance_mi: 0.6 }
+  Tarrytown:
+    - { address: "3100 Scenic Dr", sale_price: 1625000, sale_date: "2026-03-18", distance_mi: 0.5 }
+    - { address: "2806 Park View Dr", sale_price: 1580000, sale_date: "2026-02-10", distance_mi: 0.8 }
+  "East Austin":
+    - { address: "2500 E 4th St", sale_price: 718000, sale_date: "2026-03-30", distance_mi: 0.3 }
+    - { address: "2712 E 6th St", sale_price: 765000, sale_date: "2026-02-22", distance_mi: 0.4 }
+  Hancock:
+    - { address: "4500 Avenue F", sale_price: 845000, sale_date: "2026-03-08", distance_mi: 0.5 }
+  Brentwood:
+    - { address: "1310 Justin Ln", sale_price: 672000, sale_date: "2026-03-15", distance_mi: 0.4 }
+  Clarksville:
+    - { address: "1009 Toyath St", sale_price: 1090000, sale_date: "2026-02-27", distance_mi: 0.3 }
+  "Bryker Woods":
+    - { address: "2400 Wooldridge Dr", sale_price: 1420000, sale_date: "2026-03-19", distance_mi: 0.4 }
+  Cherrywood:
+    - { address: "3409 Hollywood Ave", sale_price: 698000, sale_date: "2026-02-18", distance_mi: 0.3 }
+  Mueller:
+    - { address: "1901 Tom Miller St", sale_price: 812000, sale_date: "2026-03-25", distance_mi: 0.4 }
+    - { address: "4400 Berkman Dr", sale_price: 776000, sale_date: "2026-02-05", distance_mi: 0.6 }
+  "Lake Austin":
+    - { address: "4105 Eck Ln", sale_price: 2080000, sale_date: "2026-02-12", distance_mi: 0.6 }
+  Rosedale:
+    - { address: "5604 Avenue F", sale_price: 905000, sale_date: "2026-03-11", distance_mi: 0.4 }
+  Allandale:
+    - { address: "2300 Pinewood Ter", sale_price: 668000, sale_date: "2026-02-25", distance_mi: 0.5 }
+  "Bouldin Creek":
+    - { address: "1207 Bouldin Ave", sale_price: 1045000, sale_date: "2026-03-02", distance_mi: 0.3 }
+  "North Loop":
+    - { address: "5208 Avenue F", sale_price: 738000, sale_date: "2026-02-19", distance_mi: 0.4 }
+  "South Austin":
+    - { address: "6800 Westmoor Dr", sale_price: 512000, sale_date: "2026-03-14", distance_mi: 0.5 }

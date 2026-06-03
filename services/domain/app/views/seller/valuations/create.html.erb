@@ -1,0 +1,58 @@
+<% content_for :title, "Your cash offer — Atlas" %>
+<% content_for :agent_context do %>
+  <div id="agent-context" data-address="<%= @address %>" hidden></div>
+<% end %>
+
+<p><%= link_to "← Back", seller_home_path, class: "mk-nav-link" %></p>
+
+<div class="mk-detail-head">
+  <div>
+    <div class="mk-addr"><%= @address %></div>
+  </div>
+</div>
+
+<% if !@valuation.ok? %>
+  <div class="mk-card-section">
+    <h2>Atlas is taking a moment</h2>
+    <p class="mk-muted">The valuation service didn't respond just now. Please try again shortly — nothing was submitted.</p>
+    <%= link_to "Try again", seller_home_path, class: "mk-btn mk-btn--ghost" %>
+  </div>
+
+<% elsif @valuation.usable? %>
+  <div class="mk-card-section">
+    <h2>Your Atlas cash offer</h2>
+    <div class="mk-bundle-payment">
+      <div class="mk-bundle-payment-label">Preliminary cash offer</div>
+      <div class="mk-bundle-payment-value"><%= number_to_currency(@cash_offer, precision: 0) %></div>
+      <div class="mk-bundle-breakdown">
+        Based on an estimated value of <%= number_to_currency(@valuation.estimate, precision: 0) %>
+        (range <%= number_to_currency(@valuation.low, precision: 0) %>–<%= number_to_currency(@valuation.high, precision: 0) %>).
+      </div>
+    </div>
+
+    <p class="mk-muted">
+      Routed to a licensed broker for review — not binding until approved. The
+      cash offer reflects an iBuyer convenience discount on the estimated value.
+    </p>
+
+    <% if @valuation.facts.any? %>
+      <h2 style="margin-top:18px;">What this is based on</h2>
+      <% @valuation.facts.each do |fact| %>
+        <div class="mk-comp-row">
+          <span><%= fact.description %></span>
+          <span class="mk-source"><%= source_label(fact.kind) %></span>
+        </div>
+      <% end %>
+      <p class="mk-source">Each figure is source-cited. Atlas won't quote a value it can't support.</p>
+    <% end %>
+  </div>
+
+<% else %>
+  <div class="mk-card-section">
+    <h2>A broker will follow up</h2>
+    <p class="mk-muted">
+      Atlas didn't find enough source data to value <strong><%= @address %></strong> with confidence,
+      so it won't quote a number it can't support. A licensed broker will reach out — we've logged your request.
+    </p>
+  </div>
+<% end %>

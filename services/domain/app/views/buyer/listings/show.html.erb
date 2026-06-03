@@ -1,0 +1,56 @@
+<% content_for :title, "#{@listing.address} — Atlas" %>
+<% content_for :agent_context do %>
+  <div id="agent-context" data-address="<%= @listing.address %>" data-listing-id="<%= @listing.id %>" hidden></div>
+<% end %>
+
+<p><%= link_to "← Back to homes", buyer_listings_path, class: "mk-nav-link" %></p>
+
+<div class="mk-detail-gallery">
+  <img src="<%= @listing.photo_urls&.first %>" alt="<%= @listing.address %>">
+  <div class="stack">
+    <% Array(@listing.photo_urls)[1..]&.each do |url| %>
+      <img src="<%= url %>" alt="<%= @listing.address %>">
+    <% end %>
+  </div>
+</div>
+
+<div class="mk-detail-head">
+  <div>
+    <div class="mk-price"><%= number_to_currency(@listing.list_price, precision: 0) %></div>
+    <div class="mk-addr"><%= @listing.address %></div>
+  </div>
+  <span class="mk-region"><%= @listing.region %></span>
+</div>
+
+<div class="mk-detail-facts">
+  <span><b><%= @listing.beds %></b> beds</span>
+  <span><b><%= @listing.baths&.to_f %></b> baths</span>
+  <span><b><%= number_with_delimiter(@listing.sqft) %></b> sqft</span>
+  <span>Built <b><%= @listing.year_built %></b></span>
+</div>
+
+<p><%= link_to "Make an offer →", new_buyer_listing_offer_path(@listing), class: "mk-btn" %></p>
+
+<div class="mk-card-section">
+  <h2>About this home</h2>
+  <p class="mk-muted"><%= @listing.description %></p>
+</div>
+
+<% if @comps.any? %>
+  <div class="mk-card-section">
+    <h2>Recent nearby sales</h2>
+    <% @comps.each do |comp| %>
+      <div class="mk-comp-row">
+        <span><%= comp.address %> · <%= comp.region %></span>
+        <span><b><%= number_to_currency(comp.sale_price, precision: 0) %></b> · <%= comp.sale_date.strftime("%b %Y") %></span>
+      </div>
+    <% end %>
+    <p class="mk-source">Source: <%= @comps.first.source_name %></p>
+  </div>
+<% end %>
+
+<p class="mk-source">
+  Listing data: <%= @listing.source_name %> ·
+  sample captured <%= @listing.captured_at&.strftime("%b %-d, %Y") %>.
+  Photos are sample imagery.
+</p>

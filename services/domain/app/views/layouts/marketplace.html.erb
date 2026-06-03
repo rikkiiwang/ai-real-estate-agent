@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Atlas — Austin homes" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <%= stylesheet_link_tag "marketplace", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="mk">
+    <header class="mk-masthead">
+      <a class="mk-brand" href="<%= root_path %>">
+        <span class="mk-brand-mark">▲</span> Atlas
+        <span class="mk-brand-sub">Austin</span>
+      </a>
+      <nav class="mk-nav">
+        <%= link_to "Browse homes", buyer_listings_path, class: class_names("mk-nav-link", "is-active" => controller_name == "listings") %>
+        <% if signed_in? %>
+          <%= link_to "Buyer", buyer_listings_path, class: class_names("mk-nav-link", "is-active" => controller_path.start_with?("buyer")) %>
+          <%= link_to "Seller", seller_home_path, class: class_names("mk-nav-link", "is-active" => controller_path.start_with?("seller")) %>
+          <%= link_to "Documents", contracts_path, class: class_names("mk-nav-link", "is-active" => controller_path.include?("contracts")) %>
+        <% end %>
+      </nav>
+      <div class="mk-session">
+        <% if signed_in? %>
+          <span class="mk-muted">Hi, <%= current_visitor.name %></span>
+          <%= button_to "Sign out", session_path, method: :delete, class: "mk-btn mk-btn--ghost" %>
+        <% else %>
+          <%= link_to "Sign in", new_session_path, class: "mk-btn mk-btn--ghost" %>
+        <% end %>
+      </div>
+    </header>
+
+    <% if flash.any? %>
+      <div class="mk-flash-wrap">
+        <% flash.each do |kind, message| %>
+          <div class="mk-flash mk-flash--<%= kind %>"><%= message %></div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="mk-shell mk-shell--with-sidebar">
+      <main class="mk-main">
+        <%= yield :agent_context %>
+        <%= yield %>
+      </main>
+      <aside class="mk-sidebar">
+        <%= render "shared/agent_sidebar" %>
+      </aside>
+    </div>
+  </body>
+</html>

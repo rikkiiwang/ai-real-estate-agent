@@ -1,0 +1,23 @@
+<% content_for :title, "Your documents — Atlas" %>
+
+<div class="mk-results-head">
+  <h1>Your documents</h1>
+</div>
+
+<% if @contracts.any? %>
+  <% @contracts.each do |contract| %>
+    <div class="mk-card-section">
+      <h2><%= contract.title %></h2>
+      <p class="mk-muted">
+        <%= contract.blanks["property_address"] %> ·
+        delivered <%= contract.delivered_at&.strftime("%b %-d, %Y") %> ·
+        <span class="mk-badge mk-badge--warn">draft for review</span>
+      </p>
+      <%= link_to "View draft →", contract_path(contract), class: "mk-btn mk-btn--ghost" %>
+    </div>
+  <% end %>
+<% else %>
+  <div class="mk-empty">
+    <p>No documents yet. When a broker approves an offer, your contract draft appears here.</p>
+  </div>
+<% end %>

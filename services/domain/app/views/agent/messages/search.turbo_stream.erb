@@ -1,0 +1,31 @@
+<%# Agent-driven search: echo the question, post a cited rationale in the
+    sidebar (with a link that works from any page), and replace the catalog grid
+    in place when the visitor is on the listings page. %>
+<%= turbo_stream.append "agent-messages" do %>
+  <div class="agent-msg agent-msg--user">
+    <div class="agent-bubble"><%= @query %></div>
+  </div>
+<% end %>
+
+<%= turbo_stream.append "agent-messages" do %>
+  <div class="agent-msg agent-msg--bot">
+    <div class="agent-bubble">
+      <% if @listings.any? %>
+        Found <%= pluralize(@listings.count, "home") %> matching <strong><%= @intent.summary %></strong>.
+        <%= link_to "View on the map of listings →", buyer_listings_path(@intent.to_search_params.compact), data: { turbo_frame: "_top" }, class: "agent-link" %>
+      <% else %>
+        I couldn't find homes matching <strong><%= @intent.summary %></strong> in the current sample.
+        <%= link_to "Browse all homes →", buyer_listings_path, data: { turbo_frame: "_top" }, class: "agent-link" %>
+      <% end %>
+      <% if @intent.ignored.any? %>
+        <div class="agent-ctx">Note: I couldn't pin down the <%= @intent.ignored.to_sentence %> — showing my best match.</div>
+      <% end %>
+      <div class="agent-cite agent-search-cite">Filtered from the listing catalog.</div>
+    </div>
+  </div>
+<% end %>
+
+<%# No-ops unless the catalog frame is on the current page (the listings index). %>
+<%= turbo_stream.replace "catalog" do %>
+  <%= render "buyer/listings/catalog", listings: @listings, search: ListingSearch.new(**@intent.to_search_params) %>
+<% end %>

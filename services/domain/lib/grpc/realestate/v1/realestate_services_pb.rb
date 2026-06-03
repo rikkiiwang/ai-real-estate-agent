@@ -40,6 +40,26 @@ module Realestate
 
       Stub = Service.rpc_stub_class
     end
+    module Conversation
+      # ── Conversation (the agent loop: generate→critique→fair-housing→decide) ─────
+      #
+      # Conversation runs one turn of the LangGraph orchestrator end to end and
+      # returns the full reasoning trace (draft, per-claim verdicts, citations,
+      # confidence sub-signals, Fair Housing decision, handoff trigger) so a UI can
+      # SHOW the agent reasoning over live data, not just the final answer.
+      class Service
+
+        include ::GRPC::GenericService
+
+        self.marshal_class_method = :encode
+        self.unmarshal_class_method = :decode
+        self.service_name = 'realestate.v1.Conversation'
+
+        rpc :Orchestrate, ::Realestate::V1::OrchestrateRequest, ::Realestate::V1::OrchestrateResponse
+      end
+
+      Stub = Service.rpc_stub_class
+    end
     module Domain
       # ── Domain (the transaction/CRM core, served by Rails) ───────────────────────
       #
@@ -57,6 +77,26 @@ module Realestate
         # (status awaiting_broker). A licensed human broker reviews and signs; the
         # agent never signs.
         rpc :CreateOffer, ::Realestate::V1::CreateOfferRequest, ::Realestate::V1::Offer
+      end
+
+      Stub = Service.rpc_stub_class
+    end
+    module Closer
+      # ── Closer (TREC paperwork, blanks-only — served by the brain) ───────────────
+      #
+      # Makes the previously-unreachable Closer reachable: fills a PROMULGATED TREC
+      # form (factual blanks only) via brain.lawyer.trec_form.fill_trec_form. A
+      # request for a custom clause / non-standard term is REFUSED (UplViolation) and
+      # surfaced as a handoff — the agent never authors clause language (UPL line).
+      class Service
+
+        include ::GRPC::GenericService
+
+        self.marshal_class_method = :encode
+        self.unmarshal_class_method = :decode
+        self.service_name = 'realestate.v1.Closer'
+
+        rpc :GenerateContract, ::Realestate::V1::GenerateContractRequest, ::Realestate::V1::GenerateContractResponse
       end
 
       Stub = Service.rpc_stub_class

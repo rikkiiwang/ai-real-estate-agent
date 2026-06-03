@@ -1,0 +1,56 @@
+<%# The cited decision bundle: rate, comps, tax, and the resulting monthly
+    payment — every figure sourced. `bundle` is a DecisionBundle. %>
+<div class="mk-bundle">
+  <div class="mk-bundle-payment">
+    <div class="mk-bundle-payment-label">Estimated monthly payment</div>
+    <div class="mk-bundle-payment-value"><%= number_to_currency(bundle.monthly_payment, precision: 0) %><span>/mo</span></div>
+    <div class="mk-bundle-breakdown">
+      <%= number_to_currency(bundle.monthly_principal_interest, precision: 0) %> principal &amp; interest
+      + <%= number_to_currency(bundle.monthly_tax, precision: 0) %> property tax
+    </div>
+  </div>
+
+  <div class="mk-bundle-grid">
+    <div class="mk-bundle-figure">
+      <div class="mk-bundle-k">Offer amount</div>
+      <div class="mk-bundle-v"><%= number_to_currency(bundle.assumptions[:offer_amount], precision: 0) %></div>
+      <div class="mk-bundle-src">
+        <%= number_to_currency(bundle.assumptions[:down_payment], precision: 0) %>
+        down (<%= bundle.assumptions[:down_payment_pct].to_i %>%) ·
+        <%= number_to_currency(bundle.assumptions[:loan_amount], precision: 0) %> loan
+      </div>
+    </div>
+
+    <div class="mk-bundle-figure">
+      <div class="mk-bundle-k">Mortgage rate</div>
+      <div class="mk-bundle-v"><%= number_with_precision(bundle.mortgage_rate.value, precision: 2) %>%</div>
+      <div class="mk-bundle-src">
+        <%= bundle.term_years %>-yr fixed · <%= bundle.mortgage_rate.source %>,
+        as of <%= bundle.mortgage_rate.as_of %>
+      </div>
+    </div>
+
+    <div class="mk-bundle-figure">
+      <div class="mk-bundle-k">Property tax rate</div>
+      <div class="mk-bundle-v"><%= number_with_precision(bundle.tax_rate.value, precision: 2) %>%</div>
+      <div class="mk-bundle-src"><%= bundle.tax_rate.source %>, as of <%= bundle.tax_rate.as_of %></div>
+    </div>
+  </div>
+
+  <div class="mk-bundle-comps">
+    <div class="mk-bundle-k">Nearby recent sales</div>
+    <% if bundle.comps_available? %>
+      <% bundle.comps.each do |comp| %>
+        <div class="mk-comp-row">
+          <span><%= comp.address %></span>
+          <span><b><%= number_to_currency(comp.sale_price, precision: 0) %></b> · <%= comp.sale_date.strftime("%b %Y") %></span>
+        </div>
+      <% end %>
+      <div class="mk-bundle-src">Source: <%= bundle.comps.first.source_name %></div>
+    <% else %>
+      <p class="mk-muted">No comparable sales found in <%= bundle.property.region %> for the current sample — Atlas won't estimate one without a source.</p>
+    <% end %>
+  </div>
+
+  <p class="mk-source">Rates and taxes are dated reference values, not live quotes. Your actual rate depends on credit and lender.</p>
+</div>

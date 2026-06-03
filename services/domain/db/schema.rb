@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_31_192651) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_03_000005) do
   create_table "audit_events", force: :cascade do |t|
     t.text "claim"
     t.string "content_hash", null: false
@@ -25,6 +25,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_31_192651) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "comps", force: :cascade do |t|
+    t.string "address", null: false
+    t.datetime "created_at", null: false
+    t.decimal "distance_mi", precision: 5, scale: 2
+    t.integer "property_id"
+    t.string "region", null: false
+    t.date "sale_date", null: false
+    t.decimal "sale_price", precision: 12, scale: 2, null: false
+    t.string "source_name"
+    t.string "source_url"
+    t.datetime "updated_at", null: false
+    t.index ["property_id"], name: "index_comps_on_property_id"
+    t.index ["region"], name: "index_comps_on_region"
+  end
+
   create_table "consents", force: :cascade do |t|
     t.string "channel", null: false
     t.datetime "created_at", null: false
@@ -35,6 +50,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_31_192651) do
     t.datetime "updated_at", null: false
     t.index ["lead_id", "channel"], name: "index_consents_on_lead_id_and_channel", unique: true
     t.index ["lead_id"], name: "index_consents_on_lead_id"
+  end
+
+  create_table "contracts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.string "form_id"
+    t.text "form_json"
+    t.integer "offer_id", null: false
+    t.string "source", default: "closer", null: false
+    t.string "status", default: "draft", null: false
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["offer_id"], name: "index_contracts_on_offer_id", unique: true
   end
 
   create_table "handoff_packets", force: :cascade do |t|
@@ -101,12 +129,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_31_192651) do
 
   create_table "properties", force: :cascade do |t|
     t.string "address", null: false
+    t.decimal "baths", precision: 3, scale: 1
+    t.integer "beds"
+    t.datetime "captured_at"
     t.datetime "created_at", null: false
+    t.text "description"
+    t.decimal "lat", precision: 10, scale: 6
+    t.decimal "list_price", precision: 12, scale: 2
+    t.decimal "lng", precision: 10, scale: 6
+    t.json "photo_urls"
+    t.string "region"
+    t.string "source_name"
+    t.string "source_url"
+    t.integer "sqft"
     t.string "state", default: "acquired", null: false
     t.datetime "updated_at", null: false
+    t.integer "year_built"
+    t.index ["list_price"], name: "index_properties_on_list_price"
+    t.index ["region"], name: "index_properties_on_region"
   end
 
+  create_table "visitors", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_visitors_on_email", unique: true
+  end
+
+  add_foreign_key "comps", "properties"
   add_foreign_key "consents", "leads"
+  add_foreign_key "contracts", "offers"
   add_foreign_key "handoff_packets", "leads"
   add_foreign_key "negotiations", "offers"
   add_foreign_key "offer_metrics", "leads"

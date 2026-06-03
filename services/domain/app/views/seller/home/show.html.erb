@@ -1,0 +1,21 @@
+<% content_for :title, "Seller workspace — Atlas" %>
+
+<div class="mk-results-head">
+  <h1>Seller workspace</h1>
+</div>
+
+<div class="mk-card-section">
+  <h2>Get a cash offer on your home</h2>
+  <p class="mk-muted">
+    Atlas values your address from source data and prepares a platform cash offer.
+    Every figure is cited; a licensed broker reviews before anything is binding.
+  </p>
+
+  <%= form_with url: seller_valuations_path, method: :post, class: "mk-filters" do |f| %>
+    <div class="mk-field" style="flex: 1; min-width: 280px;">
+      <%= label_tag :address, "Your home's address" %>
+      <%= text_field_tag :address, params[:address], placeholder: "123 Main St, Austin, TX 78704", style: "width: 100%;" %>
+    </div>
+    <%= f.submit "Get my cash offer", class: "mk-btn" %>
+  <% end %>
+</div>

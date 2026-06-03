@@ -1,0 +1,43 @@
+<% content_for :title, "Make an offer — #{@listing.address}" %>
+<% content_for :agent_context do %>
+  <div id="agent-context" data-address="<%= @listing.address %>" data-listing-id="<%= @listing.id %>" hidden></div>
+<% end %>
+
+<p><%= link_to "← Back to listing", buyer_listing_path(@listing), class: "mk-nav-link" %></p>
+
+<div class="mk-detail-head">
+  <div>
+    <div class="mk-price"><%= number_to_currency(@listing.list_price, precision: 0) %></div>
+    <div class="mk-addr"><%= @listing.address %> · <%= @listing.region %></div>
+  </div>
+</div>
+
+<div class="mk-card-section">
+  <h2>Your offer</h2>
+  <%= form_with url: new_buyer_listing_offer_path(@listing), method: :get, data: { turbo_frame: "bundle" }, class: "mk-filters" do |f| %>
+    <div class="mk-field">
+      <%= label_tag :offer_amount, "Offer amount" %>
+      <%= number_field_tag :offer_amount, @bundle.offer_amount, step: 5000 %>
+    </div>
+    <div class="mk-field">
+      <%= label_tag :down_payment_pct, "Down payment %" %>
+      <%= number_field_tag :down_payment_pct, @bundle.down_payment_pct.to_i, step: 5, min: 0, max: 100 %>
+    </div>
+    <%= f.submit "Recalculate", class: "mk-btn mk-btn--ghost" %>
+  <% end %>
+</div>
+
+<%= turbo_frame_tag "bundle" do %>
+  <div class="mk-card-section">
+    <h2>What this offer looks like</h2>
+    <%= render "bundle", bundle: @bundle %>
+
+    <%= form_with url: buyer_listing_offer_path(@listing), method: :post, class: "mk-offer-submit" do |f| %>
+      <%= hidden_field_tag :offer_amount, @bundle.offer_amount %>
+      <%= hidden_field_tag :down_payment_pct, @bundle.down_payment_pct.to_i %>
+      <%= hidden_field_tag :term_years, @bundle.term_years %>
+      <%= f.submit "Submit offer to seller", class: "mk-btn" %>
+      <span class="mk-muted">Routed to a licensed broker for review — not binding until approved.</span>
+    <% end %>
+  </div>
+<% end %>

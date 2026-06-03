@@ -16,6 +16,7 @@ import grpc
 from genproto.realestate.v1 import realestate_pb2 as pb
 from genproto.realestate.v1 import realestate_pb2_grpc as rpc
 
+from brain.closer_service import CloserServicer
 from brain.orchestrator import build_orchestrator
 from brain.valuation import estimate_value
 
@@ -198,6 +199,7 @@ def build_server(address: str) -> grpc.Server:
     rpc.add_ValuationServicer_to_server(ValuationServicer(), server)
     rpc.add_VerificationServicer_to_server(VerificationServicer(), server)
     rpc.add_ConversationServicer_to_server(ConversationServicer(), server)
+    rpc.add_CloserServicer_to_server(CloserServicer(), server)
     server.add_insecure_port(address)
     return server
 
