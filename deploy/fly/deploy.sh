@@ -51,13 +51,15 @@ echo "→ Ensuring the Postgres volume + flycast addresses exist"
 fly volumes list --app are-db 2>/dev/null | grep -q pgdata \
   || fly volumes create pgdata --app are-db --region "$REGION" --size 3 --yes
 # Private flycast IPs for the internal services (no public exposure).
-for app in are-db are-brain are-domain are-domain-grpc are-ingestion are-voice; do
+for app in are-db are-brain are-domain-grpc are-ingestion are-voice; do
   fly ips list --app "$app" 2>/dev/null | grep -qi private \
     || fly ips allocate-v6 --private --app "$app" >/dev/null 2>&1 || true
 done
-# Public shared IPs for the two consumer-facing apps: the REST gateway and the
-# standalone chat web app. Everything else stays private over flycast.
-for app in are-gateway are-chat; do
+# Public shared IPs for the three consumer-facing apps: the REST gateway, the
+# standalone chat web app, and the consumer marketplace (are-domain web — its
+# root is the listing site; the broker dashboard lives at /broker behind basic
+# auth). Everything else stays private over flycast.
+for app in are-gateway are-chat are-domain; do
   fly ips list --app "$app" 2>/dev/null | grep -qiE "v4|global" \
     || { fly ips allocate-v4 --shared --app "$app" >/dev/null 2>&1 || true; \
          fly ips allocate-v6 --app "$app" >/dev/null 2>&1 || true; }
@@ -104,5 +106,7 @@ for svc in "${ORDER[@]}"; do
 done
 
 echo "✓ Done."
-echo "  Public gateway (REST API): https://are-gateway.fly.dev  (verify: curl https://are-gateway.fly.dev/health)"
-echo "  Consumer chat app:         https://are-chat.fly.dev      (the 'glass box' agent UI)"
+echo "  Consumer marketplace:      https://are-domain.fly.dev               (browse/buy/sell + agent sidebar)"
+echo "  Broker console:            https://are-domain.fly.dev/broker/dashboard  (HTTP basic auth)"
+echo "  Consumer chat app:         https://are-chat.fly.dev                 (the 'glass box' agent UI)"
+echo "  Public gateway (REST API): https://are-gateway.fly.dev              (verify: curl https://are-gateway.fly.dev/health)"

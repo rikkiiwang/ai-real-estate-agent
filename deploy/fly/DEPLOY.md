@@ -1,15 +1,16 @@
 # Deploying to Fly.io
 
 The AI Real Estate Agent deploys as **8 Fly apps** sharing one private network.
-Two apps are public — the REST gateway and the consumer chat app; everything
-else is reachable internally over `<app>.flycast`.
+Three apps are public — the consumer **marketplace** (`are-domain`), the REST
+gateway, and the consumer chat app; everything else is reachable internally over
+`<app>.flycast`.
 
 | App | Role | Exposure | Internal address |
 |---|---|---|---|
+| `are-domain` | Rails consumer marketplace (`/`) + broker dashboard (`/broker`, basic auth) + migrations | **public** | — |
 | `are-gateway` | Public REST edge (auth'd) | **public** | — |
 | `are-chat` | Standalone consumer chat UI (the "glass box" agent) | **public** | — |
-| `are-brain` | Python gRPC (valuation, lawyer, RAG, orchestrator) | private | `are-brain.flycast:50051` |
-| `are-domain` | Rails broker dashboard + migrations | private | `are-domain.flycast` |
+| `are-brain` | Python gRPC (valuation, lawyer, RAG, orchestrator, closer) | private | `are-brain.flycast:50051` |
 | `are-domain-grpc` | Rails Domain gRPC (CreateLead/Offer/Handoff) | private | `are-domain-grpc.flycast:50052` |
 | `are-db` | Postgres + pgvector (RAG + Rails DBs) | private | `are-db.flycast:5432` |
 | `are-ingestion` | Go data-loader worker (optional) | private | `are-ingestion.flycast:8081` |
@@ -17,14 +18,16 @@ else is reachable internally over `<app>.flycast`.
 
 ```mermaid
 flowchart LR
+  Internet -->|HTTPS| DOM[are-domain web]
   Internet -->|HTTPS| GW[are-gateway]
   Internet -->|HTTPS| CHAT[are-chat]
   GW -->|gRPC| BRAIN[are-brain]
   CHAT -->|gRPC Orchestrate| BRAIN
+  DOM -->|gRPC Orchestrate / GetValuation / GenerateContract| BRAIN
   BRAIN -->|gRPC CreateOffer| DG[are-domain-grpc]
   BRAIN -->|SQL| DB[(are-db pgvector)]
   DG -->|SQL| DB
-  DOM[are-domain web] -->|SQL + migrate| DB
+  DOM -->|SQL + migrate| DB
   VOICE[are-voice] -->|gRPC| BRAIN
 ```
 
@@ -47,7 +50,7 @@ Generate and export these before deploying. They are staged with
 | `RAILS_MASTER_KEY` | domain, domain-grpc | `cat services/domain/config/master.key` |
 | `GATEWAY_AUTH_SECRET` | gateway | `openssl rand -hex 32` |
 | `GEMINI_API_KEY` | brain (optional) | from Google AI Studio; omit to keep vision on the fake model |
-| `BROKER_DASHBOARD_USER` / `BROKER_DASHBOARD_PASSWORD` | domain (required only if exposing the dashboard publicly) | any user + `openssl rand -hex 16`; when unset the dashboard has no login (keep it private) |
+| `BROKER_DASHBOARD_USER` / `BROKER_DASHBOARD_PASSWORD` | domain (**recommended** — are-domain is public) | any user + `openssl rand -hex 16`; the broker dashboard at `/broker` enforces HTTP basic auth when set. When unset the dashboard has no login, so set them in production. Consumer routes + `/up` stay open. |
 
 `DATABASE_URL` values are derived by `deploy.sh` from `POSTGRES_PASSWORD`
 (RAG db `realestate`, Rails db `domain_production`) — do not set them by hand.
@@ -71,10 +74,11 @@ deploy/fly/deploy.sh                # full core stack
 # deploy/fly/deploy.sh gateway           # redeploy a single app
 ```
 
-`deploy.sh` creates the apps, the Postgres volume, and the flycast/public IPs;
-stages secrets; then deploys in dependency order: **db → domain (runs
-migrations via `release_command`) → domain-grpc → brain → gateway**. Save your
-`POSTGRES_PASSWORD` — losing it means re-keying the database.
+`deploy.sh` creates the apps, the Postgres volume, the flycast (private) IPs for
+internal services, and **public IPs for `are-domain`, `are-gateway`, and
+`are-chat`**; stages secrets; then deploys in dependency order: **db → domain
+(runs migrations via `release_command`) → domain-grpc → brain → gateway →
+chat**. Save your `POSTGRES_PASSWORD` — losing it means re-keying the database.
 
 ## Verify
 
@@ -91,8 +95,10 @@ curl -fs -H "Authorization: Bearer $TOKEN" \
   "https://$GW/valuation?address=123+Congress+Ave+Austin+TX"
 # -> {"sufficient_data":true,"estimate":...,"facts":[...]}  (first call may take ~10s while the AVM warms)
 
-# Broker dashboard (private): tunnel in over WireGuard, then open localhost:3000
-fly proxy 3000:80 --app are-domain
+# Consumer marketplace (public): the listing site is the root of are-domain.
+curl -fsI "https://are-domain.fly.dev/"                    # 200 — browsable catalog
+# Broker dashboard (public, HTTP basic auth) lives under /broker:
+#   open https://are-domain.fly.dev/broker/dashboard  (user/pass = BROKER_DASHBOARD_*)
 ```
 
 ## Notes & decisions
@@ -109,10 +115,11 @@ fly proxy 3000:80 --app are-domain
 - **The brain trains its AVM at startup** and `min_machines_running = 1`, so it
   stays warm; the gateway's request timeout is 30s to cover a cold first call.
 - **Cost**: ~6 shared-cpu-1x machines + one 3GB volume. Stop everything with
-  `for a in are-db are-brain are-domain are-domain-grpc are-gateway are-ingestion are-voice; do fly scale count 0 --app $a --yes; done`.
-- **Exposing the broker dashboard publicly**: set `BROKER_DASHBOARD_USER` /
-  `BROKER_DASHBOARD_PASSWORD` first (the dashboard enforces HTTP basic auth when
-  they are present; `/up` stays open for health checks), then allocate IPs:
-  `fly ips allocate-v4 --shared --app are-domain && fly ips allocate-v6 --app are-domain`.
-  Without those secrets the dashboard has no login — keep it private (reach it
-  via `fly proxy 8080:8080 --app are-domain`).
+  `for a in are-db are-brain are-domain are-domain-grpc are-gateway are-chat are-ingestion are-voice; do fly scale count 0 --app $a --yes; done`.
+- **`are-domain` is public** (the marketplace front door); `deploy.sh` allocates
+  its public IPs alongside `are-gateway`/`are-chat`. Because the broker dashboard
+  at `/broker` shares this app, set `BROKER_DASHBOARD_USER` /
+  `BROKER_DASHBOARD_PASSWORD` so it enforces HTTP basic auth (`/up` and the
+  consumer routes stay open). `are-domain` also needs `BRAIN_ADDR`
+  (`are-brain.flycast:50051`, set in `domain.fly.toml`) for the agent sidebar,
+  valuation, and the Closer contract draft.
