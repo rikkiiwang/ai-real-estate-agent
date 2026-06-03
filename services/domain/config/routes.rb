@@ -14,6 +14,12 @@ Rails.application.routes.draw do
     get "dashboard", to: "dashboard#show"
   end
 
-  # Defines the root path route ("/")
-  root "broker/dashboard#show"
+  # Consumer marketplace: browsable listings (buyer workspace).
+  namespace :buyer do
+    resources :listings, only: %i[index show]
+  end
+
+  # The consumer marketplace is the public front door; the broker dashboard
+  # remains reachable at /broker/dashboard.
+  root "buyer/listings#index"
 end

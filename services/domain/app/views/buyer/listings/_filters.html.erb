@@ -1,0 +1,26 @@
+<%= form_with url: buyer_listings_path, method: :get, data: { turbo_frame: "catalog", turbo_action: "advance", controller: "listing-filter" }, class: "mk-filters" do |f| %>
+  <div class="mk-field">
+    <%= f.label :region %>
+    <%= f.select :region,
+          options_for_select(regions, search.region),
+          { include_blank: "Any area" },
+          data: { action: "change->listing-filter#submit" } %>
+  </div>
+  <div class="mk-field">
+    <%= f.label :price_min, "Min price" %>
+    <%= f.number_field :price_min, value: search.price_min, step: 25000, placeholder: "$" %>
+  </div>
+  <div class="mk-field">
+    <%= f.label :price_max, "Max price" %>
+    <%= f.number_field :price_max, value: search.price_max, step: 25000, placeholder: "$" %>
+  </div>
+  <div class="mk-field">
+    <%= f.label :beds, "Beds (min)" %>
+    <%= f.select :beds, options_for_select([["Any", ""], ["1+", 1], ["2+", 2], ["3+", 3], ["4+", 4], ["5+", 5]], search.beds),
+          {}, data: { action: "change->listing-filter#submit" } %>
+  </div>
+  <%= f.submit "Search", class: "mk-btn" %>
+  <% if search.filtered? %>
+    <%= link_to "Clear", buyer_listings_path, class: "mk-btn mk-btn--ghost", data: { turbo_frame: "catalog" } %>
+  <% end %>
+<% end %>

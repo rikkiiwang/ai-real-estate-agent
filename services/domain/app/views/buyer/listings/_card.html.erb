@@ -1,0 +1,11 @@
+<%= link_to buyer_listing_path(listing), class: "mk-card" do %>
+  <div class="mk-card-photo" style="background-image: url('<%= listing.photo_urls&.first %>')"></div>
+  <div class="mk-card-body">
+    <div class="mk-price"><%= number_to_currency(listing.list_price, precision: 0) %></div>
+    <div class="mk-specs">
+      <%= listing.beds %> bd · <%= listing.baths&.to_f %> ba · <%= number_with_delimiter(listing.sqft) %> sqft
+    </div>
+    <div class="mk-addr"><%= listing.address %></div>
+    <span class="mk-region"><%= listing.region %></span>
+  </div>
+<% end %>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Atlas — Austin homes" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <%= stylesheet_link_tag "marketplace", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="mk">
+    <header class="mk-masthead">
+      <a class="mk-brand" href="<%= root_path %>">
+        <span class="mk-brand-mark">▲</span> Atlas
+        <span class="mk-brand-sub">Austin</span>
+      </a>
+      <nav class="mk-nav">
+        <%= link_to "Browse homes", buyer_listings_path, class: "mk-nav-link" %>
+        <%= yield :workspace_nav %>
+      </nav>
+      <div class="mk-session">
+        <%= yield :session_nav %>
+      </div>
+    </header>
+
+    <div class="mk-shell <%= content_for?(:sidebar) ? "mk-shell--with-sidebar" : "" %>">
+      <main class="mk-main">
+        <%= yield %>
+      </main>
+      <% if content_for?(:sidebar) %>
+        <aside class="mk-sidebar"><%= yield :sidebar %></aside>
+      <% end %>
+    </div>
+  </body>
+</html>
