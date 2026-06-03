@@ -125,6 +125,23 @@ body.mk {
 .mk-bundle-comps { border-top: 1px solid var(--line); padding-top: 12px; }
 .mk-offer-submit { margin-top: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
+/* Broker console */
+.mk--broker .mk-masthead { border-bottom-color: var(--accent); }
+.mk-broker-tag { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--accent);
+  background: var(--accent-soft); padding: 5px 12px; border-radius: 99px; letter-spacing: .02em; }
+.mk--broker .mk-shell { max-width: 1100px; }
+
+/* Tables (broker console) */
+.mk-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.mk-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--ink-soft); font-weight: 600; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.mk-table td { padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.mk-table tbody tr:last-child td { border-bottom: 0; }
+.mk-table tbody tr:hover { background: #f9fafe; }
+.mk-table .mk-btn { padding: 6px 12px; font-size: 13px; }
+.mk-table form { margin: 0; }
+.mk-card-section h2 .mk-badge { vertical-align: middle; font-size: 11px; }
+
 /* Contract draft */
 .mk-contract-table { width: 100%; border-collapse: collapse; margin-top: 14px; }
 .mk-contract-table th { text-align: left; width: 180px; color: var(--ink-soft); font-weight: 600; font-size: 13px; padding: 9px 0; vertical-align: top; }
