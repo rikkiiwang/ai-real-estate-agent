@@ -81,5 +81,25 @@ module Realestate
 
       Stub = Service.rpc_stub_class
     end
+    module Closer
+      # ── Closer (TREC paperwork, blanks-only — served by the brain) ───────────────
+      #
+      # Makes the previously-unreachable Closer reachable: fills a PROMULGATED TREC
+      # form (factual blanks only) via brain.lawyer.trec_form.fill_trec_form. A
+      # request for a custom clause / non-standard term is REFUSED (UplViolation) and
+      # surfaced as a handoff — the agent never authors clause language (UPL line).
+      class Service
+
+        include ::GRPC::GenericService
+
+        self.marshal_class_method = :encode
+        self.unmarshal_class_method = :decode
+        self.service_name = 'realestate.v1.Closer'
+
+        rpc :GenerateContract, ::Realestate::V1::GenerateContractRequest, ::Realestate::V1::GenerateContractResponse
+      end
+
+      Stub = Service.rpc_stub_class
+    end
   end
 end
