@@ -40,6 +40,26 @@ module Realestate
 
       Stub = Service.rpc_stub_class
     end
+    module Conversation
+      # ── Conversation (the agent loop: generate→critique→fair-housing→decide) ─────
+      #
+      # Conversation runs one turn of the LangGraph orchestrator end to end and
+      # returns the full reasoning trace (draft, per-claim verdicts, citations,
+      # confidence sub-signals, Fair Housing decision, handoff trigger) so a UI can
+      # SHOW the agent reasoning over live data, not just the final answer.
+      class Service
+
+        include ::GRPC::GenericService
+
+        self.marshal_class_method = :encode
+        self.unmarshal_class_method = :decode
+        self.service_name = 'realestate.v1.Conversation'
+
+        rpc :Orchestrate, ::Realestate::V1::OrchestrateRequest, ::Realestate::V1::OrchestrateResponse
+      end
+
+      Stub = Service.rpc_stub_class
+    end
     module Domain
       # ── Domain (the transaction/CRM core, served by Rails) ───────────────────────
       #

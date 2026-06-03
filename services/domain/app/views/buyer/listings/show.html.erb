@@ -1,4 +1,7 @@
 <% content_for :title, "#{@listing.address} — Atlas" %>
+<% content_for :agent_context do %>
+  <div id="agent-context" data-address="<%= @listing.address %>" data-listing-id="<%= @listing.id %>" hidden></div>
+<% end %>
 
 <p><%= link_to "← Back to homes", buyer_listings_path, class: "mk-nav-link" %></p>
 

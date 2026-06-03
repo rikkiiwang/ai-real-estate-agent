@@ -27,6 +27,11 @@ Rails.application.routes.draw do
     get "home", to: "home#show"
   end
 
+  # Agent sidebar: one orchestrator turn per posted message.
+  namespace :agent do
+    resources :messages, only: %i[create]
+  end
+
   # The consumer marketplace is the public front door; the broker dashboard
   # remains reachable at /broker/dashboard.
   root "buyer/listings#index"

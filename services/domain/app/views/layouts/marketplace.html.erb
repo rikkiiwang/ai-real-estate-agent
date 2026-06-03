@@ -42,13 +42,14 @@
       </div>
     <% end %>
 
-    <div class="mk-shell <%= content_for?(:sidebar) ? "mk-shell--with-sidebar" : "" %>">
+    <div class="mk-shell mk-shell--with-sidebar">
       <main class="mk-main">
+        <%= yield :agent_context %>
         <%= yield %>
       </main>
-      <% if content_for?(:sidebar) %>
-        <aside class="mk-sidebar"><%= yield :sidebar %></aside>
-      <% end %>
+      <aside class="mk-sidebar">
+        <%= render "shared/agent_sidebar" %>
+      </aside>
     </div>
   </body>
 </html>
