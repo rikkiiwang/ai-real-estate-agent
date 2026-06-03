@@ -1,4 +1,5 @@
 require "test_helper"
+require "realestate/v1/realestate_services_pb"
 
 class BrainValuationClientTest < ActiveSupport::TestCase
   class FakeStub

@@ -1,4 +1,5 @@
 require "test_helper"
+require "realestate/v1/realestate_services_pb"
 
 class BrainConversationClientTest < ActiveSupport::TestCase
   # A fake gRPC stub that returns a canned OrchestrateResponse (or raises).
