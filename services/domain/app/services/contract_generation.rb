@@ -22,11 +22,16 @@ class ContractGeneration
 
     if result.drafted
       build_contract(form_id: result.form_id, title: result.title, form_json: result.form_json, source: "closer")
-    else
-      # Closer unavailable or refused on transport — Rails fills the same
-      # blanks-only form so the party still receives a draft.
+    elsif result.error.present?
+      # The Closer was UNREACHABLE (transport) — Rails fills the same blanks-only
+      # form so the flow never dead-ends.
       fallback = ContractDraft.fill(@offer)
       build_contract(form_id: fallback["form_id"], title: fallback["title"], form_json: fallback.to_json, source: "rails_fallback")
+    else
+      # The Closer was reachable and REFUSED (UPL custom clause, or invalid
+      # facts). Never fabricate a draft over a genuine refusal — escalate by
+      # returning nil so the caller routes to a human.
+      nil
     end
   end
 

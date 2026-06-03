@@ -6,8 +6,13 @@ module Broker
     def sign
       offer = Offer.find(params[:id])
       offer.sign!
-      ContractGeneration.call(offer)
-      redirect_to broker_dashboard_path, notice: "Offer signed and a contract draft was delivered to both parties."
+      contract = ContractGeneration.call(offer)
+      notice = if contract
+                 "Offer signed and a contract draft was delivered to both parties."
+               else
+                 "Offer signed. The contract needs broker/legal follow-up before it can be drafted."
+               end
+      redirect_to broker_dashboard_path, notice: notice
     end
   end
 end

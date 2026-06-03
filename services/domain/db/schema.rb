@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_03_000004) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_03_000005) do
   create_table "audit_events", force: :cascade do |t|
     t.text "claim"
     t.string "content_hash", null: false
@@ -62,7 +62,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_000004) do
     t.string "status", default: "draft", null: false
     t.string "title"
     t.datetime "updated_at", null: false
-    t.index ["offer_id"], name: "index_contracts_on_offer_id"
+    t.index ["offer_id"], name: "index_contracts_on_offer_id", unique: true
   end
 
   create_table "handoff_packets", force: :cascade do |t|

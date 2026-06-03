@@ -4,6 +4,7 @@ class Contract < ApplicationRecord
   # executed, e-signed, or money-moving instrument (R13).
   belongs_to :offer
 
+  validates :offer_id, uniqueness: true # one contract per offer (DB-enforced too)
   validates :status, inclusion: { in: %w[draft] }
   validates :source, inclusion: { in: %w[closer rails_fallback] }
 

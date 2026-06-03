@@ -47,6 +47,16 @@ class ContractGenerationTest < ActiveSupport::TestCase
     assert_equal 625_000.0, contract.blanks["sales_price"]
   end
 
+  test "a genuine Closer refusal (UPL) does not fabricate a fallback draft" do
+    offer = buyer_offer
+    refused = CloserClient::Result.new(drafted: false, upl_blocked: true,
+      handoff_reason: "needs a licensed broker", error: nil)
+    assert_no_difference -> { Contract.count } do
+      result = ContractGeneration.call(offer, closer: FakeCloser.new(refused))
+      assert_nil result
+    end
+  end
+
   test "is idempotent — a second call returns the existing contract" do
     offer = buyer_offer
     first = ContractGeneration.call(offer, closer: FakeCloser.new(closer_drafted))

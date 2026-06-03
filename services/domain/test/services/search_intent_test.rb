@@ -23,6 +23,18 @@ class SearchIntentTest < ActiveSupport::TestCase
     assert_equal "Tarrytown", intent.region
   end
 
+  test "parses both bounds positionally (not the max of all tokens)" do
+    intent = SearchIntent.detect("homes over $400k under $800k in Mueller", regions: REGIONS)
+    assert_equal 400_000, intent.price_min
+    assert_equal 800_000, intent.price_max
+    assert_equal "Mueller", intent.region
+  end
+
+  test "ignores an unrelated larger number, binding the price to the keyword" do
+    intent = SearchIntent.detect("homes under 700k near 900 Congress in Crestview", regions: REGIONS)
+    assert_equal 700_000, intent.price_max
+  end
+
   test "returns nil for a non-search question" do
     assert_nil SearchIntent.detect("is this house a good deal?", regions: REGIONS)
     assert_nil SearchIntent.detect("what are the property taxes?", regions: REGIONS)

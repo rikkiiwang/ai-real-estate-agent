@@ -57,17 +57,16 @@ class SearchIntent
     end
   end
 
-  # Numbers like "$700k", "700k", "1.2m", "650,000".
+  # Parses the price token that FOLLOWS the bound keyword, so "over $400k under
+  # $800k" yields price_min=400k and price_max=800k (not both = the largest
+  # number), and unrelated numbers like street addresses aren't mistaken for a
+  # bound. Numbers like "$700k", "700k", "1.2m", "650,000".
   def parse_price(bound)
-    keyword = bound == :max ? /\b(under|below|less than|up to|max|<=?)\b/i : /\b(over|above|more than|at least|min|>=?)\b/i
-    # Find a price token near the relevant keyword; fall back to a bare number
-    # only when the keyword is present somewhere in the message.
-    return nil unless @text.match?(keyword) || (bound == :max && @text.match?(/\bunder\b/i))
+    keyword = bound == :max ? /(?:under|below|less than|up to|max|<=?)/i : /(?:over|above|more than|at least|min|>=?)/i
+    m = @text.match(/#{keyword}\s*\$?\s?(\d[\d,]*(?:\.\d+)?)\s*([kKmM]?)/i)
+    return nil unless m
 
-    tokens = @text.scan(/\$?\s?(\d[\d,]*(?:\.\d+)?)\s*([kKmM]?)/)
-    return nil if tokens.empty?
-
-    value = tokens.map { |num, unit| to_amount(num, unit) }.compact.max
+    value = to_amount(m[1], m[2])
     value if value && value > 1000
   end
 
@@ -87,6 +86,6 @@ class SearchIntent
   end
 
   def mentions_region_word?
-    @text.match?(/\bin\s+[A-Z]/) || @text.match?(/\bnear\b/i)
+    @text.match?(/\b(?:in|near|around)\s+[a-z]/i)
   end
 end
