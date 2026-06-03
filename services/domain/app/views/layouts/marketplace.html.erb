@@ -18,13 +18,29 @@
         <span class="mk-brand-sub">Austin</span>
       </a>
       <nav class="mk-nav">
-        <%= link_to "Browse homes", buyer_listings_path, class: "mk-nav-link" %>
-        <%= yield :workspace_nav %>
+        <%= link_to "Browse homes", buyer_listings_path, class: class_names("mk-nav-link", "is-active" => controller_name == "listings") %>
+        <% if signed_in? %>
+          <%= link_to "Buyer", buyer_listings_path, class: class_names("mk-nav-link", "is-active" => controller_path.start_with?("buyer")) %>
+          <%= link_to "Seller", seller_home_path, class: class_names("mk-nav-link", "is-active" => controller_path.start_with?("seller")) %>
+        <% end %>
       </nav>
       <div class="mk-session">
-        <%= yield :session_nav %>
+        <% if signed_in? %>
+          <span class="mk-muted">Hi, <%= current_visitor.name %></span>
+          <%= button_to "Sign out", session_path, method: :delete, class: "mk-btn mk-btn--ghost" %>
+        <% else %>
+          <%= link_to "Sign in", new_session_path, class: "mk-btn mk-btn--ghost" %>
+        <% end %>
       </div>
     </header>
+
+    <% if flash.any? %>
+      <div class="mk-flash-wrap">
+        <% flash.each do |kind, message| %>
+          <div class="mk-flash mk-flash--<%= kind %>"><%= message %></div>
+        <% end %>
+      </div>
+    <% end %>
 
     <div class="mk-shell <%= content_for?(:sidebar) ? "mk-shell--with-sidebar" : "" %>">
       <main class="mk-main">

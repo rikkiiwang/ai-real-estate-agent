@@ -95,5 +95,21 @@ body.mk {
 .mk-source { font-size: 11px; color: var(--ink-soft); margin-top: 10px; }
 .mk-source a { color: var(--ink-soft); }
 
+/* Flash */
+.mk-flash-wrap { max-width: 1240px; margin: 14px auto 0; padding: 0 28px; }
+.mk-flash { padding: 10px 14px; border-radius: 8px; font-size: 14px; margin-bottom: 8px; border: 1px solid var(--line); }
+.mk-flash--notice { background: #ecfdf5; border-color: #bbf7d0; color: var(--good); }
+.mk-flash--alert { background: #fef2f2; border-color: #fecaca; color: #b42318; }
+
+/* Auth */
+.mk-auth { max-width: 420px; margin: 24px auto; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); }
+.mk-auth h1 { margin: 0 0 8px; font-size: 22px; }
+.mk-auth-form { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
+.mk-auth-form .mk-field input { min-width: 0; width: 100%; }
+
+/* button_to renders a form; keep the sign-out button inline */
+.mk-session form { margin: 0; }
+
 /* Reasoning / sidebar primitives reused later */
 .mk-muted { color: var(--ink-soft); }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_03_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_03_000003) do
   create_table "audit_events", force: :cascade do |t|
     t.text "claim"
     t.string "content_hash", null: false
@@ -134,6 +134,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_000002) do
     t.integer "year_built"
     t.index ["list_price"], name: "index_properties_on_list_price"
     t.index ["region"], name: "index_properties_on_region"
+  end
+
+  create_table "visitors", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_visitors_on_email", unique: true
   end
 
   add_foreign_key "comps", "properties"

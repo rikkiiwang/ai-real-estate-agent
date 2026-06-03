@@ -14,9 +14,17 @@ Rails.application.routes.draw do
     get "dashboard", to: "dashboard#show"
   end
 
+  # Lightweight consumer login (name + email, no password).
+  resource :session, only: %i[new create destroy]
+
   # Consumer marketplace: browsable listings (buyer workspace).
   namespace :buyer do
     resources :listings, only: %i[index show]
+  end
+
+  # Seller workspace (requires a signed-in visitor).
+  namespace :seller do
+    get "home", to: "home#show"
   end
 
   # The consumer marketplace is the public front door; the broker dashboard
