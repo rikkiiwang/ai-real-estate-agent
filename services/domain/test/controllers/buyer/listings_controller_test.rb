@@ -18,6 +18,18 @@ class Buyer::ListingsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".mk-card", minimum: 1
   end
 
+  test "catalog frame breaks out of itself so clicking a card opens the full page" do
+    get buyer_listings_path
+    # Without target=_top, a card click navigates inside the catalog frame and
+    # the detail page (no catalog frame) shows 'Content missing'.
+    assert_match(/turbo-frame id="catalog" target="_top"/, @response.body)
+  end
+
+  test "Sell your home is reachable from the nav even when signed out" do
+    get buyer_listings_path
+    assert_select "a.mk-nav-link[href=?]", seller_home_path, text: "Sell your home"
+  end
+
   test "index shows browsable listings but not acquired inventory" do
     get buyer_listings_path
     assert_match @mueller.address, @response.body

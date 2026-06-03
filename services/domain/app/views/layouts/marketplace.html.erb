@@ -18,10 +18,11 @@
         <span class="mk-brand-sub">Austin</span>
       </a>
       <nav class="mk-nav">
-        <%= link_to "Browse homes", buyer_listings_path, class: class_names("mk-nav-link", "is-active" => controller_name == "listings") %>
+        <%# Both workspaces are always visible. Buy is the public catalog; Sell
+            routes through sign-in for anyone not yet signed in. %>
+        <%= link_to "Buy a home", buyer_listings_path, class: class_names("mk-nav-link", "is-active" => controller_path.start_with?("buyer")) %>
+        <%= link_to "Sell your home", seller_home_path, class: class_names("mk-nav-link", "is-active" => controller_path.start_with?("seller")) %>
         <% if signed_in? %>
-          <%= link_to "Buyer", buyer_listings_path, class: class_names("mk-nav-link", "is-active" => controller_path.start_with?("buyer")) %>
-          <%= link_to "Seller", seller_home_path, class: class_names("mk-nav-link", "is-active" => controller_path.start_with?("seller")) %>
           <%= link_to "Documents", contracts_path, class: class_names("mk-nav-link", "is-active" => controller_path.include?("contracts")) %>
         <% end %>
       </nav>
