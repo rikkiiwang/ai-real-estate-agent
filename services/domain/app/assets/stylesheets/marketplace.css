@@ -125,6 +125,12 @@ body.mk {
 .mk-bundle-comps { border-top: 1px solid var(--line); padding-top: 12px; }
 .mk-offer-submit { margin-top: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
+/* Contract draft */
+.mk-contract-table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+.mk-contract-table th { text-align: left; width: 180px; color: var(--ink-soft); font-weight: 600; font-size: 13px; padding: 9px 0; vertical-align: top; }
+.mk-contract-table td { padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.mk-contract-table tr:last-child td { border-bottom: 0; }
+
 /* Agent sidebar */
 .mk-sidebar { position: sticky; top: 86px; }
 .agent { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);

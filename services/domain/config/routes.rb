@@ -12,7 +12,13 @@ Rails.application.routes.draw do
   # Broker review/handoff dashboard.
   namespace :broker do
     get "dashboard", to: "dashboard#show"
+    resources :offers, only: [] do
+      post :sign, on: :member
+    end
   end
+
+  # A signed-in visitor's delivered contract drafts.
+  resources :contracts, only: %i[index show], controller: "consumer/contracts"
 
   # Lightweight consumer login (name + email, no password).
   resource :session, only: %i[new create destroy]

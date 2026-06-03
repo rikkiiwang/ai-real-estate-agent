@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_03_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_03_000004) do
   create_table "audit_events", force: :cascade do |t|
     t.text "claim"
     t.string "content_hash", null: false
@@ -50,6 +50,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_000003) do
     t.datetime "updated_at", null: false
     t.index ["lead_id", "channel"], name: "index_consents_on_lead_id_and_channel", unique: true
     t.index ["lead_id"], name: "index_consents_on_lead_id"
+  end
+
+  create_table "contracts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.string "form_id"
+    t.text "form_json"
+    t.integer "offer_id", null: false
+    t.string "source", default: "closer", null: false
+    t.string "status", default: "draft", null: false
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["offer_id"], name: "index_contracts_on_offer_id"
   end
 
   create_table "handoff_packets", force: :cascade do |t|
@@ -146,6 +159,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_000003) do
 
   add_foreign_key "comps", "properties"
   add_foreign_key "consents", "leads"
+  add_foreign_key "contracts", "offers"
   add_foreign_key "handoff_packets", "leads"
   add_foreign_key "negotiations", "offers"
   add_foreign_key "offer_metrics", "leads"
