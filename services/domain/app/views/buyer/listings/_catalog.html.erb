@@ -1,4 +1,7 @@
-<%= turbo_frame_tag "catalog" do %>
+<%# target: "_top" so clicking a listing card navigates the whole page (the
+    detail page has no "catalog" frame). The filter form and agent search still
+    update this frame by targeting it explicitly. %>
+<%= turbo_frame_tag "catalog", target: "_top" do %>
   <div class="mk-results-head">
     <h1>Austin homes</h1>
     <span class="mk-count"><%= pluralize(listings.count, "home") %><%= " · filtered" if search.filtered? %></span>
