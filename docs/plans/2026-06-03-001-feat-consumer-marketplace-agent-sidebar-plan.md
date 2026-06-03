@@ -1,6 +1,6 @@
 ---
 title: "feat: Consumer marketplace with agent sidebar"
-status: active
+status: completed
 date: 2026-06-03
 type: feat
 origin: docs/brainstorms/2026-06-03-consumer-marketplace-agent-sidebar-requirements.md
