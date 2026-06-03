@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_31_192651) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_03_000002) do
   create_table "audit_events", force: :cascade do |t|
     t.text "claim"
     t.string "content_hash", null: false
@@ -23,6 +23,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_31_192651) do
     t.string "subject_id"
     t.string "subject_type"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "comps", force: :cascade do |t|
+    t.string "address", null: false
+    t.datetime "created_at", null: false
+    t.decimal "distance_mi", precision: 5, scale: 2
+    t.integer "property_id"
+    t.string "region", null: false
+    t.date "sale_date", null: false
+    t.decimal "sale_price", precision: 12, scale: 2, null: false
+    t.string "source_name"
+    t.string "source_url"
+    t.datetime "updated_at", null: false
+    t.index ["property_id"], name: "index_comps_on_property_id"
+    t.index ["region"], name: "index_comps_on_region"
   end
 
   create_table "consents", force: :cascade do |t|
@@ -101,11 +116,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_31_192651) do
 
   create_table "properties", force: :cascade do |t|
     t.string "address", null: false
+    t.decimal "baths", precision: 3, scale: 1
+    t.integer "beds"
+    t.datetime "captured_at"
     t.datetime "created_at", null: false
+    t.text "description"
+    t.decimal "lat", precision: 10, scale: 6
+    t.decimal "list_price", precision: 12, scale: 2
+    t.decimal "lng", precision: 10, scale: 6
+    t.json "photo_urls"
+    t.string "region"
+    t.string "source_name"
+    t.string "source_url"
+    t.integer "sqft"
     t.string "state", default: "acquired", null: false
     t.datetime "updated_at", null: false
+    t.integer "year_built"
+    t.index ["list_price"], name: "index_properties_on_list_price"
+    t.index ["region"], name: "index_properties_on_region"
   end
 
+  add_foreign_key "comps", "properties"
   add_foreign_key "consents", "leads"
   add_foreign_key "handoff_packets", "leads"
   add_foreign_key "negotiations", "offers"
