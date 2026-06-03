@@ -3,8 +3,8 @@
   <div id="agent-context" data-address="<%= @address %>" hidden></div>
 <% end %>
 
-<p><%= link_to "← Back", seller_home_path, class: "mk-nav-link" %></p>
-
+<%# Rendered into the seller-result frame so the page + agent sidebar persist. %>
+<%= turbo_frame_tag "seller-result" do %>
 <div class="mk-detail-head">
   <div>
     <div class="mk-addr"><%= @address %></div>
@@ -55,4 +55,5 @@
       so it won't quote a number it can't support. A licensed broker will reach out — we've logged your request.
     </p>
   </div>
+<% end %>
 <% end %>

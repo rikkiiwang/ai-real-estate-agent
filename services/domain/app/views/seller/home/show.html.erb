@@ -11,7 +11,8 @@
     Every figure is cited; a licensed broker reviews before anything is binding.
   </p>
 
-  <%= form_with url: seller_valuations_path, method: :post, class: "mk-filters" do |f| %>
+  <%= form_with url: seller_valuations_path, method: :post, class: "mk-filters",
+                data: { turbo_frame: "seller-result" } do |f| %>
     <div class="mk-field" style="flex: 1; min-width: 280px;">
       <%= label_tag :address, "Your home's address" %>
       <%= text_field_tag :address, params[:address], placeholder: "123 Main St, Austin, TX 78704", style: "width: 100%;" %>
@@ -19,3 +20,6 @@
     <%= f.submit "Get my cash offer", class: "mk-btn" %>
   <% end %>
 </div>
+
+<%# The cash-offer result lands here so the page (and the agent sidebar) persist. %>
+<%= turbo_frame_tag "seller-result" %>
