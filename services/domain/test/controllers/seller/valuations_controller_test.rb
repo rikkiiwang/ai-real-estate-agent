@@ -44,6 +44,9 @@ class Seller::ValuationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "awaiting_broker", offer.status
     assert_match "Preliminary cash offer", @response.body
     assert_match "county appraisal (TCAD)", @response.body # cited, friendly label
+    # The result must be inside the seller-result Turbo frame, or a real browser
+    # discards the 200 POST response and the result never appears.
+    assert_match(/turbo-frame id="seller-result"/, @response.body)
   end
 
   test "insufficient data does not fabricate an offer (records a lead instead)" do
