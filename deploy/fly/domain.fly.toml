@@ -1,8 +1,11 @@
-# Domain — Rails broker dashboard (web). Uses the Rails-generated production
-# Dockerfile (RAILS_ENV=production, Thruster). Build context is services/domain.
-# Internal by default (are-domain.flycast); allocate IPs to expose the dashboard
-# publicly (see DEPLOY.md). Migrations run once per deploy via release_command,
-# so the web/grpc machines never race on schema setup.
+# Domain — Rails consumer marketplace + broker dashboard (web). Uses the
+# Rails-generated production Dockerfile (RAILS_ENV=production, Thruster). Build
+# context is services/domain. PUBLIC: its root `/` is the consumer listing site
+# (browse/buy/sell + agent sidebar); the broker dashboard is at `/broker` behind
+# HTTP basic auth. deploy.sh allocates public IPs. The web process calls the
+# brain over flycast (BRAIN_ADDR) for the agent sidebar, valuation, and the
+# Closer contract draft. Migrations run once per deploy via release_command, so
+# the web/grpc machines never race on schema setup.
 app = "are-domain"
 primary_region = "dfw"
 
@@ -15,6 +18,7 @@ primary_region = "dfw"
 [env]
   RAILS_ENV = "production"
   HTTP_PORT = "8080"            # Thruster listens here; uid 1000 cannot bind :80
+  BRAIN_ADDR = "are-brain.flycast:50051"  # agent sidebar, valuation, Closer over the private mesh
   # RAILS_MASTER_KEY and DATABASE_URL (domain_production) set via `fly secrets set`.
 
 [http_service]

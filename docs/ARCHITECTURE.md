@@ -69,13 +69,15 @@ flowchart TB
   GW["gateway — Go<br/>REST edge, HMAC auth"]
   BRAIN["brain — Python<br/>valuation · rag · lawyer · orchestrator · closer"]
   DOMG["domain-grpc — Rails<br/>Domain gRPC service"]
-  DASH["domain — Rails<br/>broker dashboard (basic auth)"]
+  DASH["domain — Rails<br/>marketplace (/) + broker dashboard (/broker)"]
   DB[("Postgres + pgvector<br/>RAG store + domain DB")]
 
   B --> CHAT
+  B --> DASH
   API --> GW
   CHAT -->|"gRPC Conversation.Orchestrate"| BRAIN
   GW -->|"gRPC GetValuation / Orchestrate"| BRAIN
+  DASH -->|"gRPC Orchestrate / GetValuation / GenerateContract"| BRAIN
   BRAIN -->|"gRPC CreateOffer / EnqueueHandoff"| DOMG
   BRAIN -->|"SQL / vector search"| DB
   DOMG --> DB
@@ -83,22 +85,24 @@ flowchart TB
   broker(["licensed broker"]) --> DASH
 ```
 
-**Public surfaces:** only `chat` and `gateway`. Everything else is private,
-reachable on the internal network (`*.flycast` in production). The brain holds no
-public IP; the only ways to reach the agent are the authenticated gateway or the
-first-party chat backend.
+**Public surfaces:** `gateway`, `chat`, and the consumer marketplace served by
+`domain`. Everything else is private, reachable on the internal network
+(`*.flycast` in production). The brain holds no public IP; it is reached only by
+the authenticated gateway, the chat backend, or the marketplace's server-side
+agent sidebar — all first-party gRPC clients on the internal network.
 
 ---
 
 ## 4. The polyglot contract
 
-`proto/realestate/v1/realestate.proto` defines four services:
+`proto/realestate/v1/realestate.proto` defines five services:
 
 | Service | Served by | RPCs |
 |---|---|---|
 | `Valuation` | brain (Python) | `GetValuation` |
 | `Verification` | brain (Python) | `VerifyMessage` |
 | `Conversation` | brain (Python) | `Orchestrate` — runs one full agent turn, returns the whole reasoning trace |
+| `Closer` | brain (Python) | `GenerateContract` — fills a promulgated TREC form (factual blanks only; a custom-clause request ⇒ UPL refusal + escalate) |
 | `Domain` | domain (Rails) | `CreateLead`, `EnqueueHandoff`, `CreateOffer` |
 
 `Conversation.Orchestrate` is the RPC that makes the glass box possible — its
@@ -270,13 +274,15 @@ dashboard has full, resumable context.
   persisted via `DomainOfferSink → Domain.CreateOffer` into the Rails broker
   queue with its `form_json`. A licensed human reviews and signs in the dashboard.
 
-The buyer side reuses the same Closer. **Reachability gap (current):** the Closer
-is invoked only by tests and the demo spine (`orchestrator/loop.py`); it is *not*
-wired into the conversation graph or any REST endpoint. The `Negotiation` Rails
-model and the `ClosingOrchestrator` (milestone → escrow/title/lender pings,
+The buyer side reuses the same Closer. **Now reachable:** the Closer is exposed
+over the `Closer.GenerateContract` RPC (`services/brain/src/brain/closer_service.py`),
+called by the Rails consumer marketplace when a broker signs an offer — it fills
+the promulgated TREC form and the marketplace delivers the draft in-app to both
+parties (with a Rails-side fallback fill if the brain is unreachable, so the flow
+never dead-ends). Still unwired: the `Negotiation` Rails model (counter-offer
+loop) and the `ClosingOrchestrator` (milestone → escrow/title/lender pings,
 `closing.py`) exist and are tested against fakes, but their real sinks/flows are
-not yet wired. Exposing the Closer behind the chat/gateway is the single
-highest-value next step (see README coverage).
+not yet connected.
 
 ---
 
@@ -286,9 +292,12 @@ highest-value next step (see README coverage).
 `Negotiation`, `AuditEvent`, `HandoffPacket`, `OfferMetric`, `Consent`. It runs
 two processes from one image:
 
-- **web** — the broker dashboard (the HITL back office: the handoff queue and
-  offers awaiting signature), behind HTTP basic auth in production, sole DB
-  migrator on boot.
+- **web** — the **consumer marketplace** at `/` (browsable Austin listings,
+  lightweight visitor login, the Buyer and Seller workspaces, the context-aware
+  agent sidebar that calls `Conversation.Orchestrate`, and broker-signed contract
+  delivery) **and** the **broker dashboard** at `/broker/dashboard` (the HITL back
+  office: handoff queue + offers awaiting signature), behind HTTP basic auth in
+  production. Sole DB migrator on boot.
 - **grpc** — the `Domain` gRPC service (`CreateLead`, `EnqueueHandoff`,
   `CreateOffer`) the brain calls; waits for the web service's migration.
 
@@ -306,25 +315,32 @@ happened, with the Critic's per-claim rows, for compliance review.
   The brain currently does not enforce a server-side interceptor (it is
   network-isolated over flycast); the gateway still presents a service token, so
   tightening the brain to verify it is a drop-in.
-- **Broker dashboard.** Env-gated HTTP basic auth (open in dev/test when unset),
-  so the public dashboard is protected without affecting local runs.
+- **Consumer marketplace.** Public at `domain`'s root `/`. A lightweight visitor
+  login (name + email, no password) scopes the buyer/seller workspaces — a
+  session identity for context, not a security boundary. The agent sidebar runs
+  server-side, so the browser never reaches the brain directly.
+- **Broker dashboard.** Path-scoped under `/broker` (not the root) behind
+  env-gated HTTP basic auth (open in dev/test when unset), so it stays protected
+  on the public app without affecting local runs.
 
 ---
 
 ## 12. Deployment topology (Fly.io)
 
-Eight apps, one private network, two public surfaces:
+Eight apps, one private network, three public surfaces:
 
 ```mermaid
 flowchart LR
+  Internet -->|HTTPS| DOM[are-domain web]
   Internet -->|HTTPS| GW[are-gateway]
   Internet -->|HTTPS| CHAT[are-chat]
   GW -->|gRPC| BRAIN[are-brain]
   CHAT -->|gRPC| BRAIN
+  DOM -->|gRPC Orchestrate / GenerateContract| BRAIN
   BRAIN -->|gRPC| DG[are-domain-grpc]
   BRAIN -->|SQL| DB[(are-db pgvector)]
   DG --> DB
-  DOM[are-domain web] --> DB
+  DOM --> DB
 ```
 
 `are-ingestion` and `are-voice` are created but optional. All Go services build
@@ -345,8 +361,9 @@ single migrator. Full runbook, secrets, and per-app `fly.toml` in
 | Entailer (Critic) | deterministic token-overlap | real-LLM entailer (injected) |
 | Vision | real protocol + fake | Gemini structured output (needs key) |
 | Handoff / offer sinks | fakes in tests | Rails gRPC (wired for offer/handoff) |
+| Contract generation | real TREC fill | reachable via `Closer.GenerateContract` (wired to the marketplace) |
 | Closing counterparty sink | fake | gRPC sink (`NotImplementedError` today) |
-| Listings | synthetic RESO | live MLS behind `ListingSource` |
+| Listings | synthetic RESO; marketplace = curated sample | live MLS behind `ListingSource` |
 
 Every seam is dependency-injected and documented — the architecture is
 production-shaped; the data and a few external integrations are deferred.
@@ -356,15 +373,18 @@ production-shaped; the data and a few external integrations are deferred.
 ## 14. Testing strategy
 
 - **Hermetic by default.** Fakes + in-memory stores + `MemorySaver` mean the
-  whole agent loop runs with no network and no Postgres. The brain suite (186
+  whole agent loop runs with no network and no Postgres. The brain suite (190
   tests) covers valuation, RAG, the Critic, Fair Housing, confidence, handoff,
   the orchestrator (happy / critical / Fair-Housing / regenerate / resumability),
-  the Closer, the closing orchestration, the demo spine, and the `Conversation`
-  servicer mapping.
+  the Closer, the closing orchestration, the demo spine, the `Conversation`
+  servicer mapping, and the `Closer.GenerateContract` servicer (TREC fill +
+  UPL-refusal path).
 - **Cross-language smoke** (`make smoke`) exercises a real gateway → brain gRPC
   round-trip and returns a live valuation.
-- **Rails** tests cover the domain models (including the audit log and the
-  broker-gate offer lifecycle) against SQLite.
+- **Rails** tests (141) cover the domain models and the full consumer marketplace
+  — listings/search, the agent sidebar (DI fake brain), the cited decision bundle,
+  the buyer/seller offer flows, contract generation + fallback, and the
+  broker-gate lifecycle — against SQLite.
 
 ```bash
 make test     # Go + Python
