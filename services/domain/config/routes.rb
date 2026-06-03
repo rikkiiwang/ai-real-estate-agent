@@ -27,6 +27,7 @@ Rails.application.routes.draw do
   # Seller workspace (requires a signed-in visitor).
   namespace :seller do
     get "home", to: "home#show"
+    resources :valuations, only: %i[create]
   end
 
   # Agent sidebar: one orchestrator turn per posted message.

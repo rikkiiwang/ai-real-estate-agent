@@ -7,9 +7,15 @@
 <div class="mk-card-section">
   <h2>Get a cash offer on your home</h2>
   <p class="mk-muted">
-    Atlas can value your address and prepare a platform cash offer, with every
-    figure sourced. Enter your address to start — the agent will walk you through
-    it and bring in a licensed broker when needed.
+    Atlas values your address from source data and prepares a platform cash offer.
+    Every figure is cited; a licensed broker reviews before anything is binding.
   </p>
-  <p class="mk-muted">The valuation and cash-offer flow lands in the next step.</p>
+
+  <%= form_with url: seller_valuations_path, method: :post, class: "mk-filters" do |f| %>
+    <div class="mk-field" style="flex: 1; min-width: 280px;">
+      <%= label_tag :address, "Your home's address" %>
+      <%= text_field_tag :address, params[:address], placeholder: "123 Main St, Austin, TX 78704", style: "width: 100%;" %>
+    </div>
+    <%= f.submit "Get my cash offer", class: "mk-btn" %>
+  <% end %>
 </div>
