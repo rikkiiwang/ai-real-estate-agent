@@ -29,6 +29,8 @@
   <span>Built <b><%= @listing.year_built %></b></span>
 </div>
 
+<p><%= link_to "Make an offer →", new_buyer_listing_offer_path(@listing), class: "mk-btn" %></p>
+
 <div class="mk-card-section">
   <h2>About this home</h2>
   <p class="mk-muted"><%= @listing.description %></p>

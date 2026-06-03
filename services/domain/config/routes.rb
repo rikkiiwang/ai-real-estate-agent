@@ -19,7 +19,9 @@ Rails.application.routes.draw do
 
   # Consumer marketplace: browsable listings (buyer workspace).
   namespace :buyer do
-    resources :listings, only: %i[index show]
+    resources :listings, only: %i[index show] do
+      resource :offer, only: %i[new create]
+    end
   end
 
   # Seller workspace (requires a signed-in visitor).
