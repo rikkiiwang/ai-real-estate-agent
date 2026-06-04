@@ -10,7 +10,21 @@ class Broker::OffersControllerTest < ActionDispatch::IntegrationTest
       form_json: { property_address: "1 Mueller", buyer_name: "Jordan", buyer_email: "jordan@example.com" }.to_json)
   end
 
+  def sign_in_broker
+    post session_path, params: { name: "Bea Broker", email: "broker@atlas.example" } # allowlisted
+  end
+
+  test "signing requires a broker; a non-broker cannot sign" do
+    post session_path, params: { name: "Casey", email: "casey@example.com" }
+    assert_no_difference -> { Contract.count } do
+      post sign_broker_offer_path(@offer)
+    end
+    assert_redirected_to root_path
+    assert_equal "awaiting_broker", @offer.reload.status
+  end
+
   test "signing an offer marks it signed and delivers a contract draft to both parties" do
+    sign_in_broker
     assert_difference -> { Contract.count }, 1 do
       post sign_broker_offer_path(@offer)
     end
@@ -22,8 +36,10 @@ class Broker::OffersControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "the buyer can view their delivered contract; a stranger cannot" do
+    sign_in_broker
     post sign_broker_offer_path(@offer)
     contract = @offer.reload.contract
+    delete session_path # broker signs out
 
     # The buyer (matching email) sees it.
     post session_path, params: { name: "Jordan", email: "jordan@example.com" }

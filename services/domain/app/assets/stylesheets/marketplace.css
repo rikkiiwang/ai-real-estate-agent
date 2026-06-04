@@ -41,6 +41,10 @@ body.mk {
 .mk-nav { display: flex; gap: 18px; align-items: center; }
 .mk-nav-link { color: var(--ink-soft); text-decoration: none; font-size: 14px; font-weight: 500; padding: 6px 2px; }
 .mk-nav-link:hover, .mk-nav-link.is-active { color: var(--accent); }
+/* The broker-only Dashboard tab — subtly marked as the back-office view. */
+.mk-nav-link--broker { color: var(--warn); }
+.mk-nav-link--broker::before { content: "◆ "; font-size: 9px; vertical-align: middle; }
+.mk-nav-link--broker.is-active, .mk-nav-link--broker:hover { color: var(--warn); filter: brightness(.9); }
 .mk-session { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 14px; }
 
 /* Shell layout */

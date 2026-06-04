@@ -18,3 +18,10 @@ shared:
   default_assumptions:
     down_payment_pct: 20
     term_years: 30
+  # Visitors whose email is on this allowlist sign in through the normal
+  # consumer login and additionally see the broker "Dashboard" tab (the review
+  # console). Override/extend at deploy time with the BROKER_EMAILS env var
+  # (comma-separated). NOTE: consumer login is passwordless, so in production a
+  # broker would carry real credentials — this is the demo seam.
+  broker_emails:
+    - broker@atlas.example

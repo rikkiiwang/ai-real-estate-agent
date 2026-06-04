@@ -25,6 +25,10 @@
         <% if signed_in? %>
           <%= link_to "Documents", contracts_path, class: class_names("mk-nav-link", "is-active" => controller_path.include?("contracts")) %>
         <% end %>
+        <% if broker_signed_in? %>
+          <%# Brokers get one extra tab — the review console — through the same login. %>
+          <%= link_to "Dashboard", broker_dashboard_path, class: class_names("mk-nav-link", "mk-nav-link--broker", "is-active" => controller_path.start_with?("broker")) %>
+        <% end %>
       </nav>
       <div class="mk-session">
         <% if signed_in? %>
@@ -44,14 +48,19 @@
       </div>
     <% end %>
 
-    <div class="mk-shell mk-shell--with-sidebar">
+    <%# The agent sidebar rides along on consumer pages, but not the broker
+        review console — that's a back-office view, not a shopping one. %>
+    <% show_sidebar = !controller_path.start_with?("broker") %>
+    <div class="mk-shell <%= "mk-shell--with-sidebar" if show_sidebar %>">
       <main class="mk-main">
         <%= yield :agent_context %>
         <%= yield %>
       </main>
-      <aside class="mk-sidebar">
-        <%= render "shared/agent_sidebar" %>
-      </aside>
+      <% if show_sidebar %>
+        <aside class="mk-sidebar">
+          <%= render "shared/agent_sidebar" %>
+        </aside>
+      <% end %>
     </div>
   </body>
 </html>

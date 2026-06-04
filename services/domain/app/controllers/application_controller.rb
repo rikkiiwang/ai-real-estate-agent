@@ -5,12 +5,12 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  # NOTE: broker HTTP basic auth now lives on Broker::BaseController, not here,
-  # so the consumer marketplace (open browsing + lightweight visitor login) is
-  # never gated behind broker credentials. Consumer login lives in
-  # Consumer::BaseController (require_login).
+  # NOTE: brokers use the same consumer login as everyone else; a visitor whose
+  # email is on the broker allowlist additionally sees the "Dashboard" tab and
+  # may reach Broker::BaseController pages (require_login + require_broker). Open
+  # browsing of the catalog needs no login at all.
 
-  helper_method :current_visitor, :signed_in?
+  helper_method :current_visitor, :signed_in?, :broker_signed_in?
 
   private
 
@@ -20,5 +20,9 @@ class ApplicationController < ActionController::Base
 
   def signed_in?
     current_visitor.present?
+  end
+
+  def broker_signed_in?
+    current_visitor&.broker?
   end
 end

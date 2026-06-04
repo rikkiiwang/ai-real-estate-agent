@@ -17,4 +17,10 @@ class Visitor < ApplicationRecord
     visitor.save
     visitor
   end
+
+  # A broker is a normal signed-in visitor whose email is on the allowlist; they
+  # additionally see the broker review console. Same entrance, one more tab.
+  def broker?
+    MarketConfig.broker_emails.include?(email.to_s.downcase)
+  end
 end
