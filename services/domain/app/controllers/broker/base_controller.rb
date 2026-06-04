@@ -1,24 +1,18 @@
 module Broker
-  # Base for all broker-facing pages. Gates them behind HTTP basic auth.
-  # Credentials come from env (set as Fly secrets in production). When unset
-  # (dev/test), auth is skipped so local work and the hermetic test suite are
-  # unaffected. The Rails health endpoint (/up) lives on Rails::HealthController,
-  # not here, so it stays open for Fly health checks.
-  class BaseController < ApplicationController
-    layout "broker"
-    before_action :authenticate_broker!
+  # Base for broker-facing pages. Brokers use the SAME consumer login as everyone
+  # else; a visitor whose email is on the broker allowlist (MarketConfig) sees the
+  # extra "Dashboard" tab and may reach these pages. Server-side gating here is
+  # the real boundary — a non-broker visitor can never reach the review queue,
+  # tab hidden or not.
+  class BaseController < Consumer::BaseController
+    before_action :require_broker
 
     private
 
-    def authenticate_broker!
-      user = ENV["BROKER_DASHBOARD_USER"]
-      pass = ENV["BROKER_DASHBOARD_PASSWORD"]
-      return if user.blank? || pass.blank? # auth not configured -> open (dev/test)
+    def require_broker
+      return if current_visitor&.broker?
 
-      authenticate_or_request_with_http_basic("Broker Dashboard") do |u, p|
-        ActiveSupport::SecurityUtils.secure_compare(u, user) &
-          ActiveSupport::SecurityUtils.secure_compare(p, pass)
-      end
+      redirect_to root_path, alert: "That area is for licensed brokers."
     end
   end
 end

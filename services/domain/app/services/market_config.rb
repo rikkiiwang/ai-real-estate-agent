@@ -23,4 +23,11 @@ module MarketConfig
   def default_term_years
     all.dig(:default_assumptions, :term_years) || 30
   end
+
+  # Normalized broker allowlist: config emails + the BROKER_EMAILS env override.
+  def broker_emails
+    from_config = Array(all[:broker_emails])
+    from_env = ENV.fetch("BROKER_EMAILS", "").split(",")
+    (from_config + from_env).map { |e| e.to_s.strip.downcase }.reject(&:blank?).uniq
+  end
 end
