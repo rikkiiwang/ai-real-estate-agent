@@ -160,8 +160,9 @@ is not the same as it being *reachable by a user*:
 | Consumer | Buyer decision bundle (rate / comps / tax / monthly), cited | ✅ reachable — each figure sourced; no fabricated comps |
 | Consumer | Buyer offer → broker queue | ✅ reachable — lands `awaiting_broker`, not binding until signed |
 | Consumer | Seller valuation + platform cash offer, cited | ✅ reachable — live AVM, no-fabrication on insufficient data |
-| Brain | Real-time per-address valuation (AVM) | ✅ reachable; 🟠 synthetic-trained, not live last-24h market data |
-| Brain | Multi-source ingestion (MLS + TCAD + news) | 🟠 TCAD/GIS + synthetic MLS; **news ingestion ❌** |
+| Brain | Real-time per-address valuation (AVM) | ✅ reachable; AVM 🟠 synthetic-trained, but the catalog now carries **real, dated RentCast market data** (median / $psf / active / DOM) |
+| Consumer | Market intelligence (real, dated) | ✅ reachable — live RentCast market snapshot per ZIP, shown with its as-of date |
+| Brain | Multi-source ingestion (MLS + TCAD + news) | 🟡 **real RentCast listings + market feed** (periodically refreshed) + TCAD/GIS + synthetic-trained AVM; **news ingestion ❌** |
 | Brain | Visual property analysis (photos) | 🟡 real design (Gemini structured output), model unbound + unexposed in prod |
 | Voice | Intent triaging (looky-loo vs high-intent) | ✅ real logic (voice service); voice app not deployed |
 | Voice | Omnichannel (voice + SMS + email, one thread) | 🟠 voice session only; **SMS/email ❌** |
@@ -269,7 +270,7 @@ and verification commands.
 - The **RAG / Critic** pipeline is real; the entailer in the deployed path is a
   deterministic token-overlap implementation (a real-LLM entailer is dependency-injected and deferred).
 - **Vision** is wired to Gemini structured output but runs against a fake unless a `GEMINI_API_KEY` is provided.
-- **Marketplace listings** are a curated static sample of ~20 real Austin addresses with sample imagery (provenance-labeled), seeded once — not a live MLS feed. Mortgage/tax rates are dated, sourced reference values, not live quotes.
+- **Marketplace listings** are a mix: **real, active Austin listings + market stats from the RentCast API** (genuine address/price/beds/baths/sqft/days-on-market, refreshed on import — the free tier is rate-limited, so it's periodically-refreshed real data, not a 24/7 tick; RentCast licenses no photos, so all listings use labeled sample imagery) plus a curated sample with photos and comps. Mortgage/tax rates are dated, sourced reference values, not live quotes.
 
 This is an assessment-grade system with production-shaped architecture — the
 seams (real embedder, real entailer, live MLS feed, real closing sink) are

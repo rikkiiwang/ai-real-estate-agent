@@ -9,6 +9,7 @@ module Buyer
       @search = ListingSearch.from_params(params)
       @listings = @search.results
       @regions = ListingSearch.regions
+      @market = MarketSnapshot.headline
     end
 
     def show

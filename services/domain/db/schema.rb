@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_03_000005) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_04_000001) do
   create_table "audit_events", force: :cascade do |t|
     t.text "claim"
     t.string "content_hash", null: false
@@ -86,6 +86,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_000005) do
     t.string "intent", default: "unknown", null: false
     t.string "side", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "market_snapshots", force: :cascade do |t|
+    t.string "area", null: false
+    t.date "as_of"
+    t.decimal "avg_days_on_market", precision: 6, scale: 1
+    t.decimal "avg_price_per_sqft", precision: 8, scale: 2
+    t.datetime "created_at", null: false
+    t.decimal "median_price", precision: 12, scale: 2
+    t.integer "new_listings"
+    t.string "source", default: "RentCast", null: false
+    t.integer "total_listings"
+    t.datetime "updated_at", null: false
+    t.string "zip"
+    t.index ["zip"], name: "index_market_snapshots_on_zip", unique: true
   end
 
   create_table "negotiations", force: :cascade do |t|

@@ -1,4 +1,5 @@
 <% content_for :title, "Browse Austin homes — Atlas" %>
 
+<%= render "market_banner", snapshot: @market %>
 <%= render "filters", search: @search, regions: @regions %>
 <%= render "catalog", listings: @listings, search: @search %>
