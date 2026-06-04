@@ -1,0 +1,26 @@
+<%# Real, dated market snapshot from RentCast (cached). Renders only when present. %>
+<% if snapshot %>
+  <div class="mk-market">
+    <div class="mk-market-head">
+      <span class="mk-market-dot"></span>
+      Austin market <span class="mk-muted"><%= snapshot.area %></span>
+    </div>
+    <div class="mk-market-stats">
+      <% if snapshot.median_price %>
+        <span><b><%= number_to_currency(snapshot.median_price, precision: 0) %></b> median</span>
+      <% end %>
+      <% if snapshot.avg_price_per_sqft %>
+        <span><b>$<%= number_with_precision(snapshot.avg_price_per_sqft, precision: 0) %></b>/sqft</span>
+      <% end %>
+      <% if snapshot.total_listings %>
+        <span><b><%= number_with_delimiter(snapshot.total_listings) %></b> active</span>
+      <% end %>
+      <% if snapshot.avg_days_on_market %>
+        <span><b><%= snapshot.avg_days_on_market.to_i %></b> avg days on market</span>
+      <% end %>
+    </div>
+    <div class="mk-source">
+      Live market data · <%= snapshot.source %> · as of <%= snapshot.as_of&.strftime("%b %-d, %Y") %>
+    </div>
+  </div>
+<% end %>
