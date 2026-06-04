@@ -1,0 +1,18 @@
+<%# The agent's response to a seller's counter, swapped into the negotiation
+    frame on the cash-offer page. %>
+<%= turbo_frame_tag "negotiation-result" do %>
+  <div class="agent-msg agent-msg--bot mk-negotiation">
+    <div class="agent-bubble">
+      <%= simple_format(@result.message) %>
+      <p class="agent-verdict">
+        <span class="mk-badge <%= @result.accepted ? "mk-badge--good" : "mk-badge--warn" %>">
+          <%= @result.accepted ? "accepted — within Atlas's authorized band" : "above the band — routed to a broker" %>
+        </span>
+      </p>
+      <div class="mk-source">
+        Authorized band: <%= number_to_currency(@result.open, precision: 0) %>–<%= number_to_currency(@result.ceiling, precision: 0) %>
+        · your counter <%= number_to_currency(@result.counter, precision: 0) %>
+      </div>
+    </div>
+  </div>
+<% end %>

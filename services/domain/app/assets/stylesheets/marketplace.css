@@ -169,6 +169,8 @@ body.mk {
 .agent-ctx, .agent-conf { font-size: 11px; color: var(--ink-soft); margin-top: 3px; }
 .agent-verdict { margin: 8px 0 0; }
 .agent-verdict .mk-badge { font-size: 11px; }
+.mk-negotiation { margin-top: 14px; }
+.mk-negotiation .agent-bubble { max-width: 100%; }
 .agent-cite { color: var(--ink-soft); font-size: 12px; }
 .agent-search-cite { display: block; margin-top: 6px; }
 .agent-link { color: var(--accent); font-weight: 600; text-decoration: none; display: inline-block; margin-top: 4px; }

@@ -34,6 +34,7 @@ Rails.application.routes.draw do
   namespace :seller do
     get "home", to: "home#show"
     resources :valuations, only: %i[create]
+    resources :counters, only: %i[create] # negotiate the cash offer within the band
   end
 
   # Agent sidebar: one orchestrator turn per posted message.

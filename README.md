@@ -167,7 +167,7 @@ is not the same as it being *reachable by a user*:
 | Voice | Omnichannel (voice + SMS + email, one thread) | 🟠 voice session only; **SMS/email ❌** |
 | Voice | Dynamic scheduling (calendars) | ❌ missing |
 | Closer | TREC document generation (blanks-only, UPL-safe) | ✅ reachable — `Closer.GenerateContract` RPC; broker-sign delivers the draft in-app |
-| Closer | Automated negotiation within a price band | 🟠 band guardrail real (single-pass, no counter loop); `Negotiation` model unused |
+| Closer | Automated negotiation within a price band | ✅ reachable — seller can counter the cash offer; the agent auto-accepts within the authorized band (opening offer → valuation ceiling) or escalates above it, recording a `Negotiation` either way |
 | Closer | Closing orchestration (escrow/title/lender pings) | 🟡 built; real sink raises `NotImplementedError`; not wired |
 | **Lawyer** | **Fair Housing compliance** | ✅ reachable — runs every turn |
 | **Lawyer** | **Truth-verification (Critic/RAG)** | ✅ reachable — every turn (deterministic entailer; real-LLM deferred) |

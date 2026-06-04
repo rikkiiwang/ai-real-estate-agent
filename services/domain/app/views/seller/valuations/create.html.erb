@@ -47,6 +47,24 @@
     <% end %>
   </div>
 
+  <div class="mk-card-section">
+    <h2>Negotiate</h2>
+    <p class="mk-muted">
+      Think it's worth more? Counter, and I'll respond within what I'm authorized to
+      approve — anything above my ceiling (about <%= number_to_currency(@valuation.estimate, precision: 0) %>)
+      goes to a licensed broker.
+    </p>
+    <%= form_with url: seller_counters_path, method: :post, data: { turbo_frame: "negotiation-result" }, class: "mk-filters" do |f| %>
+      <%= hidden_field_tag :offer_id, @offer.id %>
+      <div class="mk-field">
+        <%= label_tag :counter_amount, "Your counter" %>
+        <%= number_field_tag :counter_amount, @valuation.estimate.to_i, step: 5000 %>
+      </div>
+      <%= f.submit "Counter", class: "mk-btn mk-btn--ghost" %>
+    <% end %>
+    <%= turbo_frame_tag "negotiation-result" %>
+  </div>
+
 <% else %>
   <div class="mk-card-section">
     <h2>A broker will follow up</h2>
