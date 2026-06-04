@@ -175,24 +175,39 @@ def _make_decide(deps: _Deps):
 
 def _make_send(deps: _Deps):
     def send(state: OrchestratorState) -> dict:
-        """Terminal: emit the Critic's cited, approved message.
+        """Terminal: emit a VERIFIED, cited message.
 
-        When a naturalizer (LLM) is configured, the approved message is rewritten
-        into natural prose AFTER verification — the glass box (claims, citations,
-        confidence) is unchanged, the facts are locked, and the rewrite must still
-        pass the Fair Housing rail or the verified text is kept.
+        When a naturalizer (LLM) is configured, it rewrites the already-verified
+        message into natural prose — but the rewrite is NEVER sent unverified. It
+        is RE-RUN through the SAME Critic (decompose -> retrieve -> entail ->
+        cite) and the Fair Housing rail; the rewrite is adopted only if it
+        re-verifies to a non-empty, non-escalating, FH-clean message (then its
+        citations are used). Otherwise the deterministic verified message is sent.
+        So every customer-facing claim is Critic-verified, LLM or not.
         """
         result = state["verification"]
         final = result.approved_message
+        citations = list(result.citations)
+
         if deps.naturalizer is not None and final and final.strip():
             candidate = naturalize_message(final, state.get("query"), deps.naturalizer)
-            if candidate and scan_output(candidate).allowed:
-                final = candidate
+            if candidate and candidate.strip() and candidate.strip() != final.strip():
+                recheck = deps.critic.verify(candidate, address=state.get("address"))
+                approved = recheck.approved_message
+                if (
+                    approved
+                    and approved.strip()
+                    and not recheck.escalate
+                    and scan_output(approved).allowed
+                ):
+                    final = approved  # the re-verified rewrite (stripped to supported claims)
+                    citations = list(recheck.citations)
+
         return {
             "outcome": "send",
             "final_message": final,
             "escalated": False,
-            "citations": list(result.citations),
+            "citations": citations,
         }
 
     return send

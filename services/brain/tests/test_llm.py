@@ -52,13 +52,18 @@ def test_naturalize_passes_through_empty_message():
 
 # --- wired into the orchestrator send path ------------------------------------
 
-def test_send_naturalizes_the_verified_message():
+def test_send_never_ships_an_unverified_rewrite():
+    """SAFETY (P1): a rewrite that introduces unsupported content ('low six
+    figures', 'fairly valued') fails the re-verification through the Critic, so
+    it is NOT sent — the deterministic verified message goes out instead."""
     rewrite = "Here's the gist: Atlas estimates this home in the low six figures, and it looks fairly valued."
     app = build_orchestrator(retriever=_fakes(), naturalizer=FakeGemini(response=rewrite))
     state = app.invoke({"address": COVERED, "query": "is it fairly priced?", "attempts": 0},
                        config={"configurable": {"thread_id": "nat-1"}})
     if state.get("outcome") == "send":
-        assert state["final_message"] == rewrite  # naturalized, not the feature dump
+        assert "low six figures" not in state["final_message"]  # the unverified rewrite is rejected
+        assert "fairly valued" not in state["final_message"]
+        assert state["final_message"].strip()  # a verified message is still sent
 
 def test_send_falls_back_to_verified_text_when_rewrite_trips_fair_housing():
     # A rewrite that trips the Fair Housing rail must NOT be sent; the verified
