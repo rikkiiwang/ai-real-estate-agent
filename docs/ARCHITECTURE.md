@@ -268,8 +268,11 @@ dashboard has full, resumable context.
   boundary as a type, not a guideline.
 - **Authorized band.** `AuthorizedBand(open_price, ceiling)` guards the price:
   in-band ⇒ proceed; over the ceiling ⇒ escalate to a human (never auto-offered).
-  This is the negotiation guardrail — currently a single-pass check, not a
-  counter-offer loop.
+  This is the negotiation guardrail. On the seller side it is now wired into a
+  **counter loop**: a seller counters the platform cash offer and the agent
+  auto-accepts within the band or escalates above the ceiling, recording each
+  counter as a `Negotiation`
+  (`services/domain/app/services/negotiation_response.rb`).
 - **Never signs.** A drafted offer is emitted with status `AWAITING_BROKER` and
   persisted via `DomainOfferSink → Domain.CreateOffer` into the Rails broker
   queue with its `form_json`. A licensed human reviews and signs in the dashboard.
@@ -279,10 +282,10 @@ over the `Closer.GenerateContract` RPC (`services/brain/src/brain/closer_service
 called by the Rails consumer marketplace when a broker signs an offer — it fills
 the promulgated TREC form and the marketplace delivers the draft in-app to both
 parties (with a Rails-side fallback fill if the brain is unreachable, so the flow
-never dead-ends). Still unwired: the `Negotiation` Rails model (counter-offer
-loop) and the `ClosingOrchestrator` (milestone → escrow/title/lender pings,
-`closing.py`) exist and are tested against fakes, but their real sinks/flows are
-not yet connected.
+never dead-ends). The `Negotiation` Rails model is now wired through the seller
+counter loop (above). Still unwired: the `ClosingOrchestrator` (milestone →
+escrow/title/lender pings, `closing.py`) exists and is tested against fakes, but
+its real sinks/flows are not yet connected.
 
 ---
 

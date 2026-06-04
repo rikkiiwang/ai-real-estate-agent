@@ -175,11 +175,15 @@ is not the same as it being *reachable by a user*:
 | **Lawyer** | **HITL handoff triggers** | ✅ reachable — legal / human-request handoffs + every offer broker-gated |
 
 **Bottom line:** the entire **Lawyer** pillar, per-address valuation, the full
-**buyer/seller journey**, and the **Closer's** TREC paperwork are now met and
-reachable in the live marketplace — including the previously-unreachable Closer,
-now exposed via `Closer.GenerateContract`. Still open: negotiation *counter*
-loops and closing orchestration (built, unwired), and news ingestion, SMS/email,
-and scheduling (genuinely unbuilt).
+**buyer/seller journey**, the **Closer's** TREC paperwork, and **in-band seller
+counter-negotiation** are now met and reachable in the live marketplace —
+including the previously-unreachable Closer (now exposed via
+`Closer.GenerateContract`) and the previously-unused `Negotiation` model (now
+driven by the seller counter loop). Still deferred: post-signature **closing
+orchestration** (built, sink raises `NotImplementedError`), and **news
+ingestion, SMS/email, and calendar scheduling** (genuinely unbuilt) — see the
+[Autonomy boundary](#autonomy-boundary--by-design-vs-deferred) for why the human
+broker signature is deliberate, not a gap.
 
 ---
 
@@ -209,10 +213,16 @@ scripts/               gen-proto.sh, smoke.sh
 
 ```bash
 make proto       # regenerate gRPC stubs (Go + Python + Ruby)
-make test        # Go + Python unit tests
+make test        # Go + Python brain unit tests
+make test-all    # adds the Rails domain suite (Go + brain + Rails)
 make smoke       # cross-language gRPC round-trip (gateway -> brain)
 make up          # full stack via docker compose (Postgres+pgvector + all services)
 ```
+
+Per-suite toolchains (the Makefile vars let you point at the right ones):
+- **Brain (Python):** needs a Python with `pytest` + the brain deps — `make brain-test PYTHON=/opt/anaconda3/bin/python3` if your `python3` lacks them (196 tests).
+- **Rails (domain):** needs Ruby 3.3.11 (`services/domain/.ruby-version`, via rbenv) + `bundle install` — `make rails-test` (tests run on SQLite; no Postgres needed).
+- **Go:** `make go-test` (build + vet + tests).
 
 Full stack in one command:
 
