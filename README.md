@@ -122,6 +122,31 @@ flowchart LR
 
 ---
 
+## Autonomy boundary — by design vs. deferred
+
+"Fully autonomous, lead-to-close" bundles two different things, and only one is
+a gap. Be explicit about which is which:
+
+- **Human-in-the-loop *by design* (not a missing feature).** A licensed broker
+  reviews and **signs** every offer; the agent fills *promulgated TREC blanks
+  only* and refuses to author clause language. This is deliberate: in Texas an
+  AI cannot practice law or act as the signing principal/broker (UPL +
+  licensing). "Fully autonomous through signature, no human" wouldn't be a
+  higher bar — it'd be a **compliance defect**. So the agent is autonomous up to
+  the legal line; the human gate at signing is the thesis, not a shortfall.
+- **Deferred integration seams (honest MVP gaps).** A live MLS feed, a real-LLM
+  entailer/generator, and the post-signature **closing orchestration**
+  (escrow/title/lender milestone pings — a sink that currently raises
+  `NotImplementedError`) are genuinely not production-integrated yet. They are
+  dependency-injected seams, documented below, not hand-waved.
+
+So the honest framing is **autonomous lead → *broker-ready* close**: capture →
+valuation → cited reasoning → in-band offer/negotiation → TREC contract draft,
+with a deliberate human signature gate, and post-signature closing + live-data
+integrations deferred.
+
+---
+
 ## Requirements coverage (honest self-assessment)
 
 Built against a four-pillar spec. The candid status — a feature *existing in code*
@@ -142,7 +167,7 @@ is not the same as it being *reachable by a user*:
 | Voice | Omnichannel (voice + SMS + email, one thread) | 🟠 voice session only; **SMS/email ❌** |
 | Voice | Dynamic scheduling (calendars) | ❌ missing |
 | Closer | TREC document generation (blanks-only, UPL-safe) | ✅ reachable — `Closer.GenerateContract` RPC; broker-sign delivers the draft in-app |
-| Closer | Automated negotiation within a price band | 🟠 band guardrail real (single-pass, no counter loop); `Negotiation` model unused |
+| Closer | Automated negotiation within a price band | ✅ reachable — seller can counter the cash offer; the agent auto-accepts within the authorized band (opening offer → valuation ceiling) or escalates above it, recording a `Negotiation` either way |
 | Closer | Closing orchestration (escrow/title/lender pings) | 🟡 built; real sink raises `NotImplementedError`; not wired |
 | **Lawyer** | **Fair Housing compliance** | ✅ reachable — runs every turn |
 | **Lawyer** | **Truth-verification (Critic/RAG)** | ✅ reachable — every turn (deterministic entailer; real-LLM deferred) |
