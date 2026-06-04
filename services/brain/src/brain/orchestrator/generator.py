@@ -24,12 +24,42 @@ and it never imports the Critic (the verifier stays separate from the writer).
 """
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Optional
 
 from brain.lawyer.fair_housing import scan_output
 from brain.rag import Retriever, valuation_facts
 from brain.valuation import estimate_value
+
+
+def naturalize_message(message: str, query: Optional[str], llm: object) -> str:
+    """Rewrite an ALREADY-VERIFIED, cited message into natural prose with an LLM.
+
+    Runs AFTER the Critic has approved + cited the deterministic draft, so the
+    glass box (claims, citations, confidence) is unchanged and the LLM cannot
+    introduce an un-sourced number — it is locked to the verified facts and only
+    improves the phrasing. Returns the original message unchanged on any LLM
+    failure (the caller additionally re-checks the Fair Housing rail).
+    """
+    if not message or not message.strip():
+        return message
+
+    prompt = (
+        "Rewrite the verified answer below so it reads naturally and "
+        "conversationally for a homebuyer, in 2-4 short sentences. Keep EVERY "
+        "number, dollar figure, and fact exactly as given — do not add, remove, "
+        "or change any fact, and do not use language about protected classes or "
+        "neighborhood 'desirability'.\n\n"
+        f"Customer question: {(query or 'Tell me about this home.').strip()}\n"
+        f"Verified answer: {message.strip()}\n\nNatural rewrite:"
+    )
+    try:
+        out = llm.generate(prompt, temperature=0.3, max_output_tokens=320).strip()
+        return out or message
+    except Exception as exc:  # noqa: BLE001 - any LLM failure -> keep the verified message
+        logging.getLogger(__name__).warning("LLM naturalize fell back to verified text: %s", exc)
+        return message
 
 
 @dataclass(frozen=True)

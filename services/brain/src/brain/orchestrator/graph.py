@@ -74,7 +74,9 @@ from brain.lawyer.handoff import (
 )
 from brain.rag import Embedder, FakeEmbedder, InMemoryVectorStore, Retriever, SourceStore
 
-from .generator import generate_grounded_draft
+from brain.llm import gemini_client_or_none
+
+from .generator import generate_grounded_draft, naturalize_message
 from .state import OrchestratorState
 
 # How many generate passes a single run may make before it must escalate. The
@@ -92,6 +94,7 @@ class _Deps:
     confidence_threshold: float
     high_dollar_band: float
     max_attempts: int
+    naturalizer: object = None  # Gemini client when GEMINI_API_KEY is set, else None
 
 
 # --------------------------------------------------------------------------- #
@@ -172,11 +175,22 @@ def _make_decide(deps: _Deps):
 
 def _make_send(deps: _Deps):
     def send(state: OrchestratorState) -> dict:
-        """Terminal: emit the Critic's cited, approved message."""
+        """Terminal: emit the Critic's cited, approved message.
+
+        When a naturalizer (LLM) is configured, the approved message is rewritten
+        into natural prose AFTER verification — the glass box (claims, citations,
+        confidence) is unchanged, the facts are locked, and the rewrite must still
+        pass the Fair Housing rail or the verified text is kept.
+        """
         result = state["verification"]
+        final = result.approved_message
+        if deps.naturalizer is not None and final and final.strip():
+            candidate = naturalize_message(final, state.get("query"), deps.naturalizer)
+            if candidate and scan_output(candidate).allowed:
+                final = candidate
         return {
             "outcome": "send",
-            "final_message": result.approved_message,
+            "final_message": final,
             "escalated": False,
             "citations": list(result.citations),
         }
@@ -381,6 +395,7 @@ def build_orchestrator(
     high_dollar_band: float = DEFAULT_HIGH_DOLLAR_BAND,
     max_attempts: int = DEFAULT_MAX_ATTEMPTS,
     checkpointer: Optional[Any] = None,
+    naturalizer: object = None,
 ):
     """Build and compile the orchestrator graph with injected dependencies.
 
@@ -423,6 +438,10 @@ def build_orchestrator(
         confidence_threshold=confidence_threshold,
         high_dollar_band=high_dollar_band,
         max_attempts=max_attempts,
+        # The LLM only naturalizes the already-verified message (post-Critic); it
+        # never affects retrieval/entailment, so the glass box is unchanged. None
+        # without GEMINI_API_KEY -> the deterministic message is sent as-is.
+        naturalizer=naturalizer or gemini_client_or_none(),
     )
 
     graph: StateGraph = StateGraph(OrchestratorState)
