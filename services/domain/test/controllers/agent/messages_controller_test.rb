@@ -47,9 +47,58 @@ class Agent::MessagesControllerTest < ActionDispatch::IntegrationTest
     listing = Property.create!(address: "500 Mueller Blvd", state: "listed", list_price: 700_000)
     fake = FakeClient.new(grounded)
     use_client(fake) do
-      post agent_messages_path, params: { query: "good deal?", listing_id: listing.id }, as: :turbo_stream
+      # Non-pricing question -> routes to the orchestrator with the listing address.
+      post agent_messages_path, params: { query: "tell me about the neighborhood", listing_id: listing.id }, as: :turbo_stream
     end
     assert_equal "500 Mueller Blvd", fake.last_args[:address]
+  end
+
+  class FakeValuation
+    def initialize(result)
+      @result = result
+    end
+
+    def valuation(**)
+      @result
+    end
+  end
+
+  def use_valuation(result)
+    Agent::MessagesController.valuation_client_factory = -> { FakeValuation.new(result) }
+    yield
+  ensure
+    Agent::MessagesController.valuation_client_factory = nil
+  end
+
+  def usable_valuation(estimate = 636_000)
+    BrainValuationClient::Result.new(sufficient_data: true, estimate: estimate,
+      low: estimate * 0.9, high: estimate * 1.1, facts: [], error: nil)
+  end
+
+  test "a pricing question on a listing answers with a real comparison, not a model dump" do
+    listing = Property.create!(address: "1 Mueller", state: "listed", region: "Mueller", list_price: 525_000, photo_urls: ["x"])
+    Comp.create!(region: "Mueller", address: "9 Comp", sale_price: 610_000, sale_date: Date.new(2026, 3, 1), source_name: "TCAD")
+
+    # No brain client_factory set: the price-check path must NOT call orchestrate.
+    use_valuation(usable_valuation(636_000)) do
+      post agent_messages_path, params: { query: "Is this fairly priced compared to nearby sales?", listing_id: listing.id }, as: :turbo_stream
+    end
+    assert_response :success
+    assert_match "This home is listed at", @response.body
+    assert_match "$525,000", @response.body              # asking price
+    assert_match "$636,000", @response.body              # Atlas estimate
+    assert_match(/below/i, @response.body)               # asking below estimate
+    assert_match "looks well-priced", @response.body     # plain verdict
+    assert_match "How Atlas reached this", @response.body # detail demoted to reasoning
+    assert_no_match(/contributes \$/, @response.body)     # not the raw attribution dump in the headline
+  end
+
+  test "a non-pricing question on a listing still uses the orchestrator" do
+    listing = Property.create!(address: "1 Mueller", state: "listed", region: "Mueller", list_price: 525_000)
+    use_client(FakeClient.new(grounded)) do
+      post agent_messages_path, params: { query: "How many bedrooms does it have?", listing_id: listing.id }, as: :turbo_stream
+    end
+    assert_match "competitively priced", @response.body # the orchestrator's (fake) message
   end
 
   test "an escalated reply renders the broker handoff card" do

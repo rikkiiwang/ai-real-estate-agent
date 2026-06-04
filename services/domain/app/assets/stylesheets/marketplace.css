@@ -167,6 +167,8 @@ body.mk {
 .agent-msg--user .agent-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
 .agent-bubble p { margin: 0 0 6px; } .agent-bubble p:last-child { margin: 0; }
 .agent-ctx, .agent-conf { font-size: 11px; color: var(--ink-soft); margin-top: 3px; }
+.agent-verdict { margin: 8px 0 0; }
+.agent-verdict .mk-badge { font-size: 11px; }
 .agent-cite { color: var(--ink-soft); font-size: 12px; }
 .agent-search-cite { display: block; margin-top: 6px; }
 .agent-link { color: var(--accent); font-weight: 600; text-decoration: none; display: inline-block; margin-top: 4px; }
