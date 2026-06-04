@@ -1,0 +1,62 @@
+<%# pc = PriceCheck::Result. A plain-language price verdict comparing the asking
+    price to Atlas's estimate and to nearby comps; model attributions live in the
+    collapsible reasoning, not the headline. %>
+<div class="agent-msg agent-msg--bot">
+  <div class="agent-bubble">
+    <p>
+      This home is listed at <strong><%= number_to_currency(pc.asking, precision: 0) %></strong>.
+      Atlas estimates its value at <strong><%= number_to_currency(pc.estimate, precision: 0) %></strong>
+      (range <%= number_to_currency(pc.low, precision: 0) %>–<%= number_to_currency(pc.high, precision: 0) %>) —
+      <% if pc.vs_estimate_word == "in line with" %>
+        so the asking is right around my estimate.
+      <% else %>
+        so the asking is about <strong><%= pc.vs_estimate_pct %>% <%= pc.vs_estimate_word %></strong> my estimate.
+      <% end %>
+    </p>
+
+    <% if pc.comp_median %>
+      <p>
+        The nearest recent sales run around <strong><%= number_to_currency(pc.comp_median, precision: 0) %></strong> (median),
+        putting the asking <strong><%= pc.vs_comps_word %></strong> comparable sales.
+      </p>
+    <% end %>
+
+    <p class="agent-verdict">
+      <% badge = pc.verdict == "looks well-priced" ? "mk-badge--good" : (pc.verdict == "priced at a premium" ? "mk-badge--warn" : "mk-badge--good") %>
+      <span class="mk-badge <%= badge %>"><%= pc.verdict %></span>
+    </p>
+  </div>
+
+  <details class="agent-reasoning">
+    <summary>How Atlas reached this</summary>
+
+    <ul class="agent-claims">
+      <li>
+        <span class="agent-claim-text">Asking price <%= number_to_currency(pc.asking, precision: 0) %></span>
+        <span class="agent-cite">— this listing</span>
+      </li>
+      <li>
+        <span class="agent-claim-text">Atlas estimate <%= number_to_currency(pc.estimate, precision: 0) %>
+          (<%= number_to_currency(pc.low, precision: 0) %>–<%= number_to_currency(pc.high, precision: 0) %>)</span>
+        <span class="agent-cite">— <%= source_label("valuation_run") %></span>
+      </li>
+      <% if pc.comps.any? %>
+        <li>
+          <span class="agent-claim-text">Nearby sales:
+            <%= pc.comps.map { |c| number_to_currency(c.sale_price, precision: 0) }.to_sentence %></span>
+          <span class="agent-cite">— <%= pc.comps.first.source_name %></span>
+        </li>
+      <% end %>
+    </ul>
+
+    <% if pc.facts.any? %>
+      <div class="agent-signals" style="flex-direction: column; gap: 4px;">
+        <span class="mk-muted" style="font-weight:600;">What drives the estimate</span>
+        <% pc.facts.first(5).each do |f| %>
+          <span><%= f.description %></span>
+        <% end %>
+      </div>
+    <% end %>
+    <p class="agent-caveat">Estimate is from an uncalibrated model on sample data; comps are recorded sales. Not a formal appraisal.</p>
+  </details>
+</div>

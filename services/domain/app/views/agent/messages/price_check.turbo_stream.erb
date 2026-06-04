@@ -1,0 +1,11 @@
+<%# A pricing question on a listing: echo it, then answer with a real comparison. %>
+<%= turbo_stream.append "agent-messages" do %>
+  <div class="agent-msg agent-msg--user">
+    <div class="agent-bubble"><%= @query %></div>
+    <% if @listing %><div class="agent-ctx">about <%= @listing.address %></div><% end %>
+  </div>
+<% end %>
+
+<%= turbo_stream.append "agent-messages" do %>
+  <%= render "agent/messages/price_check", pc: @price_check, listing: @listing %>
+<% end %>
