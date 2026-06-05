@@ -163,7 +163,7 @@ integrations deferred.
 Built against a four-pillar spec. The candid status — a feature *existing in code*
 is not the same as it being *reachable by a user*:
 
-✅ done & reachable · 🟡 built but **not reachable** (works in tests, no user/API surface) · 🟠 partial / synthetic · ❌ missing
+✅ done & reachable · 🟡 built but **not reachable** (works in tests, no user/API surface) · 🟠 partial / synthetic · ⏸ deferred by design (out of the MVP scope per the spec) · ❌ missing
 
 | Pillar | Requirement | Status |
 |---|---|---|
@@ -175,15 +175,17 @@ is not the same as it being *reachable by a user*:
 | Consumer | Market intelligence (real, dated) | ✅ reachable — live RentCast market snapshot per ZIP, shown with its as-of date |
 | Brain | Multi-source ingestion (MLS + TCAD + news) | 🟡 **real listing data via the RentCast API** (a third-party listing-data feed, not a direct MLS connection; periodically refreshed) + TCAD/GIS + synthetic-trained AVM; **direct MLS + news ingestion ❌** |
 | Brain | Visual property analysis (photos) | 🟡 real design (Gemini structured output), model unbound + unexposed in prod |
-| Voice | Intent triaging (looky-loo vs high-intent) | ✅ real logic (voice service); voice app not deployed |
-| Voice | Omnichannel (voice + SMS + email, one thread) | 🟠 voice session only; **SMS/email ❌** |
-| Voice | Dynamic scheduling (calendars) | ❌ missing |
+| Voice (engagement pillar¹) | Intent triaging — looky-loo vs high-intent (R5) | ✅ real triage logic in the `voice` service, exercised in the single-channel MVP (a separate voice/telephony app isn't required to meet R5) |
+| Voice (engagement pillar¹) | One coherent channel, extensible to voice/SMS/email (R6) | ✅ met — the chat / agent sidebar **is** the channel; multi-channel voice + SMS/email is **⏸ deferred by design** (the spec scopes the MVP as single-channel), with the session seam already built so it adds without rework |
+| Voice (engagement pillar¹) | Tour / inspection scheduling vs availability (R7) | ❌ not built — the one genuine gap in this pillar |
 | Closer | TREC document generation (blanks-only, UPL-safe) | ✅ reachable — `Closer.GenerateContract` RPC; broker-sign delivers the draft in-app |
 | Closer | Automated negotiation within a price band | ✅ reachable — seller can counter the cash offer; the agent auto-accepts within the authorized band (opening offer → valuation ceiling) or escalates above it, recording a `Negotiation` either way |
 | Closer | Closing orchestration (escrow/title/lender pings) | 🟡 built; real sink raises `NotImplementedError`; not wired |
 | **Lawyer** | **Fair Housing compliance** | ✅ reachable — runs every turn |
 | **Lawyer** | **Truth-verification (Critic/RAG)** | ✅ reachable — every turn (deterministic entailer; real-LLM deferred) |
 | **Lawyer** | **HITL handoff triggers** | ✅ reachable — legal / human-request handoffs + every offer broker-gated |
+
+> ¹ "Voice" is the spec's name for the **engagement & qualification** pillar, not literal telephony. The spec scopes it as *thin*: a single coherent conversation channel for the MVP, **architected** so voice/SMS/email drop in later. So intent triage (R5) and the single channel (R6) are met; live voice + SMS/email are deferred by design, and only tour scheduling (R7) is an actual gap.
 
 **Bottom line:** the entire **Lawyer** pillar, per-address valuation, the full
 **buyer/seller journey**, the **Closer's** TREC paperwork, and **in-band seller
