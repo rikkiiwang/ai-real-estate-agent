@@ -5,14 +5,20 @@
 # request. RentCast does not license photos, so imported listings reuse the
 # sample imagery (clearly labeled with their real RentCast provenance).
 class RentCastImport
-  # Verified, reachable sample photos (RentCast provides no images).
+  # Verified, reachable sample photos (RentCast provides no images). A dozen so a
+  # large import doesn't repeat the same handful of pictures across every card.
   PHOTOS = [
     "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=900&q=70",
     "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=70",
     "https://images.unsplash.com/photo-1576941089067-2de3c901e126?w=900&q=70",
     "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=900&q=70",
     "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=900&q=70",
-    "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=900&q=70"
+    "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=900&q=70",
+    "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=900&q=70",
+    "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=900&q=70",
+    "https://images.unsplash.com/photo-1599809275671-b5942cabc7a2?w=900&q=70",
+    "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=900&q=70",
+    "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=900&q=70"
   ].freeze
 
   SOURCE = "RentCast (live listing data)".freeze
@@ -29,7 +35,7 @@ class RentCastImport
 
   Result = Struct.new(:imported, :snapshots, keyword_init: true)
 
-  def self.call(client: RentCastClient.new, listing_limit: 20, market_zips: nil)
+  def self.call(client: RentCastClient.new, listing_limit: 200, market_zips: nil)
     new(client).call(listing_limit: listing_limit, market_zips: market_zips)
   end
 
@@ -37,7 +43,7 @@ class RentCastImport
     @client = client
   end
 
-  def call(listing_limit: 20, market_zips: nil)
+  def call(listing_limit: 200, market_zips: nil)
     return Result.new(imported: 0, snapshots: 0) unless @client.configured?
 
     rows = @client.sale_listings(limit: listing_limit).select { |r| residential?(r) }
