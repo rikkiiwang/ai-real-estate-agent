@@ -33,7 +33,7 @@ class RentCastImport
   ].freeze
   MAX_MARKET_ZIPS = 12
 
-  Result = Struct.new(:imported, :snapshots, keyword_init: true)
+  Result = Struct.new(:imported, :snapshots, :retired, keyword_init: true)
 
   def self.call(client: RentCastClient.new, listing_limit: 200, market_zips: nil)
     new(client).call(listing_limit: listing_limit, market_zips: market_zips)
@@ -44,10 +44,13 @@ class RentCastImport
   end
 
   def call(listing_limit: 200, market_zips: nil)
-    return Result.new(imported: 0, snapshots: 0) unless @client.configured?
+    return Result.new(imported: 0, snapshots: 0, retired: 0) unless @client.configured?
+
+    run_at = Time.current
+    prior_active = rentcast_active.count
 
     rows = @client.sale_listings(limit: listing_limit).select { |r| residential?(r) }
-    imported = rows.each_with_index.count { |row, i| upsert_listing(row, i) }
+    imported = rows.each_with_index.count { |row, i| upsert_listing(row, i, run_at) }
 
     # Snapshot the curated ZIPs first, then any extra ZIPs the listings surfaced,
     # deduped and capped. A ZIP with no market data is simply skipped.
@@ -55,16 +58,34 @@ class RentCastImport
     zips = (Array(market_zips.presence || DEFAULT_MARKET_ZIPS) + listing_zips).uniq.first(MAX_MARKET_ZIPS)
     snapshots = zips.count { |zip| upsert_market(zip) }
 
-    Result.new(imported: imported, snapshots: snapshots)
+    retired = retire_stale(run_at, prior_active, imported)
+
+    Result.new(imported: imported, snapshots: snapshots, retired: retired)
   end
 
   private
+
+  def rentcast_active
+    Property.where("source_name LIKE ?", "RentCast%").where(retired_at: nil)
+  end
 
   def residential?(row)
     row["price"].to_i.positive? && row["bedrooms"] && row["bathrooms"] && row["squareFootage"].to_i.positive?
   end
 
-  def upsert_listing(row, index)
+  # Retire RentCast listings that were NOT refreshed this run (i.e. they dropped
+  # out of the active feed — sold or delisted), so they stop being browsable and
+  # labelled "Live listing". Guarded against a thin/transient feed: if this run
+  # refreshed fewer than half of what was active, skip retirement rather than
+  # wipe the catalog on an API hiccup.
+  def retire_stale(run_at, prior_active, imported)
+    return 0 if prior_active.positive? && imported < prior_active / 2
+
+    rentcast_active.where("captured_at < ?", run_at)
+                   .update_all(retired_at: Time.current, updated_at: Time.current)
+  end
+
+  def upsert_listing(row, index, run_at)
     property = Property.find_or_initialize_by(address: row["formattedAddress"])
     property.assign_attributes(
       state: "listed",
@@ -80,7 +101,8 @@ class RentCastImport
       photo_urls: [PHOTOS[index % PHOTOS.size], PHOTOS[(index + 2) % PHOTOS.size]],
       source_name: SOURCE,
       source_url: "https://www.rentcast.io",
-      captured_at: Time.current
+      captured_at: run_at,
+      retired_at: nil # a listing that reappears in the feed is reactivated
     )
     property.save!
   rescue ActiveRecord::RecordInvalid => e

@@ -89,6 +89,51 @@ class RentCastImportTest < ActiveSupport::TestCase
     end
   end
 
+  def four_listings(*zips_prices)
+    zips_prices.each_with_index.map do |(zip, price), i|
+      listing(addr: "#{i} Feed St, Austin, TX #{zip}", price: price, beds: 3, baths: 2, sqft: 1500, zip: zip)
+    end
+  end
+
+  test "retires RentCast listings that drop out of the active feed" do
+    full = four_listings(["78704", 700_000], ["78702", 600_000], ["78723", 500_000], ["78745", 800_000])
+    RentCastImport.new(FakeClient.new(listings: full)).call
+    assert_equal 4, Property.browsable.count
+
+    # Next import: the 500k home is gone from the feed. It must be retired —
+    # no longer browsable, and flagged retired_at — not silently kept as "Live".
+    shrunk = full.reject { |l| l["price"] == 500_000 }
+    result = RentCastImport.new(FakeClient.new(listings: shrunk)).call
+    assert_equal 1, result.retired
+    assert_equal 3, Property.browsable.count
+    gone = Property.find_by(address: "2 Feed St, Austin, TX 78723")
+    assert_not_nil gone.retired_at
+    assert_not_includes Property.browsable, gone
+  end
+
+  test "a reappearing listing is reactivated (retired_at cleared)" do
+    full = four_listings(["78704", 700_000], ["78702", 600_000], ["78723", 500_000], ["78745", 800_000])
+    RentCastImport.new(FakeClient.new(listings: full)).call
+    RentCastImport.new(FakeClient.new(listings: full.first(3))).call # 800k drops, retired
+    gone = Property.find_by(address: "3 Feed St, Austin, TX 78745")
+    assert_not_nil gone.retired_at
+
+    RentCastImport.new(FakeClient.new(listings: full)).call # it's back in the feed
+    assert_nil gone.reload.retired_at
+    assert_includes Property.browsable, gone
+  end
+
+  test "a thin/transient feed does NOT mass-retire the catalog" do
+    full = four_listings(["78704", 700_000], ["78702", 600_000], ["78723", 500_000], ["78745", 800_000])
+    RentCastImport.new(FakeClient.new(listings: full)).call
+
+    # An API hiccup returns just one listing (< half of 4). Retirement is skipped
+    # so the other three stay browsable rather than vanishing.
+    result = RentCastImport.new(FakeClient.new(listings: full.first(1))).call
+    assert_equal 0, result.retired
+    assert_equal 4, Property.browsable.count
+  end
+
   test "an unconfigured client imports nothing" do
     unconfigured = Class.new { def configured? = false }.new
     assert_equal 0, RentCastImport.new(unconfigured).call.imported

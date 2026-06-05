@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_04_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_000001) do
   create_table "audit_events", force: :cascade do |t|
     t.text "claim"
     t.string "content_hash", null: false
@@ -154,6 +154,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_000001) do
     t.decimal "lng", precision: 10, scale: 6
     t.json "photo_urls"
     t.string "region"
+    t.datetime "retired_at"
     t.string "source_name"
     t.string "source_url"
     t.integer "sqft"
@@ -162,6 +163,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_000001) do
     t.integer "year_built"
     t.index ["list_price"], name: "index_properties_on_list_price"
     t.index ["region"], name: "index_properties_on_region"
+    t.index ["retired_at"], name: "index_properties_on_retired_at"
   end
 
   create_table "visitors", force: :cascade do |t|
