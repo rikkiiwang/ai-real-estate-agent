@@ -12,6 +12,10 @@ BRAIN_BIND="[::]:${BRAIN_PORT}"
 GATEWAY_ADDR=":${GW_PORT}"
 BRAIN_ADDR="localhost:${BRAIN_PORT}"
 export GATEWAY_AUTH_SECRET="${GATEWAY_AUTH_SECRET:-dev-smoke-secret}"
+# The brain needs a Python with grpc + the brain deps; the stdlib python3 may
+# lack them. Honour the same PYTHON override the Makefile uses
+# (PYTHON=/opt/anaconda3/bin/python3 make smoke), defaulting to python3.
+PYTHON="${PYTHON:-python3}"
 
 cleanup() {
   [[ -n "${BRAIN_PID:-}" ]] && kill "$BRAIN_PID" 2>/dev/null || true
@@ -20,7 +24,7 @@ cleanup() {
 trap cleanup EXIT
 
 echo "→ starting Python brain"
-( cd services/brain && BRAIN_BIND="$BRAIN_BIND" PYTHONPATH=src python3 -m brain.server ) &
+( cd services/brain && BRAIN_BIND="$BRAIN_BIND" PYTHONPATH=src "$PYTHON" -m brain.server ) &
 BRAIN_PID=$!
 
 echo "→ starting Go gateway"
