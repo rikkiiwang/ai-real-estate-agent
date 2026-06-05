@@ -58,6 +58,29 @@ class RentCastImportTest < ActiveSupport::TestCase
     assert_equal Date.new(2026, 6, 4), snap.as_of
   end
 
+  test "snapshots the curated ZIP set even for ZIPs with no listing in the batch" do
+    # One listing in 78704, but market data exists for curated ZIPs that have NO
+    # listing here (78702, 78731) — they must still be snapshotted for the banner.
+    mkt = { "medianPrice" => 600_000, "averagePricePerSquareFoot" => 400.0,
+            "totalListings" => 100, "newListings" => 5, "averageDaysOnMarket" => 30.0,
+            "lastUpdatedDate" => "2026-06-04T00:00:00.000Z" }
+    client = FakeClient.new(
+      listings: [listing(addr: "1 Real St, Austin, TX 78704", price: 700_000, beds: 3, baths: 2, sqft: 1800, zip: "78704")],
+      markets: { "78704" => mkt, "78702" => mkt, "78731" => mkt }
+    )
+    result = RentCastImport.new(client).call
+    assert_equal 3, result.snapshots
+    assert_equal %w[78702 78704 78731], MarketSnapshot.order(:zip).pluck(:zip)
+  end
+
+  test "an explicit market_zips list overrides the curated default" do
+    mkt = { "medianPrice" => 500_000, "lastUpdatedDate" => "2026-06-04T00:00:00.000Z" }
+    client = FakeClient.new(listings: [], markets: { "78745" => mkt, "78704" => mkt })
+    result = RentCastImport.new(client).call(market_zips: ["78745"])
+    assert_equal 1, result.snapshots
+    assert_equal ["78745"], MarketSnapshot.pluck(:zip)  # 78704 not requested -> not snapshotted
+  end
+
   test "is idempotent (re-import upserts, no duplicates)" do
     client = FakeClient.new(listings: [listing(addr: "1 Real St, Austin, TX 78704", price: 700_000, beds: 3, baths: 2, sqft: 1800, zip: "78704")])
     RentCastImport.new(client).call
