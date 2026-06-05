@@ -17,12 +17,17 @@ wording rail, the confidence score, and the human-handoff decision.
 
 ## ▶ Try it (for reviewers)
 
-| Surface | URL | What it is |
-|---|---|---|
-| **Consumer marketplace** | **https://are-domain.fly.dev** | The front door: browse/filter Austin listings, sign in (name + email), and use the **Buyer** and **Seller** workspaces with the agent sidebar — get a cited decision bundle, make an offer, or get a cash offer. **Start here.** |
-| **Consumer chat ("the glass box")** | https://are-chat.fly.dev | A focused standalone view: ask about a home and watch the agent reason live — grounded answer, cited claims, Fair Housing rail, human handoff. |
-| Broker console | https://are-domain.fly.dev/broker/dashboard | The human-in-the-loop back office: handoff queue + offers awaiting a broker's signature; **Sign & deliver contract** generates the TREC draft (HTTP basic auth). |
-| Public REST API | https://are-gateway.fly.dev | `GET /valuation?address=` and `POST /orchestrate` (both need a Bearer token); `GET /health` is open. |
+It's **one platform** — buyer, seller, broker, and the agent all in the same
+app. There's nothing else to open:
+
+### → **https://are-domain.fly.dev** — start (and stay) here
+
+Sign in with a name + email, then:
+
+- **Browse / filter** Austin listings — real RentCast listing data, with a live market snapshot per ZIP.
+- **Buyer + agent sidebar** — ask about a home and watch Atlas reason live: a grounded answer with a citation behind every figure, confidence + coverage signals, a Fair Housing rail, and a human handoff when it should. *The "glass box" **is** the sidebar — no separate app.*
+- **Seller** — a cited valuation + platform cash offer, with a counter-negotiation loop.
+- **Broker review** — sign in as **`broker@atlas.example`** to get an extra **Dashboard** tab: the handoff queue + offers awaiting signature; **Sign & deliver contract** generates the TREC draft. Same passwordless login as everyone — a server-side allowlist is the real boundary, not a separate door.
 
 **Things to try** (they exercise the safety design, not just a happy path):
 
@@ -34,6 +39,8 @@ wording rail, the confidence score, and the human-handoff decision.
 > The stack runs on always-on Fly machines; if a service was scaled to zero to
 > save cost, the first request wakes it (a few seconds). Everything is also
 > runnable locally — see [Run it locally](#run-it-locally).
+
+<sub>**For the architecture, not the product:** a public REST gateway at `https://are-gateway.fly.dev` exposes the polyglot path directly — `GET /valuation?address=` and `POST /orchestrate` (Bearer token), with an open `GET /health` — so you can hit the Go → Python gRPC round-trip without the UI. (A standalone "glass box" chat at `are-chat.fly.dev` is still deployed but superseded by the in-app sidebar above.)</sub>
 
 ---
 
