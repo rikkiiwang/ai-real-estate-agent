@@ -29,9 +29,10 @@
 
     <%# Omnichannel: reach Atlas on any channel — one continuous thread (R6). %>
     <div class="agent-channels">
-      <%= select_tag :channel, options_for_select(Channel::CHANNELS.map { |c| [c.upcase, c] }, "chat"),
+      <%= select_tag :channel,
+            options_for_select(Channel::CHANNELS.map { |c| [ChannelTransport.out_of_band?(c) ? "#{c.upcase} (simulated)" : c.upcase, c] }, "chat"),
             data: { agent_sidebar_target: "channel" }, class: "agent-channel-select" %>
-      <span class="agent-channels-note">one thread, every channel · simulated transport</span>
+      <span class="agent-channels-note">one thread · Voice &amp; Chat live, SMS/Email simulated (provider seam ready)</span>
     </div>
 
     <div class="agent-input-row">

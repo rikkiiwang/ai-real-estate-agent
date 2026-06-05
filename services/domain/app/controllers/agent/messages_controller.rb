@@ -27,6 +27,9 @@ module Agent
       else
         # Everything else is a grounded orchestrator turn (the glass box).
         @result = brain_client.orchestrate(query: @query, address: @address, thread_id: agent_thread_id)
+        # On an out-of-band channel (SMS/Email) the reply is "delivered" through
+        # the transport seam — simulated until a real carrier is configured.
+        @delivery = ChannelTransport.deliver(channel: @channel, to: current_visitor&.email || "buyer", body: @result.message)
       end
 
       respond_to do |format|

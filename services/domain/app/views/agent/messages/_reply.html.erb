@@ -4,6 +4,9 @@
   <div class="agent-bubble">
     <% if local_assigns[:channel].present? && channel != "chat" %><span class="mk-badge agent-channel"><%= channel %></span><% end %>
     <%= simple_format(result.message) %>
+    <% if local_assigns[:delivery].present? %>
+      <div class="agent-ctx">📤 delivered via <%= channel %> · <strong><%= delivery.status %></strong><%= " — #{delivery.note}" if delivery.note.present? %></div>
+    <% end %>
 
     <% if result.handoff? && result.handoff %>
       <div class="agent-handoff">
