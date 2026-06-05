@@ -65,11 +65,29 @@ class ConciergeService
   end
 
   def agent_reply(channel:, query:)
-    result = @brain.orchestrate(query: query, thread_id: "concierge-#{@conversation.id}")
-    append(channel: channel, role: "agent", body: result.message)
+    result = @brain.orchestrate(
+      query: query,
+      address: @conversation.signals["address"].to_s, # ground when an address is known
+      thread_id: "concierge-#{@conversation.id}"
+    )
+    body = result.message.to_s.strip
+    body = fallback_reply(result) if body.empty?
+    append(channel: channel, role: "agent", body: body)
   rescue StandardError => e
     Rails.logger.warn("[concierge] agent reply failed: #{e.class}: #{e.message}")
     nil
+  end
+
+  # The grounded agent intentionally returns an empty message for open-ended
+  # chit-chat it can't source ("no source -> no claim"). Rather than show a blank
+  # bubble, reply with a useful next step so the chatbot always moves forward.
+  def fallback_reply(result)
+    if result.respond_to?(:escalated) && result.escalated
+      "Let me bring in a licensed broker to take this further — they'll follow up shortly."
+    else
+      "Happy to help! Tell me an address or a neighborhood — plus your budget or must-haves — " \
+        "and I'll pull cited specifics: price vs. nearby sales, the monthly payment, and the local market."
+    end
   end
 
   # Reuse the existing broker queue: a Lead carries the triaged intent; a
