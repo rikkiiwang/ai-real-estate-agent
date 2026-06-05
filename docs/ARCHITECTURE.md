@@ -299,8 +299,9 @@ two processes from one image:
   lightweight visitor login, the Buyer and Seller workspaces, the context-aware
   agent sidebar that calls `Conversation.Orchestrate`, and broker-signed contract
   delivery) **and** the **broker dashboard** at `/broker/dashboard` (the HITL back
-  office: handoff queue + offers awaiting signature), behind HTTP basic auth in
-  production. Sole DB migrator on boot.
+  office: handoff queue + offers awaiting signature), reached through the SAME
+  consumer login and gated by a server-side broker allowlist. Sole DB migrator
+  on boot.
 - **grpc** — the `Domain` gRPC service (`CreateLead`, `EnqueueHandoff`,
   `CreateOffer`) the brain calls; waits for the web service's migration.
 
@@ -322,9 +323,12 @@ happened, with the Critic's per-claim rows, for compliance review.
   login (name + email, no password) scopes the buyer/seller workspaces — a
   session identity for context, not a security boundary. The agent sidebar runs
   server-side, so the browser never reaches the brain directly.
-- **Broker dashboard.** Path-scoped under `/broker` (not the root) behind
-  env-gated HTTP basic auth (open in dev/test when unset), so it stays protected
-  on the public app without affecting local runs.
+- **Broker dashboard.** Path-scoped under `/broker` (not the root). Brokers use
+  the SAME passwordless consumer login as everyone else; a `before_action
+  :require_broker` admits only visitors whose email is on the broker allowlist
+  (config `broker_emails`, extended by the `BROKER_EMAILS` env var) and redirects
+  everyone else. The server-side check is the real boundary — the "Dashboard" tab
+  is merely hidden for non-brokers, never the gate.
 
 ---
 

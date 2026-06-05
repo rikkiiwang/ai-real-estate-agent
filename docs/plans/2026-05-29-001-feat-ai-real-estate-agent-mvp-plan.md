@@ -1,7 +1,7 @@
 ---
 title: "feat: AI Real Estate Agent MVP — two-sided autonomous agent for Austin"
 type: feat
-status: active
+status: completed
 date: 2026-05-29
 origin: docs/brainstorms/2026-05-29-ai-real-estate-agent-requirements.md
 ---
