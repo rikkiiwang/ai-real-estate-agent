@@ -176,7 +176,7 @@ is not the same as it being *reachable by a user*:
 | Brain | Multi-source ingestion (MLS + TCAD + news) | 🟡 **real listing data via the RentCast API** (a third-party listing-data feed, not a direct MLS connection; periodically refreshed) + TCAD/GIS + synthetic-trained AVM; **direct MLS + news ingestion ❌** |
 | Brain | Visual property analysis (photos) | 🟡 real design (Gemini structured output), model unbound + unexposed in prod |
 | Voice (engagement pillar¹) | Intent triaging — looky-loo vs high-intent (R5) | ✅ reachable — triaged on the **visitor profile** from **neutral signals only** (financing pre-approval + ≤30-day move; equal-service: protected-class inputs are never stored or consulted); high-intent auto-routes to the broker queue and shows in the broker's **High-intent buyers** list |
-| Voice (engagement pillar¹) | Omnichannel: one thread across Voice/SMS/Email/Chat (R6) | ✅ reachable — built into the **Ask Atlas chatbot**: a channel switcher (Voice/SMS/Email/Chat) + **🎙 voice input** (browser speech-to-text) on one continuous thread, with per-channel AI disclosure (voice mandatory). Transport is **simulated** behind a swappable adapter (⏸ real carriers deferred) |
+| Voice (engagement pillar¹) | Omnichannel: one thread across Voice/SMS/Email/Chat (R6) | ✅ reachable — built into the **Ask Atlas chatbot**: a channel switcher + **🎙 voice input** (browser speech-to-text) on one continuous thread, per-channel AI disclosure. **Voice & Chat are live**; **SMS/Email run on a simulated transport** behind a real `ChannelTransport` seam — drop-in `TwilioSms` / `SendgridEmail` entry points auto-engage once their keys are set (⏸ deferred) |
 | Voice (engagement pillar¹) | Tour / inspection scheduling vs availability (R7) | ❌ not built — the one genuine gap in this pillar |
 | Closer | TREC document generation (blanks-only, UPL-safe) | ✅ reachable — `Closer.GenerateContract` RPC; broker-sign delivers the draft in-app |
 | Closer | Automated negotiation within a price band | ✅ reachable — seller can counter the cash offer; the agent auto-accepts within the authorized band (opening offer → valuation ceiling) or escalates above it, recording a `Negotiation` either way |
@@ -307,5 +307,5 @@ Two-sided MVP built across Go/Python/Rails, deployed live on Fly.io. The
 LangGraph orchestrator is exposed end-to-end through the consumer **marketplace**
 (agent sidebar) and **chat** app and the gateway `/orchestrate` API; the Closer's
 TREC paperwork is reachable via `Closer.GenerateContract`. Tests: Go green,
-Python brain **197** passing, Rails **191** passing. See `docs/ARCHITECTURE.md`
+Python brain **197** passing, Rails **196** passing. See `docs/ARCHITECTURE.md`
 for design and `docs/plans/` for the plans and remaining deferred seams.

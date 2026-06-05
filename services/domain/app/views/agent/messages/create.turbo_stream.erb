@@ -12,6 +12,6 @@
 
 <% if @result %>
   <%= turbo_stream.append "agent-messages" do %>
-    <%= render "agent/messages/reply", result: @result, channel: @channel %>
+    <%= render "agent/messages/reply", result: @result, channel: @channel, delivery: @delivery %>
   <% end %>
 <% end %>

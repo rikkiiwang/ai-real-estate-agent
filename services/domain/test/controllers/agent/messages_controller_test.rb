@@ -172,12 +172,21 @@ class Agent::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/taking a moment/i, @response.body)
   end
 
-  test "a non-chat channel tags the message bubble (omnichannel, one thread)" do
+  test "a non-chat channel tags the message bubble and shows simulated delivery (SMS/Email seam)" do
     use_client(FakeClient.new(grounded)) do
       post agent_messages_path, params: { query: "hi", channel: "sms" }, as: :turbo_stream
     end
     assert_match(/agent-channel/, @response.body)
     assert_match(/sms/, @response.body)
+    assert_match(/delivered via sms/i, @response.body)
+    assert_match(/simulated/i, @response.body) # honest: no live carrier
+  end
+
+  test "a chat reply has no out-of-band delivery note" do
+    use_client(FakeClient.new(grounded)) do
+      post agent_messages_path, params: { query: "hi", channel: "chat" }, as: :turbo_stream
+    end
+    assert_no_match(/delivered via/i, @response.body)
   end
 
   test "a signed-in buyer's pre-approval + near-term move flips their profile to high-intent (R5)" do
