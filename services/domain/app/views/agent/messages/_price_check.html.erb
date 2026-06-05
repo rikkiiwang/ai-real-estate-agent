@@ -49,14 +49,24 @@
       <% end %>
     </ul>
 
-    <% if pc.facts.any? %>
+    <% drivers = pc.facts.sort_by { |f| -f.contribution.to_f.abs }.first(5) %>
+    <% if drivers.any? %>
       <div class="agent-signals" style="flex-direction: column; gap: 4px;">
-        <span class="mk-muted" style="font-weight:600;">What drives the estimate</span>
-        <% pc.facts.first(5).each do |f| %>
-          <span><%= f.description %></span>
+        <span class="mk-muted" style="font-weight:600;">What drives this estimate</span>
+        <span class="mk-muted" style="font-size: 0.85em;">How much each feature of <em>this</em> home adds to or subtracts from the estimate:</span>
+        <% drivers.each do |f| %>
+          <% c = f.contribution.to_f %>
+          <span class="agent-driver">
+            <span class="agent-claim-text"><%= f.description %></span>
+            <% if c.abs >= 1 %>
+              <span class="mk-badge <%= c >= 0 ? "mk-badge--good" : "mk-badge--warn" %>">
+                <%= c >= 0 ? "+" : "−" %><%= number_to_currency(c.abs, precision: 0) %>
+              </span>
+            <% end %>
+          </span>
         <% end %>
       </div>
     <% end %>
-    <p class="agent-caveat">Estimate is from an uncalibrated model on sample data; comps are recorded sales. Not a formal appraisal.</p>
+    <p class="agent-caveat">Figures show how the automated model weighs each feature for this home; the comps above are real recorded sales. It's a data-driven estimate (the model is trained on sample data for this demo), not a formal appraisal.</p>
   </details>
 </div>

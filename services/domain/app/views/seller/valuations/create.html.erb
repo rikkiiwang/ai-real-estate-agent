@@ -35,12 +35,20 @@
       cash offer reflects an iBuyer convenience discount on the estimated value.
     </p>
 
-    <% if @valuation.facts.any? %>
+    <% drivers = @valuation.facts.sort_by { |f| -f.contribution.to_f.abs } %>
+    <% if drivers.any? %>
       <h2 style="margin-top:18px;">What this is based on</h2>
-      <% @valuation.facts.each do |fact| %>
+      <p class="mk-muted" style="font-size:0.9em;">How much each feature of your home adds to or subtracts from the estimate:</p>
+      <% drivers.each do |fact| %>
+        <% c = fact.contribution.to_f %>
         <div class="mk-comp-row">
           <span><%= fact.description %></span>
-          <span class="mk-source"><%= source_label(fact.kind) %></span>
+          <span>
+            <% if c.abs >= 1 %>
+              <span class="mk-badge <%= c >= 0 ? "mk-badge--good" : "mk-badge--warn" %>"><%= c >= 0 ? "+" : "−" %><%= number_to_currency(c.abs, precision: 0) %></span>
+            <% end %>
+            <span class="mk-source"><%= source_label(fact.kind) %></span>
+          </span>
         </div>
       <% end %>
       <p class="mk-source">Each figure is source-cited. Atlas won't quote a value it can't support.</p>

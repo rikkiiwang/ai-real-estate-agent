@@ -93,6 +93,28 @@ class Agent::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/contributes \$/, @response.body)     # not the raw attribution dump in the headline
   end
 
+  test "the price-check reasoning shows each feature's signed dollar effect, not bare labels" do
+    listing = Property.create!(address: "1 Mueller", state: "listed", region: "Mueller", list_price: 525_000, photo_urls: ["x"])
+    facts = [
+      BrainValuationClient::Fact.new(kind: "feature:sqft", description: "Living area (sqft)", contribution: -121_208.0, source_id: "s1"),
+      BrainValuationClient::Fact.new(kind: "feature:baths", description: "Bathroom count", contribution: 14_256.0, source_id: "s2"),
+    ]
+    valuation = BrainValuationClient::Result.new(sufficient_data: true, estimate: 636_000,
+      low: 600_000, high: 680_000, facts: facts, error: nil)
+
+    use_valuation(valuation) do
+      post agent_messages_path, params: { query: "Is this fairly priced?", listing_id: listing.id }, as: :turbo_stream
+    end
+    assert_response :success
+    assert_match "What drives this estimate", @response.body
+    # The actual dollar effect is shown (sorted biggest-first), with direction —
+    # not a vague bare feature name.
+    assert_match "Living area (sqft)", @response.body
+    assert_match(/−\s*\$121,208/, @response.body)  # sqft pulls the estimate DOWN
+    assert_match(/\+\s*\$14,256/, @response.body)   # baths push it UP
+    assert_no_match(/uncalibrated/, @response.body) # the trust-eroding caveat is gone
+  end
+
   test "a non-pricing question on a listing still uses the orchestrator" do
     listing = Property.create!(address: "1 Mueller", state: "listed", region: "Mueller", list_price: 525_000)
     use_client(FakeClient.new(grounded)) do
