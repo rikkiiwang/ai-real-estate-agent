@@ -17,9 +17,13 @@ class RentCastClient
   end
 
   # Active sale listings (defaults to residential single-family in Austin).
-  def sale_listings(city: "Austin", state: "TX", limit: 20, property_type: "Single Family")
-    get("/listings/sale", city: city, state: state, status: "Active",
-                          propertyType: property_type, limit: limit) || []
+  # All residential types by default (Single Family, Condo, Townhouse, …) — pass
+  # property_type to narrow. One request returns up to `limit` listings, so a
+  # bigger limit costs the SAME single API call (the import then caches them).
+  def sale_listings(city: "Austin", state: "TX", limit: 200, property_type: nil)
+    params = { city: city, state: state, status: "Active", limit: limit }
+    params[:propertyType] = property_type if property_type.present?
+    get("/listings/sale", **params) || []
   end
 
   # Aggregate sale-market stats for a ZIP (median price, $/sqft, DOM, as-of date).
