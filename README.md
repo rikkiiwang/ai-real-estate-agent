@@ -167,7 +167,7 @@ is not the same as it being *reachable by a user*:
 
 | Pillar | Requirement | Status |
 |---|---|---|
-| Consumer | Browse / filter / compare listings (with photos) | ✅ reachable — the marketplace (140+ real RentCast listings, newest-first with a "Live listing" badge, plus a curated photo sample) |
+| Consumer | Browse / filter / compare listings (with photos) | ✅ reachable — the repo ships a curated photo sample; `rake rentcast:import` (with a RentCast key) augments it with real listings, shown newest-first with a "Live listing" badge and auto-retired when they leave the feed (~140 live in the deployed demo) |
 | Consumer | Buyer decision bundle (rate / comps / tax / monthly), cited | ✅ reachable — each figure sourced; no fabricated comps |
 | Consumer | Buyer offer → broker queue | ✅ reachable — lands `awaiting_broker`, not binding until signed |
 | Consumer | Seller valuation + platform cash offer, cited | ✅ reachable — live AVM, no-fabrication on insufficient data |
@@ -291,7 +291,7 @@ and verification commands.
 - The **RAG / Critic** pipeline is real; the entailer in the deployed path is a
   deterministic token-overlap implementation (a real-LLM entailer is dependency-injected and deferred).
 - **Vision** is wired to Gemini structured output but runs against a fake unless a `GEMINI_API_KEY` is provided.
-- **Marketplace listings** are a mix: **real, active Austin listings + market stats from the RentCast API** (genuine address/price/beds/baths/sqft/days-on-market, refreshed on import — the free tier is rate-limited, so it's periodically-refreshed real data, not a 24/7 tick; RentCast licenses no photos, so all listings use labeled sample imagery) plus a curated sample with photos and comps. Mortgage/tax rates are dated, sourced reference values, not live quotes.
+- **Marketplace listings** are a mix: **real, active Austin listings + market stats from the RentCast API** (genuine address/price/beds/baths/sqft/days-on-market, refreshed on import and retired when they drop out of the active feed — the free tier is rate-limited, so it's periodically-refreshed real data, not a 24/7 tick; RentCast licenses no photos, so all listings use labeled sample imagery) plus a curated sample with photos and comps that ships with the repo. Mortgage/tax rates are dated, sourced reference values, not live quotes.
 
 This is an assessment-grade system with production-shaped architecture — the
 seams (real embedder, real entailer, live MLS feed, real closing sink) are
@@ -305,5 +305,5 @@ Two-sided MVP built across Go/Python/Rails, deployed live on Fly.io. The
 LangGraph orchestrator is exposed end-to-end through the consumer **marketplace**
 (agent sidebar) and **chat** app and the gateway `/orchestrate` API; the Closer's
 TREC paperwork is reachable via `Closer.GenerateContract`. Tests: Go green,
-Python brain **197** passing, Rails **170** passing. See `docs/ARCHITECTURE.md`
+Python brain **197** passing, Rails **173** passing. See `docs/ARCHITECTURE.md`
 for design and `docs/plans/` for the plans and remaining deferred seams.

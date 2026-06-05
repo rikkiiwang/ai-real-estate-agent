@@ -19,9 +19,11 @@ class Property < ApplicationRecord
   validates :list_price, numericality: { greater_than: 0 }, allow_nil: true
 
   # Listings a consumer can browse and offer on: listed state with a real
-  # asking price (the internal acquire->list lifecycle may have no price yet).
+  # asking price (the internal acquire->list lifecycle may have no price yet),
+  # and not retired. The importer retires RentCast listings that drop out of the
+  # active feed, so a sold/delisted home stops being browsable and "Live".
   scope :listed, -> { where(state: "listed") }
-  scope :browsable, -> { listed.where.not(list_price: nil) }
+  scope :browsable, -> { listed.where.not(list_price: nil).where(retired_at: nil) }
   scope :in_region, ->(region) { region.present? ? where(region: region) : all }
   scope :priced_between, lambda { |min, max|
     rel = all
