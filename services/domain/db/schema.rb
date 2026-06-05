@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_05_000003) do
   create_table "audit_events", force: :cascade do |t|
     t.text "claim"
     t.string "content_hash", null: false
@@ -65,6 +65,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_000001) do
     t.index ["offer_id"], name: "index_contracts_on_offer_id", unique: true
   end
 
+  create_table "conversations", force: :cascade do |t|
+    t.string "contact"
+    t.datetime "created_at", null: false
+    t.boolean "handed_off", default: false, null: false
+    t.string "intent", default: "low_intent_browser", null: false
+    t.string "name"
+    t.json "signals", default: {}, null: false
+    t.string "side", default: "buyer", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "handoff_packets", force: :cascade do |t|
     t.float "confidence"
     t.datetime "created_at", null: false
@@ -101,6 +112,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_000001) do
     t.datetime "updated_at", null: false
     t.string "zip"
     t.index ["zip"], name: "index_market_snapshots_on_zip", unique: true
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.boolean "ai_disclosed", default: false, null: false
+    t.text "body"
+    t.string "channel", null: false
+    t.integer "conversation_id", null: false
+    t.datetime "created_at", null: false
+    t.string "role", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id"], name: "index_messages_on_conversation_id"
   end
 
   create_table "negotiations", force: :cascade do |t|
@@ -178,6 +200,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_000001) do
   add_foreign_key "consents", "leads"
   add_foreign_key "contracts", "offers"
   add_foreign_key "handoff_packets", "leads"
+  add_foreign_key "messages", "conversations"
   add_foreign_key "negotiations", "offers"
   add_foreign_key "offer_metrics", "leads"
   add_foreign_key "offer_metrics", "offers"

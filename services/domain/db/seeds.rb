@@ -52,3 +52,16 @@ comps_by_region.each do |region, rows|
 end
 
 puts "Seeded #{Property.browsable.count} browsable listings and #{Comp.count} comps."
+
+# A demo Concierge conversation that spans Chat -> SMS -> Voice -> Email and ends
+# high-intent, so the console and the broker queue have content out of the box.
+demo_contact = "demo-buyer@example.com"
+unless Conversation.exists?(contact: demo_contact)
+  convo = Conversation.create!(side: "buyer", contact: demo_contact, name: "Dana Demo")
+  ConciergeService.ingest(conversation: convo, channel: "chat",  body: "Just browsing a few neighborhoods.")
+  ConciergeService.ingest(conversation: convo, channel: "sms",   body: "Texting now — still looking around.")
+  ConciergeService.ingest(conversation: convo, channel: "voice", body: "Calling in to talk specifics.")
+  ConciergeService.ingest(conversation: convo, channel: "email", body: "We're pre-approved and need to move in 3 weeks.",
+                          signals: { "preapproval" => "true", "move_timeline_days" => "21" })
+  puts "Seeded a demo Concierge conversation (#{convo.channels_used.join(' -> ')}, intent=#{convo.reload.intent})."
+end

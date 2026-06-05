@@ -42,6 +42,12 @@ Rails.application.routes.draw do
     resources :messages, only: %i[create]
   end
 
+  # Concierge: the omnichannel engagement console (unified Voice/SMS/Email/Chat
+  # thread + intent triaging). Public, like browsing the catalog.
+  get "concierge", to: "concierge#show"
+  post "concierge/messages", to: "concierge#create", as: :concierge_messages
+  post "concierge/reset", to: "concierge#reset", as: :concierge_reset
+
   # The consumer marketplace is the public front door; the broker dashboard
   # remains reachable at /broker/dashboard.
   root "buyer/listings#index"

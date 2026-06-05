@@ -44,6 +44,20 @@ class Broker::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
+  test "a high-intent Concierge lead appears in the queue with its cross-channel thread" do
+    convo = Conversation.create!(side: "buyer", contact: "ready@example.com")
+    ConciergeService.ingest(conversation: convo, channel: "chat", body: "browsing")
+    ConciergeService.ingest(conversation: convo, channel: "voice", body: "ready now",
+                            signals: { "preapproval" => "true", "move_timeline_days" => "20" })
+
+    sign_in_broker
+    get broker_dashboard_path
+    assert_response :success
+    assert_match "high_intent", @response.body
+    assert_match "Cross-channel thread", @response.body
+    assert_match "[voice]", @response.body  # the thread transcript names the channels
+  end
+
   test "the Dashboard tab shows only for brokers" do
     sign_in_consumer
     get buyer_listings_path

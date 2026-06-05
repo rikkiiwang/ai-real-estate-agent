@@ -48,7 +48,15 @@
             <td><%= packet.lead.address %> (<%= packet.lead.side %>)</td>
             <td><%= packet.trigger %></td>
             <td><%= packet.confidence %></td>
-            <td><%= packet.reason %></td>
+            <td>
+              <%= packet.reason %>
+              <% if packet.transcript.present? %>
+                <details class="agent-reasoning">
+                  <summary>Cross-channel thread</summary>
+                  <pre class="mk-source" style="white-space:pre-wrap;"><%= packet.transcript %></pre>
+                </details>
+              <% end %>
+            </td>
             <td><%= packet.recommended_action %></td>
           </tr>
         <% end %>

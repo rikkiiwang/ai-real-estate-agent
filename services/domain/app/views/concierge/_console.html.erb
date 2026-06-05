@@ -1,0 +1,81 @@
+<%# conversation: the unified thread. Swapped wholesale on each new message. %>
+<div id="concierge" class="mk-shell">
+  <main class="mk-main" style="flex: 1 1 auto;">
+    <section class="mk-card-section">
+      <div class="mk-results-head">
+        <h2 style="margin:0;">Conversation</h2>
+        <% high = conversation.high_intent? %>
+        <span class="mk-badge <%= high ? "mk-badge--good" : "mk-badge--warn" %>">
+          <%= high ? "● High-intent #{conversation.side}" : "○ Looky-loo (browsing)" %>
+        </span>
+      </div>
+
+      <p class="mk-muted" style="font-size:.85em;">
+        Channels in this thread:
+        <% conversation.channels_used.each do |ch| %><span class="mk-badge"><%= ch %></span> <% end %>
+        <% if conversation.channels_used.empty? %><em>none yet — send a message below</em><% end %>
+      </p>
+
+      <% if flash.now[:alert] %><p class="mk-flash mk-flash--alert"><%= flash.now[:alert] %></p><% end %>
+
+      <div class="agent-messages" style="max-height:340px; overflow:auto;">
+        <% conversation.messages.each do |m| %>
+          <div class="agent-msg <%= m.role == "agent" ? "agent-msg--bot" : "" %>">
+            <div class="agent-bubble">
+              <span class="mk-badge"><%= m.channel %></span>
+              <%= m.body %>
+              <% if m.ai_disclosed %>
+                <div class="mk-muted" style="font-size:.75em;">🔊 AI disclosure delivered (voice is mandatory)</div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+        <% if conversation.messages.empty? %>
+          <p class="mk-muted">No messages yet. Pick a channel and say hello — then switch channels and watch the thread carry over.</p>
+        <% end %>
+      </div>
+
+      <%= form_with url: concierge_messages_path, method: :post, class: "mk-filters", style: "flex-wrap:wrap; gap:10px; margin-top:14px;" do |f| %>
+        <div class="mk-field">
+          <label for="channel">Channel</label>
+          <%= select_tag :channel, options_for_select(Channel::CHANNELS.map { |c| [c.upcase, c] }), class: "mk-input" %>
+        </div>
+        <div class="mk-field" style="flex:1 1 220px;">
+          <label for="body">Message</label>
+          <%= text_field_tag :body, nil, placeholder: "Type a message on this channel…", class: "mk-input" %>
+        </div>
+        <div class="mk-field">
+          <label>Buyer signals (neutral only)</label>
+          <label class="mk-muted" style="font-weight:400;"><%= check_box_tag :preapproval, "1", false %> Pre-approved for financing</label>
+          <label class="mk-muted" style="font-weight:400;"><%= check_box_tag :move_soon, "1", false %> Needs to move in ~30 days</label>
+        </div>
+        <%= submit_tag "Send", class: "mk-btn" %>
+      <% end %>
+
+      <p class="mk-source" style="margin-top:8px;">
+        Simulated transport — no live carrier. The thread, per-channel AI disclosure, and triage are real;
+        a real Voice/SMS/Email provider drops in behind the same seam.
+      </p>
+    </section>
+  </main>
+
+  <aside class="mk-sidebar">
+    <div class="agent" style="position:static;">
+      <div class="agent-head">
+        <div class="agent-title">Intent triage</div>
+        <div class="agent-sub">Computed from neutral, transaction-relevant signals only — never a protected class.</div>
+      </div>
+      <div class="agent-bubble" style="margin:12px;">
+        <% triage = IntentTriage.call(signals: conversation.signals, side: conversation.side) %>
+        <p><strong><%= triage.high_intent? ? "High-intent #{conversation.side}" : "Looky-loo" %></strong></p>
+        <p class="mk-muted" style="font-size:.85em;"><%= triage.reason %></p>
+        <% if triage.signals_used.any? %>
+          <p class="mk-muted" style="font-size:.8em;">Signals used: <%= triage.signals_used.join(", ") %></p>
+        <% end %>
+        <% if conversation.handed_off? %>
+          <p class="mk-badge mk-badge--good" style="margin-top:8px;">✓ Routed to the broker queue</p>
+        <% end %>
+      </div>
+    </div>
+  </aside>
+</div>
