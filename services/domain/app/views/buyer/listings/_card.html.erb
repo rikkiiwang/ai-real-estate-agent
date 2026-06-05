@@ -1,5 +1,9 @@
 <%= link_to buyer_listing_path(listing), class: "mk-card" do %>
-  <div class="mk-card-photo" style="background-image: url('<%= listing.photo_urls&.first %>')"></div>
+  <div class="mk-card-photo" style="background-image: url('<%= listing.photo_urls&.first %>')">
+    <% if listing.source_name.to_s.start_with?("RentCast") %>
+      <span class="mk-badge mk-badge--good mk-card-live" title="Real active listing from the RentCast feed<%= listing.captured_at ? ", captured #{listing.captured_at.to_date}" : "" %>">● Live listing</span>
+    <% end %>
+  </div>
   <div class="mk-card-body">
     <div class="mk-price"><%= number_to_currency(listing.list_price, precision: 0) %></div>
     <div class="mk-specs">
