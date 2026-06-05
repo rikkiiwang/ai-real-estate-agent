@@ -366,7 +366,7 @@ single migrator. Full runbook, secrets, and per-app `fly.toml` in
 | Handoff / offer sinks | fakes in tests | Rails gRPC (wired for offer/handoff) |
 | Contract generation | real TREC fill | reachable via `Closer.GenerateContract` (wired to the marketplace) |
 | Closing counterparty sink | fake | gRPC sink (`NotImplementedError` today) |
-| Listings | synthetic RESO; marketplace = curated sample | live MLS behind `ListingSource` |
+| Listings | real listings + market stats imported from the **RentCast** live MLS feed (`rake rentcast:import`, source-labeled; seeded sample as offline fallback) | broader MLS coverage + listing photos behind `ListingSource` |
 
 Every seam is dependency-injected and documented — the architecture is
 production-shaped; the data and a few external integrations are deferred.
@@ -376,7 +376,7 @@ production-shaped; the data and a few external integrations are deferred.
 ## 14. Testing strategy
 
 - **Hermetic by default.** Fakes + in-memory stores + `MemorySaver` mean the
-  whole agent loop runs with no network and no Postgres. The brain suite (190
+  whole agent loop runs with no network and no Postgres. The brain suite (196
   tests) covers valuation, RAG, the Critic, Fair Housing, confidence, handoff,
   the orchestrator (happy / critical / Fair-Housing / regenerate / resumability),
   the Closer, the closing orchestration, the demo spine, the `Conversation`
@@ -384,7 +384,7 @@ production-shaped; the data and a few external integrations are deferred.
   UPL-refusal path).
 - **Cross-language smoke** (`make smoke`) exercises a real gateway → brain gRPC
   round-trip and returns a live valuation.
-- **Rails** tests (141) cover the domain models and the full consumer marketplace
+- **Rails** tests (166) cover the domain models and the full consumer marketplace
   — listings/search, the agent sidebar (DI fake brain), the cited decision bundle,
   the buyer/seller offer flows, contract generation + fallback, and the
   broker-gate lifecycle — against SQLite.

@@ -181,13 +181,23 @@ def _make_send(deps: _Deps):
         message into natural prose — but the rewrite is NEVER sent unverified. It
         is RE-RUN through the SAME Critic (decompose -> retrieve -> entail ->
         cite) and the Fair Housing rail; the rewrite is adopted only if it
-        re-verifies to a non-empty, non-escalating, FH-clean message (then its
-        citations are used). Otherwise the deterministic verified message is sent.
-        So every customer-facing claim is Critic-verified, LLM or not.
+        re-verifies to a non-empty, non-escalating, FH-clean message. When it is
+        adopted, the submitted trace is SWAPPED to the re-verification result —
+        ``verification`` and ``audit_rows`` (not just ``citations``) — so the
+        glass-box trace a reviewer reads is the verification OF THE WORDING THAT
+        WAS ACTUALLY SENT, never the superseded deterministic draft. Otherwise
+        the deterministic verified message and its trace are sent unchanged. So
+        every customer-facing claim is Critic-verified, LLM or not.
         """
         result = state["verification"]
         final = result.approved_message
         citations = list(result.citations)
+        out = {
+            "outcome": "send",
+            "final_message": final,
+            "escalated": False,
+            "citations": citations,
+        }
 
         if deps.naturalizer is not None and final and final.strip():
             candidate = naturalize_message(final, state.get("query"), deps.naturalizer)
@@ -200,15 +210,14 @@ def _make_send(deps: _Deps):
                     and not recheck.escalate
                     and scan_output(approved).allowed
                 ):
-                    final = approved  # the re-verified rewrite (stripped to supported claims)
-                    citations = list(recheck.citations)
+                    # Adopt the re-verified rewrite AND its trace, so the audit
+                    # rows / verification match the wording actually delivered.
+                    out["final_message"] = approved
+                    out["citations"] = list(recheck.citations)
+                    out["verification"] = recheck
+                    out["audit_rows"] = recheck.audit_rows()
 
-        return {
-            "outcome": "send",
-            "final_message": final,
-            "escalated": False,
-            "citations": citations,
-        }
+        return out
 
     return send
 

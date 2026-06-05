@@ -74,3 +74,24 @@ def test_send_falls_back_to_verified_text_when_rewrite_trips_fair_housing():
                        config={"configurable": {"thread_id": "nat-2"}})
     if state.get("outcome") == "send":
         assert "good schools" not in state["final_message"]
+
+
+def test_submitted_trace_matches_the_message_actually_sent():
+    """GLASS-BOX CONSISTENCY (P2): whatever wording is sent, the SUBMITTED trace
+    (``verification`` + ``citations``) must describe THAT wording — never a
+    superseded deterministic draft. The invariant holds in both branches:
+    rewrite-rejected (original kept) and rewrite-adopted (trace swapped to the
+    re-verification). We exercise an adopting rewrite and a rejected one."""
+    for thread, rewrite in (("trace-adopt", None), ("trace-reject", "in the low six figures")):
+        app = build_orchestrator(
+            retriever=_fakes(),
+            naturalizer=FakeGemini(response=rewrite) if rewrite else None,
+        )
+        state = app.invoke({"address": COVERED, "query": "is it fairly priced?", "attempts": 0},
+                           config={"configurable": {"thread_id": thread}})
+        if state.get("outcome") != "send":
+            continue
+        verification = state["verification"]
+        # The trace a reviewer reads is the verification of the sent message.
+        assert verification.approved_message == state["final_message"]
+        assert list(verification.citations) == list(state["citations"])

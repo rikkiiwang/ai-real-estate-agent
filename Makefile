@@ -22,8 +22,8 @@ test: go-test brain-test  ## Go + brain unit tests (run `make test-all` to inclu
 
 test-all: go-test brain-test rails-test  ## Every suite: Go + Python brain + Rails domain
 
-smoke:        ## Cross-language gRPC round-trip (gateway -> brain)
-	bash scripts/smoke.sh
+smoke:        ## Cross-language gRPC round-trip (gateway -> brain); honours PYTHON=...
+	PYTHON='$(PYTHON)' bash scripts/smoke.sh
 
 up:           ## Boot the full stack (Postgres+pgvector + services)
 	docker compose up --build
