@@ -15,26 +15,38 @@ class RentCastImport
     "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=900&q=70"
   ].freeze
 
-  SOURCE = "RentCast (live MLS data)".freeze
-  MAX_MARKET_ZIPS = 5
+  SOURCE = "RentCast (live listing data)".freeze
+
+  # A curated set of well-known Austin ZIPs to snapshot for the market banner.
+  # We snapshot a CHOSEN list (not whatever ZIPs happen to appear in the listing
+  # batch) so the banner's ZIP picker is predictable and covers recognisable
+  # areas — Mueller (78723), South Congress/Zilker (78704), East Austin (78702),
+  # Tarrytown (78703), Northwest Hills (78731), Hyde Park (78751), etc.
+  DEFAULT_MARKET_ZIPS = %w[
+    78702 78703 78704 78723 78731 78744 78745 78746 78751 78759
+  ].freeze
+  MAX_MARKET_ZIPS = 12
 
   Result = Struct.new(:imported, :snapshots, keyword_init: true)
 
-  def self.call(client: RentCastClient.new, listing_limit: 20)
-    new(client).call(listing_limit: listing_limit)
+  def self.call(client: RentCastClient.new, listing_limit: 20, market_zips: nil)
+    new(client).call(listing_limit: listing_limit, market_zips: market_zips)
   end
 
   def initialize(client)
     @client = client
   end
 
-  def call(listing_limit: 20)
+  def call(listing_limit: 20, market_zips: nil)
     return Result.new(imported: 0, snapshots: 0) unless @client.configured?
 
     rows = @client.sale_listings(limit: listing_limit).select { |r| residential?(r) }
     imported = rows.each_with_index.count { |row, i| upsert_listing(row, i) }
 
-    zips = rows.map { |r| r["zipCode"] }.compact.uniq.first(MAX_MARKET_ZIPS)
+    # Snapshot the curated ZIPs first, then any extra ZIPs the listings surfaced,
+    # deduped and capped. A ZIP with no market data is simply skipped.
+    listing_zips = rows.map { |r| r["zipCode"] }.compact
+    zips = (Array(market_zips.presence || DEFAULT_MARKET_ZIPS) + listing_zips).uniq.first(MAX_MARKET_ZIPS)
     snapshots = zips.count { |zip| upsert_market(zip) }
 
     Result.new(imported: imported, snapshots: snapshots)
