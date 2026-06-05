@@ -388,7 +388,7 @@ production-shaped; the data and a few external integrations are deferred.
   UPL-refusal path).
 - **Cross-language smoke** (`make smoke`) exercises a real gateway → brain gRPC
   round-trip and returns a live valuation.
-- **Rails** tests (169) cover the domain models and the full consumer marketplace
+- **Rails** tests (170) cover the domain models and the full consumer marketplace
   — listings/search, the agent sidebar (DI fake brain), the cited decision bundle,
   the buyer/seller offer flows, contract generation + fallback, and the
   broker-gate lifecycle — against SQLite.

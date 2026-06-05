@@ -27,8 +27,18 @@ class ListingSearch
       .in_region(region)
       .priced_between(price_min, price_max)
       .min_beds(beds)
-      .order(:list_price)
+      .order(FRESHNESS_ORDER)
   end
+
+  # Surface the real, freshly-imported listings first (live RentCast data, most
+  # recent capture), then fall back to price. Without this the catalog was a
+  # fixed price-ascending list that looked identical on every visit and never
+  # reflected a re-import. Portable across SQLite (test) and Postgres (prod):
+  # the CASE + boolean ordering work in both.
+  FRESHNESS_ORDER = Arel.sql(
+    "CASE WHEN source_name LIKE 'RentCast%' THEN 0 ELSE 1 END, " \
+    "captured_at DESC, list_price ASC"
+  )
 
   # Distinct regions that currently have browsable listings, for the filter UI.
   def self.regions

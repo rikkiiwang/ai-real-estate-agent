@@ -83,7 +83,8 @@ body.mk {
 .mk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
 .mk-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: transform .12s ease, box-shadow .12s ease; }
 .mk-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(27,34,51,.1), 0 16px 40px rgba(27,34,51,.08); }
-.mk-card-photo { aspect-ratio: 4 / 3; background: #dfe4ee center/cover no-repeat; }
+.mk-card-photo { position: relative; aspect-ratio: 4 / 3; background: #dfe4ee center/cover no-repeat; }
+.mk-card-live { position: absolute; top: 8px; left: 8px; font-size: 11px; font-weight: 600; letter-spacing: .01em; box-shadow: 0 1px 3px rgba(27,34,51,.18); }
 .mk-card-body { padding: 14px 15px 16px; }
 .mk-price { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
 .mk-specs { color: var(--ink-soft); font-size: 13px; margin: 4px 0 6px; }
