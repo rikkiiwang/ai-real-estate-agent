@@ -1,26 +1,37 @@
-<%# Real, dated market snapshot from RentCast (cached). Renders only when present. %>
-<% if snapshot %>
-  <div class="mk-market">
-    <div class="mk-market-head">
-      <span class="mk-market-dot"></span>
-      Austin market <span class="mk-muted"><%= snapshot.area %></span>
+<%# Real, dated market snapshot from RentCast (cached), with a ZIP picker.
+    Wrapped in a Turbo frame so changing the ZIP refreshes only this banner. %>
+<%= turbo_frame_tag "market" do %>
+  <% if snapshot %>
+    <div class="mk-market">
+      <div class="mk-market-head">
+        <span class="mk-market-dot"></span>
+        Austin market
+        <% if zips.present? && zips.size > 1 %>
+          <%= form_with url: buyer_listings_path, method: :get, data: { turbo_frame: "market", controller: "listing-filter" }, class: "mk-market-zip" do %>
+            <%= select_tag :zip, options_for_select(zips.map { |z| ["ZIP #{z}", z] }, snapshot.zip),
+                  data: { action: "change->listing-filter#submit" } %>
+          <% end %>
+        <% else %>
+          <span class="mk-muted"><%= snapshot.area %></span>
+        <% end %>
+      </div>
+      <div class="mk-market-stats">
+        <% if snapshot.median_price %>
+          <span><b><%= number_to_currency(snapshot.median_price, precision: 0) %></b> median</span>
+        <% end %>
+        <% if snapshot.avg_price_per_sqft %>
+          <span><b>$<%= number_with_precision(snapshot.avg_price_per_sqft, precision: 0) %></b>/sqft</span>
+        <% end %>
+        <% if snapshot.total_listings %>
+          <span><b><%= number_with_delimiter(snapshot.total_listings) %></b> active</span>
+        <% end %>
+        <% if snapshot.avg_days_on_market %>
+          <span><b><%= snapshot.avg_days_on_market.to_i %></b> avg days on market</span>
+        <% end %>
+      </div>
+      <div class="mk-source">
+        Live market data · <%= snapshot.source %> · ZIP <%= snapshot.zip %> · as of <%= snapshot.as_of&.strftime("%b %-d, %Y") %>
+      </div>
     </div>
-    <div class="mk-market-stats">
-      <% if snapshot.median_price %>
-        <span><b><%= number_to_currency(snapshot.median_price, precision: 0) %></b> median</span>
-      <% end %>
-      <% if snapshot.avg_price_per_sqft %>
-        <span><b>$<%= number_with_precision(snapshot.avg_price_per_sqft, precision: 0) %></b>/sqft</span>
-      <% end %>
-      <% if snapshot.total_listings %>
-        <span><b><%= number_with_delimiter(snapshot.total_listings) %></b> active</span>
-      <% end %>
-      <% if snapshot.avg_days_on_market %>
-        <span><b><%= snapshot.avg_days_on_market.to_i %></b> avg days on market</span>
-      <% end %>
-    </div>
-    <div class="mk-source">
-      Live market data · <%= snapshot.source %> · as of <%= snapshot.as_of&.strftime("%b %-d, %Y") %>
-    </div>
-  </div>
+  <% end %>
 <% end %>

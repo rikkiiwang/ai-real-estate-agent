@@ -59,6 +59,8 @@ body.mk {
 .mk-market-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 3px #14855f22; }
 .mk-market-stats { display: flex; flex-wrap: wrap; gap: 20px; margin: 8px 0 4px; font-size: 14px; color: var(--ink-soft); }
 .mk-market-stats b { color: var(--ink); font-weight: 700; }
+.mk-market-zip { display: inline; margin: 0; }
+.mk-market-zip select { border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; font: inherit; font-size: 13px; color: var(--accent); background: var(--accent-soft); cursor: pointer; }
 
 /* Filters */
 .mk-filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: end;

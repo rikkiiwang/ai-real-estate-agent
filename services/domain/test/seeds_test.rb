@@ -38,6 +38,11 @@ class SeedsTest < ActiveSupport::TestCase
     assert_equal count, Property.browsable.count
   end
 
+  test "Mueller has a sub-700k 3-bed listing so the demo search query returns results" do
+    results = ListingSearch.new(region: "Mueller", price_max: 700_000, beds: 3).results
+    assert results.any?, "expected '3-bed under $700k in Mueller' to match seeded inventory"
+  end
+
   test "marketplace config carries a value, source and as_of for rate and tax" do
     cfg = Rails.application.config_for(:marketplace)
     %i[mortgage_rate property_tax_rate].each do |key|

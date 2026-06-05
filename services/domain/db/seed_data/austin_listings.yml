@@ -115,6 +115,22 @@ listings:
     sqft: 2200
     year_built: 2014
     description: "Energy-efficient Mueller home facing a greenbelt, walkable to the weekly farmers market."
+  - address: "1900 Tom Miller St, Austin, TX 78723"
+    region: "Mueller"
+    list_price: 645000
+    beds: 3
+    baths: 2.5
+    sqft: 1760
+    year_built: 2012
+    description: "Three-bedroom Mueller row home steps from the Branch Park pool and the weekly farmers market."
+  - address: "4412 Mattie St, Austin, TX 78723"
+    region: "Mueller"
+    list_price: 689000
+    beds: 3
+    baths: 2.0
+    sqft: 1640
+    year_built: 2016
+    description: "Light-filled Mueller bungalow with a flex office, walkable to Aldrich Street shops."
   - address: "4209 Eck Ln, Austin, TX 78734"
     region: "Lake Austin"
     list_price: 2150000
