@@ -9,7 +9,9 @@ module Buyer
       @search = ListingSearch.from_params(params)
       @listings = @search.results
       @regions = ListingSearch.regions
-      @market = MarketSnapshot.headline
+      # Market banner: the picked ZIP, else the most-recent snapshot.
+      @market_zips = MarketSnapshot.order(:zip).pluck(:zip)
+      @market = MarketSnapshot.find_by(zip: params[:zip]) || MarketSnapshot.headline
     end
 
     def show

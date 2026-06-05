@@ -25,6 +25,17 @@ class Buyer::ListingsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/turbo-frame id="catalog" target="_top"/, @response.body)
   end
 
+  test "the market banner offers a ZIP selector and shows the picked ZIP's snapshot" do
+    MarketSnapshot.create!(area: "Austin 78704", zip: "78704", median_price: 830_000, source: "RentCast", as_of: Date.new(2026, 6, 4))
+    MarketSnapshot.create!(area: "Austin 78731", zip: "78731", median_price: 1_150_000, source: "RentCast", as_of: Date.new(2026, 6, 4))
+
+    get buyer_listings_path(zip: "78704")
+    assert_response :success
+    assert_select "turbo-frame#market select[name=zip]"   # the picker exists
+    assert_select "turbo-frame#market option[value=78704]"
+    assert_match "$830,000", @response.body                # the picked ZIP's median, not the other
+  end
+
   test "Sell your home is reachable from the nav even when signed out" do
     get buyer_listings_path
     assert_select "a.mk-nav-link[href=?]", seller_home_path, text: "Sell your home"
