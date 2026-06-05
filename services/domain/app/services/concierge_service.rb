@@ -4,14 +4,19 @@
 # into the EXISTING broker handoff queue (a Lead + a HandoffPacket), so a human
 # engages ready parties. Transport is simulated; this owns the thread + routing.
 class ConciergeService
-  Result = Struct.new(:message, :triage, :handed_off, keyword_init: true)
+  # Test seam: a callable returning a brain conversation client. Nil in
+  # production, where the real BrainConversationClient (gRPC) is used.
+  cattr_accessor :brain_factory
+
+  Result = Struct.new(:message, :reply, :triage, :handed_off, keyword_init: true)
 
   def self.ingest(conversation:, channel:, body:, signals: {}, role: "visitor")
     new(conversation).ingest(channel:, body:, signals:, role:)
   end
 
-  def initialize(conversation)
+  def initialize(conversation, brain: nil)
     @conversation = conversation
+    @brain = brain || brain_factory&.call || BrainConversationClient.new
   end
 
   def ingest(channel:, body:, signals: {}, role: "visitor")
@@ -22,14 +27,7 @@ class ConciergeService
     newly_handed_off = false
 
     Conversation.transaction do
-      message = @conversation.messages.create!(
-        channel: channel,
-        role: role,
-        body: body,
-        # On a voice call, AI disclosure is mandatory and assumed delivered up
-        # front; text channels carry the voluntary disclosure flag.
-        ai_disclosed: Channel.mandatory_disclosure?(channel)
-      )
+      message = append(channel: channel, role: role, body: body)
 
       @conversation.merge_signals(signals)
       triage = IntentTriage.call(signals: @conversation.signals, side: @conversation.side)
@@ -44,10 +42,35 @@ class ConciergeService
       @conversation.save!
     end
 
-    Result.new(message: message, triage: triage, handed_off: newly_handed_off)
+    # The embedded chatbot: the same grounded, cited "glass box" agent (brain
+    # orchestrator) replies IN-THREAD, on the same channel, to a visitor turn.
+    # Runs after the transaction so a slow/failed brain call never rolls back the
+    # visitor's message; the client degrades to a friendly fallback on its own.
+    reply = role == "visitor" ? agent_reply(channel: channel, query: body) : nil
+
+    Result.new(message: message, reply: reply, triage: triage, handed_off: newly_handed_off)
   end
 
   private
+
+  def append(channel:, role:, body:)
+    @conversation.messages.create!(
+      channel: channel,
+      role: role,
+      body: body,
+      # AI messages on a voice call carry the mandatory disclosure; text channels
+      # carry the voluntary flag.
+      ai_disclosed: Channel.mandatory_disclosure?(channel)
+    )
+  end
+
+  def agent_reply(channel:, query:)
+    result = @brain.orchestrate(query: query, thread_id: "concierge-#{@conversation.id}")
+    append(channel: channel, role: "agent", body: result.message)
+  rescue StandardError => e
+    Rails.logger.warn("[concierge] agent reply failed: #{e.class}: #{e.message}")
+    nil
+  end
 
   # Reuse the existing broker queue: a Lead carries the triaged intent; a
   # HandoffPacket with trigger "high_intent" lands in HandoffPacket.queue on the
