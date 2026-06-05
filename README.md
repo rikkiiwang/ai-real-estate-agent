@@ -167,7 +167,7 @@ is not the same as it being *reachable by a user*:
 
 | Pillar | Requirement | Status |
 |---|---|---|
-| Consumer | Browse / filter / compare listings (with photos) | ✅ reachable — the marketplace (20 curated sample listings) |
+| Consumer | Browse / filter / compare listings (with photos) | ✅ reachable — the marketplace (140+ real RentCast listings, newest-first with a "Live listing" badge, plus a curated photo sample) |
 | Consumer | Buyer decision bundle (rate / comps / tax / monthly), cited | ✅ reachable — each figure sourced; no fabricated comps |
 | Consumer | Buyer offer → broker queue | ✅ reachable — lands `awaiting_broker`, not binding until signed |
 | Consumer | Seller valuation + platform cash offer, cited | ✅ reachable — live AVM, no-fabrication on insufficient data |
