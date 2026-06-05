@@ -1,6 +1,8 @@
 require "test_helper"
 
 class ConciergeServiceTest < ActiveSupport::TestCase
+  # brain_factory is stubbed offline globally in test_helper (FakeBrain).
+
   def convo(side: "buyer")
     Conversation.create!(side: side, contact: "buyer@example.com")
   end
@@ -10,8 +12,20 @@ class ConciergeServiceTest < ActiveSupport::TestCase
     ConciergeService.ingest(conversation: c, channel: "chat", body: "looking around")
     ConciergeService.ingest(conversation: c, channel: "email", body: "more info?", signals: { "budget" => "700000" })
     c.reload
-    assert_equal %w[chat email], c.messages.map(&:channel)
+    # The visitor turns span both channels (the agent replies on the same channels).
+    assert_equal %w[chat email], c.messages.where(role: "visitor").map(&:channel)
+    assert_equal %w[chat email], c.channels_used
     assert_equal "700000", c.signals["budget"]
+  end
+
+  test "the embedded chatbot replies in-thread on the same channel" do
+    c = convo
+    r = ConciergeService.ingest(conversation: c, channel: "sms", body: "is 78704 a good area?")
+    assert_not_nil r.reply
+    assert_equal "agent", r.reply.role
+    assert_equal "sms", r.reply.channel # replies on the visitor's channel
+    assert_match(/grounded reply/, r.reply.body)
+    assert_equal %w[visitor agent], c.reload.messages.map(&:role)
   end
 
   test "becoming high-intent routes exactly one packet into the broker queue" do

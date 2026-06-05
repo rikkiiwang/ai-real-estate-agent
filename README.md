@@ -185,7 +185,7 @@ is not the same as it being *reachable by a user*:
 | **Lawyer** | **Truth-verification (Critic/RAG)** | ✅ reachable — every turn (deterministic entailer; real-LLM deferred) |
 | **Lawyer** | **HITL handoff triggers** | ✅ reachable — legal / human-request handoffs + every offer broker-gated |
 
-> ¹ "Voice" is the spec's name for the **engagement & qualification** pillar, not literal telephony. The reachable **Concierge** console (`/concierge`) demonstrates both R5 (buyer + seller intent triage) and R6 (one unified thread across Voice/SMS/Email/Chat with per-channel AI disclosure). Channel **transport is simulated** behind a swappable adapter — real low-latency carriers (Twilio/SendGrid) are deferred by design — so the only genuine unbuilt gap in the pillar is tour scheduling (R7).
+> ¹ "Voice" is the spec's name for the **engagement & qualification** pillar, not literal telephony. The reachable **Concierge** console (`/concierge`) demonstrates both R5 (buyer + seller intent triage) and R6 (one unified thread across Voice/SMS/Email/Chat with per-channel AI disclosure). It's a real two-way chatbot: the **same grounded "glass box" agent** (brain orchestrator) replies **in-thread on the visitor's channel**, with triage + broker routing running alongside. Channel **transport is simulated** behind a swappable adapter — real low-latency carriers (Twilio/SendGrid) are deferred by design — so the only genuine unbuilt gap in the pillar is tour scheduling (R7).
 
 **Bottom line:** the entire **Lawyer** pillar, per-address valuation, the full
 **buyer/seller journey**, the **Closer's** TREC paperwork, and **in-band seller
@@ -307,5 +307,5 @@ Two-sided MVP built across Go/Python/Rails, deployed live on Fly.io. The
 LangGraph orchestrator is exposed end-to-end through the consumer **marketplace**
 (agent sidebar) and **chat** app and the gateway `/orchestrate` API; the Closer's
 TREC paperwork is reachable via `Closer.GenerateContract`. Tests: Go green,
-Python brain **197** passing, Rails **199** passing. See `docs/ARCHITECTURE.md`
+Python brain **197** passing, Rails **201** passing. See `docs/ARCHITECTURE.md`
 for design and `docs/plans/` for the plans and remaining deferred seams.

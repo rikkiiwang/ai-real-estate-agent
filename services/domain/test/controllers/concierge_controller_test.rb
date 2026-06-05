@@ -1,6 +1,15 @@
 require "test_helper"
 
 class ConciergeControllerTest < ActionDispatch::IntegrationTest
+  # brain_factory is stubbed offline globally in test_helper (FakeBrain).
+
+  test "the embedded chatbot's reply renders in the thread" do
+    get concierge_path
+    post concierge_messages_path, params: { channel: "chat", body: "hello" }, as: :turbo_stream
+    assert_response :success
+    assert_match(/Atlas: a grounded reply/, @response.body)
+  end
+
   test "GET /concierge renders the thread and an intent badge" do
     get concierge_path
     assert_response :success
