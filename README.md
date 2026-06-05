@@ -162,7 +162,7 @@ is not the same as it being *reachable by a user*:
 | Consumer | Seller valuation + platform cash offer, cited | ✅ reachable — live AVM, no-fabrication on insufficient data |
 | Brain | Real-time per-address valuation (AVM) | ✅ reachable; AVM 🟠 synthetic-trained, but the catalog now carries **real, dated RentCast market data** (median / $psf / active / DOM) |
 | Consumer | Market intelligence (real, dated) | ✅ reachable — live RentCast market snapshot per ZIP, shown with its as-of date |
-| Brain | Multi-source ingestion (MLS + TCAD + news) | 🟡 **real RentCast listings + market feed** (periodically refreshed) + TCAD/GIS + synthetic-trained AVM; **news ingestion ❌** |
+| Brain | Multi-source ingestion (MLS + TCAD + news) | 🟡 **real listing data via the RentCast API** (a third-party listing-data feed, not a direct MLS connection; periodically refreshed) + TCAD/GIS + synthetic-trained AVM; **direct MLS + news ingestion ❌** |
 | Brain | Visual property analysis (photos) | 🟡 real design (Gemini structured output), model unbound + unexposed in prod |
 | Voice | Intent triaging (looky-loo vs high-intent) | ✅ real logic (voice service); voice app not deployed |
 | Voice | Omnichannel (voice + SMS + email, one thread) | 🟠 voice session only; **SMS/email ❌** |
@@ -220,7 +220,7 @@ make up          # full stack via docker compose (Postgres+pgvector + all servic
 ```
 
 Per-suite toolchains (the Makefile vars let you point at the right ones):
-- **Brain (Python):** needs a Python with `pytest` + the brain deps — `make brain-test PYTHON=/opt/anaconda3/bin/python3` if your `python3` lacks them (196 tests).
+- **Brain (Python):** needs a Python with `pytest` + the brain deps — `make brain-test PYTHON=/opt/anaconda3/bin/python3` if your `python3` lacks them (197 tests).
 - **Rails (domain):** needs Ruby 3.3.11 (`services/domain/.ruby-version`, via rbenv) + `bundle install` — `make rails-test` (tests run on SQLite; no Postgres needed).
 - **Go:** `make go-test` (build + vet + tests).
 
@@ -294,5 +294,5 @@ Two-sided MVP built across Go/Python/Rails, deployed live on Fly.io. The
 LangGraph orchestrator is exposed end-to-end through the consumer **marketplace**
 (agent sidebar) and **chat** app and the gateway `/orchestrate` API; the Closer's
 TREC paperwork is reachable via `Closer.GenerateContract`. Tests: Go green,
-Python brain **196** passing, Rails **166** passing. See `docs/ARCHITECTURE.md`
+Python brain **197** passing, Rails **167** passing. See `docs/ARCHITECTURE.md`
 for design and `docs/plans/` for the plans and remaining deferred seams.
