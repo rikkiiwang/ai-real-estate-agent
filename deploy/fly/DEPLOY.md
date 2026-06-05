@@ -7,7 +7,7 @@ gateway, and the consumer chat app; everything else is reachable internally over
 
 | App | Role | Exposure | Internal address |
 |---|---|---|---|
-| `are-domain` | Rails consumer marketplace (`/`) + broker dashboard (`/broker`, basic auth) + migrations | **public** | — |
+| `are-domain` | Rails consumer marketplace (`/`) + broker dashboard (`/broker`, same login + broker allowlist) + migrations | **public** | — |
 | `are-gateway` | Public REST edge (auth'd) | **public** | — |
 | `are-chat` | Standalone consumer chat UI (the "glass box" agent) | **public** | — |
 | `are-brain` | Python gRPC (valuation, lawyer, RAG, orchestrator, closer) | private | `are-brain.flycast:50051` |
@@ -50,7 +50,7 @@ Generate and export these before deploying. They are staged with
 | `RAILS_MASTER_KEY` | domain, domain-grpc | `cat services/domain/config/master.key` |
 | `GATEWAY_AUTH_SECRET` | gateway | `openssl rand -hex 32` |
 | `GEMINI_API_KEY` | brain (optional) | from Google AI Studio; omit to keep vision on the fake model |
-| `BROKER_DASHBOARD_USER` / `BROKER_DASHBOARD_PASSWORD` | domain (**recommended** — are-domain is public) | any user + `openssl rand -hex 16`; the broker dashboard at `/broker` enforces HTTP basic auth when set. When unset the dashboard has no login, so set them in production. Consumer routes + `/up` stay open. |
+| `BROKER_EMAILS` | domain (optional) | comma-separated emails allowed into the broker dashboard, **extending** the config default (`broker@atlas.example`). Brokers sign in through the same passwordless consumer login; a server-side allowlist (`require_broker`) is the boundary, so unlisted visitors are redirected away even though the app is public. |
 
 `DATABASE_URL` values are derived by `deploy.sh` from `POSTGRES_PASSWORD`
 (RAG db `realestate`, Rails db `domain_production`) — do not set them by hand.
@@ -97,8 +97,10 @@ curl -fs -H "Authorization: Bearer $TOKEN" \
 
 # Consumer marketplace (public): the listing site is the root of are-domain.
 curl -fsI "https://are-domain.fly.dev/"                    # 200 — browsable catalog
-# Broker dashboard (public, HTTP basic auth) lives under /broker:
-#   open https://are-domain.fly.dev/broker/dashboard  (user/pass = BROKER_DASHBOARD_*)
+# Broker dashboard (public, gated by the broker allowlist) lives under /broker:
+#   sign in at /session/new with an allowlisted email (default broker@atlas.example,
+#   or any in BROKER_EMAILS) to get the "Dashboard" tab; others are redirected.
+curl -fs -o /dev/null -w '%{http_code}\n' "https://are-domain.fly.dev/broker/dashboard"  # 302 -> /session/new when signed out
 ```
 
 ## Notes & decisions
@@ -117,9 +119,11 @@ curl -fsI "https://are-domain.fly.dev/"                    # 200 — browsable c
 - **Cost**: ~6 shared-cpu-1x machines + one 3GB volume. Stop everything with
   `for a in are-db are-brain are-domain are-domain-grpc are-gateway are-chat are-ingestion are-voice; do fly scale count 0 --app $a --yes; done`.
 - **`are-domain` is public** (the marketplace front door); `deploy.sh` allocates
-  its public IPs alongside `are-gateway`/`are-chat`. Because the broker dashboard
-  at `/broker` shares this app, set `BROKER_DASHBOARD_USER` /
-  `BROKER_DASHBOARD_PASSWORD` so it enforces HTTP basic auth (`/up` and the
-  consumer routes stay open). `are-domain` also needs `BRAIN_ADDR`
+  its public IPs alongside `are-gateway`/`are-chat`. The broker dashboard at
+  `/broker` shares this app but is gated server-side by `require_broker` — a
+  visitor must sign in (passwordless consumer login) with an email on the broker
+  allowlist (config `broker_emails`, default `broker@atlas.example`; extend via
+  the `BROKER_EMAILS` env var). Unlisted visitors are redirected to the root, so
+  no separate password is needed. `are-domain` also needs `BRAIN_ADDR`
   (`are-brain.flycast:50051`, set in `domain.fly.toml`) for the agent sidebar,
   valuation, and the Closer contract draft.

@@ -22,7 +22,11 @@ app. There's nothing else to open:
 
 ### → **https://are-domain.fly.dev** — start (and stay) here
 
-Sign in with a name + email, then:
+**How to sign in** (passwordless — just a name + email):
+- **As a buyer / seller:** use *any* name and email — that's an ordinary visitor, and both the Buyer and Seller workspaces are available on the same login.
+- **As a broker:** sign in with **`broker@atlas.example`** (the demo broker on the allowlist) — you'll additionally see the **Dashboard** tab.
+
+Then:
 
 - **Browse / filter** Austin listings — real RentCast listing data, with a live market snapshot per ZIP.
 - **Buyer + agent sidebar** — ask about a home and watch Atlas reason live: a grounded answer with a citation behind every figure, confidence + coverage signals, a Fair Housing rail, and a human handoff when it should. *The "glass box" **is** the sidebar — no separate app.*
@@ -271,7 +275,7 @@ everything else is reachable over `*.flycast`.
 export POSTGRES_PASSWORD=$(openssl rand -hex 24)
 export RAILS_MASTER_KEY=$(cat services/domain/config/master.key)
 export GATEWAY_AUTH_SECRET=$(openssl rand -hex 32)
-export BROKER_DASHBOARD_USER=broker BROKER_DASHBOARD_PASSWORD=$(openssl rand -hex 16)
+# export BROKER_EMAILS=you@example.com   # optional — extend the broker allowlist (default broker@atlas.example)
 deploy/fly/deploy.sh        # creates apps, allocates IPs, stages secrets, deploys in order
 ```
 
