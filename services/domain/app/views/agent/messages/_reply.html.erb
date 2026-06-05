@@ -2,6 +2,7 @@
     (progressive disclosure — calm first, evidence on demand). %>
 <div class="agent-msg agent-msg--bot">
   <div class="agent-bubble">
+    <% if local_assigns[:channel].present? && channel != "chat" %><span class="mk-badge agent-channel"><%= channel %></span><% end %>
     <%= simple_format(result.message) %>
 
     <% if result.handoff? && result.handoff %>

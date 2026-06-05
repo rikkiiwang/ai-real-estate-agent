@@ -175,8 +175,8 @@ is not the same as it being *reachable by a user*:
 | Consumer | Market intelligence (real, dated) | ✅ reachable — live RentCast market snapshot per ZIP, shown with its as-of date |
 | Brain | Multi-source ingestion (MLS + TCAD + news) | 🟡 **real listing data via the RentCast API** (a third-party listing-data feed, not a direct MLS connection; periodically refreshed) + TCAD/GIS + synthetic-trained AVM; **direct MLS + news ingestion ❌** |
 | Brain | Visual property analysis (photos) | 🟡 real design (Gemini structured output), model unbound + unexposed in prod |
-| Voice (engagement pillar¹) | Intent triaging — looky-loo vs high-intent (R5) | ✅ reachable — the **Concierge** console triages **buyer** (financing pre-approval + ≤30-day move) and **seller** (address + timeline/motivation) from **neutral signals only** (equal-service: protected-class inputs are structurally excluded); high-intent auto-routes into the broker queue |
-| Voice (engagement pillar¹) | Omnichannel: one thread across Voice/SMS/Email/Chat (R6) | ✅ reachable — the **Concierge** carries one unified thread across all four channels, context preserved on switch, with per-channel AI disclosure (voice mandatory). Transport is **simulated** behind a swappable adapter (⏸ real carriers deferred) |
+| Voice (engagement pillar¹) | Intent triaging — looky-loo vs high-intent (R5) | ✅ reachable — triaged on the **visitor profile** from **neutral signals only** (financing pre-approval + ≤30-day move; equal-service: protected-class inputs are never stored or consulted); high-intent auto-routes to the broker queue and shows in the broker's **High-intent buyers** list |
+| Voice (engagement pillar¹) | Omnichannel: one thread across Voice/SMS/Email/Chat (R6) | ✅ reachable — built into the **Ask Atlas chatbot**: a channel switcher (Voice/SMS/Email/Chat) + **🎙 voice input** (browser speech-to-text) on one continuous thread, with per-channel AI disclosure (voice mandatory). Transport is **simulated** behind a swappable adapter (⏸ real carriers deferred) |
 | Voice (engagement pillar¹) | Tour / inspection scheduling vs availability (R7) | ❌ not built — the one genuine gap in this pillar |
 | Closer | TREC document generation (blanks-only, UPL-safe) | ✅ reachable — `Closer.GenerateContract` RPC; broker-sign delivers the draft in-app |
 | Closer | Automated negotiation within a price band | ✅ reachable — seller can counter the cash offer; the agent auto-accepts within the authorized band (opening offer → valuation ceiling) or escalates above it, recording a `Negotiation` either way |
@@ -185,7 +185,7 @@ is not the same as it being *reachable by a user*:
 | **Lawyer** | **Truth-verification (Critic/RAG)** | ✅ reachable — every turn (deterministic entailer; real-LLM deferred) |
 | **Lawyer** | **HITL handoff triggers** | ✅ reachable — legal / human-request handoffs + every offer broker-gated |
 
-> ¹ "Voice" is the spec's name for the **engagement & qualification** pillar, not literal telephony. The reachable **Concierge** console (`/concierge`) demonstrates both R5 (buyer + seller intent triage) and R6 (one unified thread across Voice/SMS/Email/Chat with per-channel AI disclosure). It's a real two-way chatbot: the **same grounded "glass box" agent** (brain orchestrator) replies **in-thread on the visitor's channel**, with triage + broker routing running alongside. Channel **transport is simulated** behind a swappable adapter — real low-latency carriers (Twilio/SendGrid) are deferred by design — so the only genuine unbuilt gap in the pillar is tour scheduling (R7).
+> ¹ "Voice" is the spec's name for the **engagement & qualification** pillar, not literal telephony. Both capabilities live in the **Ask Atlas chatbot** itself: you can **type or 🎙 speak** to it, switch the channel (Voice/SMS/Email/Chat) while keeping one thread (R6), and the grounded glass-box agent answers in-thread. Intent triaging (R5) runs on your **visitor profile** from neutral signals (pre-approval + ≤30-day move) and surfaces high-intent buyers to the broker. Channel **transport is simulated** behind a swappable adapter — real low-latency carriers (Twilio/SendGrid) are deferred by design — so the only genuine unbuilt gap in the pillar is tour scheduling (R7).
 
 **Bottom line:** the entire **Lawyer** pillar, per-address valuation, the full
 **buyer/seller journey**, the **Closer's** TREC paperwork, and **in-band seller
@@ -307,5 +307,5 @@ Two-sided MVP built across Go/Python/Rails, deployed live on Fly.io. The
 LangGraph orchestrator is exposed end-to-end through the consumer **marketplace**
 (agent sidebar) and **chat** app and the gateway `/orchestrate` API; the Closer's
 TREC paperwork is reachable via `Closer.GenerateContract`. Tests: Go green,
-Python brain **197** passing, Rails **202** passing. See `docs/ARCHITECTURE.md`
+Python brain **197** passing, Rails **191** passing. See `docs/ARCHITECTURE.md`
 for design and `docs/plans/` for the plans and remaining deferred seams.
