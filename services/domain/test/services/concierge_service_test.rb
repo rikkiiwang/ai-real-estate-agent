@@ -18,6 +18,19 @@ class ConciergeServiceTest < ActiveSupport::TestCase
     assert_equal "700000", c.signals["budget"]
   end
 
+  test "an empty grounded message falls back to a useful next-step reply (no blank bubble)" do
+    empty_brain = Class.new do
+      Empty = Struct.new(:message, :escalated, keyword_init: true)
+      def orchestrate(**) = Empty.new(message: "", escalated: false)
+    end
+    ConciergeService.brain_factory = -> { empty_brain.new }
+    r = ConciergeService.ingest(conversation: convo, channel: "chat", body: "hey there")
+    assert r.reply.body.present?
+    assert_match(/address or a neighborhood/i, r.reply.body)
+  ensure
+    ConciergeService.brain_factory = -> { FakeBrain.new }
+  end
+
   test "the embedded chatbot replies in-thread on the same channel" do
     c = convo
     r = ConciergeService.ingest(conversation: c, channel: "sms", body: "is 78704 a good area?")
