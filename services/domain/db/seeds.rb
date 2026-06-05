@@ -60,7 +60,9 @@ unless Conversation.exists?(contact: demo_contact)
   convo = Conversation.create!(side: "buyer", contact: demo_contact, name: "Dana Demo")
   ConciergeService.ingest(conversation: convo, channel: "chat",  body: "Just browsing a few neighborhoods.")
   ConciergeService.ingest(conversation: convo, channel: "sms",   body: "Texting now — still looking around.")
-  ConciergeService.ingest(conversation: convo, channel: "voice", body: "Calling in to talk specifics.")
+  # A grounded turn: an address in the signals lets the agent reply with cited specifics.
+  ConciergeService.ingest(conversation: convo, channel: "voice", body: "Is 6705 Manchaca Rd fairly priced?",
+                          signals: { "address" => "6705 Manchaca Rd, Austin, TX 78745" })
   ConciergeService.ingest(conversation: convo, channel: "email", body: "We're pre-approved and need to move in 3 weeks.",
                           signals: { "preapproval" => "true", "move_timeline_days" => "21" })
   puts "Seeded a demo Concierge conversation (#{convo.channels_used.join(' -> ')}, intent=#{convo.reload.intent})."

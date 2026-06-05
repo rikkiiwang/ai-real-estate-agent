@@ -79,15 +79,13 @@ class ConciergeService
   end
 
   # The grounded agent intentionally returns an empty message for open-ended
-  # chit-chat it can't source ("no source -> no claim"). Rather than show a blank
-  # bubble, reply with a useful next step so the chatbot always moves forward.
-  def fallback_reply(result)
-    if result.respond_to?(:escalated) && result.escalated
-      "Let me bring in a licensed broker to take this further — they'll follow up shortly."
-    else
-      "Happy to help! Tell me an address or a neighborhood — plus your budget or must-haves — " \
-        "and I'll pull cited specifics: price vs. nearby sales, the monthly payment, and the local market."
-    end
+  # chit-chat it can't source ("no source -> no claim"), and tends to escalate on
+  # low confidence. In the Concierge, a vague turn is NOT a reason to punt to a
+  # broker — broker hand-off here is driven by INTENT TRIAGE, not per-message
+  # confidence — so reply with a useful next step that keeps the chat moving.
+  def fallback_reply(_result)
+    "Happy to help! Tell me an address or a neighborhood — plus your budget or must-haves — " \
+      "and I'll pull cited specifics: price vs. nearby sales, the monthly payment, and the local market."
   end
 
   # Reuse the existing broker queue: a Lead carries the triaged intent; a
