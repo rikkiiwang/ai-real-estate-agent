@@ -171,4 +171,31 @@ class Agent::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match(/taking a moment/i, @response.body)
   end
+
+  test "a non-chat channel tags the message bubble (omnichannel, one thread)" do
+    use_client(FakeClient.new(grounded)) do
+      post agent_messages_path, params: { query: "hi", channel: "sms" }, as: :turbo_stream
+    end
+    assert_match(/agent-channel/, @response.body)
+    assert_match(/sms/, @response.body)
+  end
+
+  test "a signed-in buyer's pre-approval + near-term move flips their profile to high-intent (R5)" do
+    post session_path, params: { name: "Bea Buyer", email: "bea@example.com" } # sign in
+    use_client(FakeClient.new(grounded)) do
+      assert_difference "HandoffPacket.queue.count", 1 do
+        post agent_messages_path,
+             params: { query: "I'm ready", preapproval: "1", move_soon: "1" }, as: :turbo_stream
+      end
+    end
+    assert Visitor.find_by(email: "bea@example.com").high_intent?
+  end
+
+  test "an anonymous visitor's signals are a no-op (no profile to triage)" do
+    use_client(FakeClient.new(grounded)) do
+      assert_no_difference "HandoffPacket.count" do
+        post agent_messages_path, params: { query: "hi", preapproval: "1", move_soon: "1" }, as: :turbo_stream
+      end
+    end
+  end
 end

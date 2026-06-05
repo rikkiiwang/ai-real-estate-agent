@@ -22,7 +22,6 @@
             routes through sign-in for anyone not yet signed in. %>
         <%= link_to "Buy a home", buyer_listings_path, class: class_names("mk-nav-link", "is-active" => controller_path.start_with?("buyer")) %>
         <%= link_to "Sell your home", seller_home_path, class: class_names("mk-nav-link", "is-active" => controller_path.start_with?("seller")) %>
-        <%= link_to "Concierge", concierge_path, class: class_names("mk-nav-link", "is-active" => controller_path.start_with?("concierge")) %>
         <% if signed_in? %>
           <%= link_to "Documents", contracts_path, class: class_names("mk-nav-link", "is-active" => controller_path.include?("contracts")) %>
         <% end %>

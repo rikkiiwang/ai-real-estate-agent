@@ -53,17 +53,7 @@ end
 
 puts "Seeded #{Property.browsable.count} browsable listings and #{Comp.count} comps."
 
-# A demo Concierge conversation that spans Chat -> SMS -> Voice -> Email and ends
-# high-intent, so the console and the broker queue have content out of the box.
-demo_contact = "demo-buyer@example.com"
-unless Conversation.exists?(contact: demo_contact)
-  convo = Conversation.create!(side: "buyer", contact: demo_contact, name: "Dana Demo")
-  ConciergeService.ingest(conversation: convo, channel: "chat",  body: "Just browsing a few neighborhoods.")
-  ConciergeService.ingest(conversation: convo, channel: "sms",   body: "Texting now — still looking around.")
-  # A grounded turn: an address in the signals lets the agent reply with cited specifics.
-  ConciergeService.ingest(conversation: convo, channel: "voice", body: "Is 6705 Manchaca Rd fairly priced?",
-                          signals: { "address" => "6705 Manchaca Rd, Austin, TX 78745" })
-  ConciergeService.ingest(conversation: convo, channel: "email", body: "We're pre-approved and need to move in 3 weeks.",
-                          signals: { "preapproval" => "true", "move_timeline_days" => "21" })
-  puts "Seeded a demo Concierge conversation (#{convo.channels_used.join(' -> ')}, intent=#{convo.reload.intent})."
-end
+# A demo high-intent buyer profile so the broker dashboard has a ready lead.
+demo = Visitor.sign_in(name: "Dana Demo", email: "demo-buyer@example.com")
+demo.record_engagement(signals: { "preapproval" => "true", "move_timeline_days" => "21" }, side: "buyer")
+puts "Seeded a demo high-intent buyer (intent=#{demo.reload.intent})."

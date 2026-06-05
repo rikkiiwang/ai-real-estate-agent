@@ -1,11 +1,17 @@
 <%# Append the visitor's question, then the agent's grounded reply. %>
 <%= turbo_stream.append "agent-messages" do %>
   <div class="agent-msg agent-msg--user">
-    <div class="agent-bubble"><%= @query %></div>
+    <div class="agent-bubble">
+      <% if @channel.present? && @channel != "chat" %><span class="mk-badge agent-channel"><%= @channel %></span><% end %>
+      <%= @query %>
+    </div>
     <% if @address.present? %><div class="agent-ctx">about <%= @address %></div><% end %>
+    <% if Channel.mandatory_disclosure?(@channel) %><div class="agent-ctx">🔊 voice — AI disclosure delivered</div><% end %>
   </div>
 <% end %>
 
-<%= turbo_stream.append "agent-messages" do %>
-  <%= render "agent/messages/reply", result: @result %>
+<% if @result %>
+  <%= turbo_stream.append "agent-messages" do %>
+    <%= render "agent/messages/reply", result: @result, channel: @channel %>
+  <% end %>
 <% end %>

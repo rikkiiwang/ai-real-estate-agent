@@ -210,9 +210,18 @@ body.mk {
 .agent-dot:nth-child(2) { animation-delay: .2s; } .agent-dot:nth-child(3) { animation-delay: .4s; }
 @keyframes agent-blink { 0%, 100% { opacity: .25; } 50% { opacity: .9; } }
 
-.agent-composer { border-top: 1px solid var(--line); padding: 10px; display: flex; gap: 8px; align-items: end; }
+.agent-composer { border-top: 1px solid var(--line); padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.agent-input-row { display: flex; gap: 8px; align-items: end; }
 .agent-composer textarea { flex: 1; resize: none; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13.5px; }
-.agent-send { white-space: nowrap; }
+.agent-send { white-space: nowrap; align-self: flex-end; }
+.agent-channels { display: flex; gap: 8px; align-items: center; }
+.agent-channel-select { border: 1px solid var(--line); border-radius: 8px; padding: 4px 6px; font: inherit; font-size: 12px; }
+.agent-channels-note { color: var(--ink-soft); font-size: 11px; }
+.agent-mic { padding: 6px 9px; line-height: 1; }
+.agent-mic.is-live { background: #ffe3e3; border-color: #ff8585; }
+.agent-signals-toggles { display: flex; gap: 12px; font-size: 12px; color: var(--ink-soft); }
+.agent-signals-toggles label { display: inline-flex; gap: 4px; align-items: center; font-weight: 400; }
+.agent-channel { font-size: 10px; margin-right: 4px; text-transform: uppercase; }
 
 /* Reasoning / sidebar primitives reused later */
 .mk-muted { color: var(--ink-soft); }

@@ -7,6 +7,8 @@ module Broker
       @handoffs = HandoffPacket.queue.includes(:lead)
       @offers = Offer.awaiting_broker_sign.includes(:lead, :property)
       @time_to_offer = OfferMetric.summary
+      # Intent triaging lives on the visitor profile; surface ready leads here.
+      @high_intent_buyers = Visitor.where("intent LIKE 'high%'").order(updated_at: :desc)
     end
   end
 end

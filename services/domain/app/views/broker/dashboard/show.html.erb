@@ -67,6 +67,29 @@
   <% end %>
 </section>
 
+<section id="high-intent-buyers" class="mk-card-section">
+  <h2>High-intent buyers <span class="mk-badge mk-badge--good"><%= @high_intent_buyers.size %></span></h2>
+  <p class="mk-muted" style="font-size:.85em;">Triaged from neutral signals on each visitor's profile (financing pre-approval + near-term move) — never a protected class.</p>
+  <% if @high_intent_buyers.any? %>
+    <table class="mk-table">
+      <thead>
+        <tr><th>Buyer</th><th>Status</th><th>Signals</th></tr>
+      </thead>
+      <tbody>
+        <% @high_intent_buyers.each do |v| %>
+          <tr class="high-intent-buyer">
+            <td><%= v.name %> &lt;<%= v.email %>&gt;</td>
+            <td><span class="mk-badge mk-badge--good">high-intent</span></td>
+            <td class="mk-muted"><%= v.engagement_signals.map { |k, val| "#{k.tr('_', ' ')}: #{val}" }.join(" · ") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty mk-muted">No high-intent buyers yet.</p>
+  <% end %>
+</section>
+
 <section id="offers-awaiting-sign" class="mk-card-section">
   <h2>Offers awaiting broker sign <span class="mk-badge mk-badge--good"><%= @offers.size %></span></h2>
   <% if @offers.any? %>
