@@ -207,4 +207,36 @@ class Agent::MessagesControllerTest < ActionDispatch::IntegrationTest
       end
     end
   end
+
+  test "agent sidebar price check is grounded in real comps + freshness" do
+    listing = Property.create!(address: "1 Oak St", state: "listed", region: "Austin 78704",
+                               list_price: 500_000, sqft: 2000, beds: 4, baths: 2.5, year_built: 1998,
+                               photo_urls: ["x"], source_name: "RentCast (live listing data)",
+                               captured_at: Time.current)
+    Property.create!(address: "2 Oak St", state: "listed", region: "Austin 78704",
+                     list_price: 520_000, sqft: 2050, beds: 4, baths: 2,
+                     source_name: "RentCast (live listing data)", captured_at: Time.current)
+    MarketSnapshot.create!(zip: "78704", area: "Austin 78704", median_price: 600_000,
+                           new_listings: 3, avg_days_on_market: 21, as_of: Date.new(2026, 6, 5))
+
+    # Inject a client that returns a comp:active_listing fact so the view renders the citation.
+    comp_result = BrainValuationClient::Result.new(
+      sufficient_data: true, estimate: 490_000, low: 450_000, high: 530_000,
+      facts: [BrainValuationClient::Fact.new(
+        source_id: "comp:2", kind: "comp:active_listing",
+        description: "Active listing 2 Oak St: $520,000 ($253/sqft, 0.0 mi, listed 0d ago)",
+        contribution: 0.0
+      )],
+      as_of: nil, recent_activity: nil, error: nil
+    )
+
+    use_valuation(comp_result) do
+      post agent_messages_path,
+           params: { query: "Is this fairly priced?", listing_id: listing.id },
+           as: :turbo_stream
+    end
+
+    assert_response :success
+    assert_match(/Active listing/i, @response.body)  # comp citation surfaced
+  end
 end

@@ -67,9 +67,9 @@ module Agent
     def price_check_for(listing, query)
       return nil unless listing && PriceCheck.pricing_question?(query)
 
-      valuation = valuation_client.valuation(address: listing.address)
+      @valuation = ValuationAssembly.new(address: listing.address, client: valuation_client).call
       comps = Comp.in_region(listing.region).recent_first.limit(3)
-      result = PriceCheck.for(property: listing, valuation: valuation, comps: comps)
+      result = PriceCheck.for(property: listing, valuation: @valuation, comps: comps)
       result.usable? ? result : nil
     end
 

@@ -13,7 +13,7 @@ module Seller
       @address = params[:address].to_s.strip
       return redirect_to(seller_home_path, alert: "Enter your home's address.") if @address.blank?
 
-      @valuation = valuation_client.valuation(address: @address)
+      @valuation = ValuationAssembly.new(address: @address, client: valuation_client).call
 
       if @valuation.usable?
         @cash_offer = (@valuation.estimate * CASH_OFFER_RATIO).round(-3).to_i

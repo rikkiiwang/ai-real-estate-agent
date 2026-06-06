@@ -27,6 +27,26 @@
     </p>
   </div>
 
+  <% val = local_assigns.fetch(:valuation, @valuation) %>
+  <% if val.respond_to?(:as_of) && val.as_of.present? %>
+    <p class="mk-meta">&#128197; Data as of <%= val.as_of.to_date.strftime("%b %-d, %Y") rescue val.as_of %> &middot; updated ~daily</p>
+  <% end %>
+  <% if val.respond_to?(:recent_activity) && val.recent_activity.present? %>
+    <p class="mk-meta">&#128200; <%= val.recent_activity %></p>
+  <% end %>
+  <% comp_facts = val.respond_to?(:facts) ? Array(val.facts).select { |f| f.kind == "comp:active_listing" } : [] %>
+  <% if comp_facts.any? %>
+    <details class="mk-comps">
+      <summary>Comparable active listings used (<%= comp_facts.size %>)</summary>
+      <ul>
+        <% comp_facts.each do |f| %><li><%= f.description %></li><% end %>
+      </ul>
+    </details>
+  <% end %>
+  <% if val.respond_to?(:low_confidence?) && val.low_confidence? %>
+    <p class="mk-meta mk-meta--warn">&#9888; Limited data for this address &mdash; estimate shown at lower confidence.</p>
+  <% end %>
+
   <details class="agent-reasoning">
     <summary>How Atlas reached this</summary>
 

@@ -73,4 +73,31 @@ class Seller::ValuationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match(/taking a moment/i, @response.body)
   end
+
+  test "seller valuation surfaces freshness from the assembled valuation" do
+    Property.create!(address: "1 Oak St", state: "listed", region: "Austin 78704",
+                     list_price: 500_000, sqft: 2000, beds: 4, baths: 2.5, year_built: 1998,
+                     source_name: "RentCast (live listing data)", captured_at: Time.current)
+    MarketSnapshot.create!(zip: "78704", area: "Austin 78704", median_price: 600_000,
+                           new_listings: 3, avg_days_on_market: 21, as_of: Date.new(2026, 6, 5))
+    sign_in
+
+    # Inject a client that echoes the freshness metadata back so the view can render it.
+    freshness_client = Class.new do
+      def valuation(address:, features: nil, comps: nil, as_of: nil, recent_activity: nil, **)
+        BrainValuationClient::Result.new(
+          sufficient_data: true, estimate: 480_000, low: 440_000, high: 520_000,
+          facts: [], as_of: as_of, recent_activity: recent_activity, error: nil
+        )
+      end
+    end.new
+
+    Seller::ValuationsController.valuation_client_override = -> { freshness_client }
+    post seller_valuations_path, params: { address: "1 Oak St" }
+    Seller::ValuationsController.valuation_client_override = nil
+
+    assert_response :success
+    assert_match(/new listing/i, @response.body)    # recent_activity surfaced
+    assert_match(/as of/i, @response.body)          # freshness label surfaced
+  end
 end

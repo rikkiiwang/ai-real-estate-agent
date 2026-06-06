@@ -53,6 +53,25 @@
       <% end %>
       <p class="mk-source">Each figure is source-cited. Atlas won't quote a value it can't support.</p>
     <% end %>
+
+    <% if @valuation.respond_to?(:as_of) && @valuation.as_of.present? %>
+      <p class="mk-meta">&#128197; Data as of <%= @valuation.as_of.to_date.strftime("%b %-d, %Y") rescue @valuation.as_of %> &middot; updated ~daily</p>
+    <% end %>
+    <% if @valuation.respond_to?(:recent_activity) && @valuation.recent_activity.present? %>
+      <p class="mk-meta">&#128200; <%= @valuation.recent_activity %></p>
+    <% end %>
+    <% comp_facts = Array(@valuation.facts).select { |f| f.kind == "comp:active_listing" } %>
+    <% if comp_facts.any? %>
+      <details class="mk-comps">
+        <summary>Comparable active listings used (<%= comp_facts.size %>)</summary>
+        <ul>
+          <% comp_facts.each do |f| %><li><%= f.description %></li><% end %>
+        </ul>
+      </details>
+    <% end %>
+    <% if @valuation.respond_to?(:low_confidence?) && @valuation.low_confidence? %>
+      <p class="mk-meta mk-meta--warn">&#9888; Limited data for this address &mdash; estimate shown at lower confidence.</p>
+    <% end %>
   </div>
 
   <div class="mk-card-section">
