@@ -20,7 +20,7 @@ COMP_ANCHOR_ALPHA: float = 0.7
 COMP_HALFLIFE_DAYS: float = 30.0
 
 
-@dataclass
+@dataclass(frozen=True)
 class MarketResult:
     estimate: float
     low: float
@@ -72,5 +72,4 @@ def anchor_and_blend(
         )
         for c in usable
     ]
-    return MarketResult(estimate=round(estimate, 2), low=round(low, 2),
-                        high=round(high, 2), facts=facts)
+    return MarketResult(estimate=estimate, low=low, high=high, facts=facts)

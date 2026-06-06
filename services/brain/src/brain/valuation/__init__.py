@@ -77,7 +77,7 @@ def _facts_from_contributions(
 def value_record(
     record: PropertyRecord,
     *,
-    comps: Optional[list["CompInput"]] = None,
+    comps: Optional[list[CompInput]] = None,
     as_of: Optional[str] = None,
     recent_activity: Optional[str] = None,
 ) -> Valuation:

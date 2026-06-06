@@ -28,7 +28,7 @@ def test_recent_comps_weighted_higher():
                       contributions=[0.0])
     # A fresh cheap comp and a stale expensive comp; fresh one should pull harder.
     fresh = _comp(150.0, age=0, cid="fresh")
-    stale = _comp(350.0, age=4 * COMP_HALFLIFE_DAYS, cid="stale")
+    stale = _comp(350.0, age=int(4 * COMP_HALFLIFE_DAYS), cid="stale")
     out = anchor_and_blend(pred, subject_sqft=2000.0, comps=[fresh, stale])
     midpoint_ppsf = 250.0 * 2000.0  # unweighted mean would land here
     assert out.estimate < midpoint_ppsf  # weighted toward the fresh, cheaper comp
