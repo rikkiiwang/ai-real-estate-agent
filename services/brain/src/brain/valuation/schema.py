@@ -39,6 +39,9 @@ class Valuation:
     low: float = 0.0
     high: float = 0.0
     facts: list[Fact] = field(default_factory=list)
+    # Freshness metadata (set on the comps-grounded path; None on hash fallback).
+    as_of: Optional[str] = None
+    recent_activity: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -63,3 +66,24 @@ class PropertyRecord:
     condition: Optional[float] = None
     # Provenance: source record ids backing this record's fields, for citation.
     source_ids: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class CompInput:
+    """A real comparable listing passed in by Rails to anchor the estimate.
+
+    These are ACTIVE listings (asking prices), never described as closed sales.
+    """
+
+    id: str
+    price: float
+    sqft: float
+    beds: float = 0.0
+    baths: float = 0.0
+    distance_mi: float = 0.0
+    age_days: int = 0
+    address: str = ""
+
+    @property
+    def price_per_sqft(self) -> float:
+        return self.price / self.sqft if self.sqft > 0 else 0.0

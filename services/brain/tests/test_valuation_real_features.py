@@ -27,3 +27,14 @@ def test_record_from_features_defaults_missing_geo_to_city_center():
     # Missing lot/year/geo fall back to neutral defaults so the vector is valid.
     assert rec.latitude == feat._LAT_CENTER and rec.longitude == feat._LON_CENTER
     assert rec.lot_sqft > 0 and rec.year_built >= 1900
+
+
+def test_comp_input_and_valuation_freshness_fields():
+    from brain.valuation.schema import CompInput, Valuation
+    c = CompInput(id="p1", price=500_000.0, sqft=2000.0, beds=4.0, baths=2.0,
+                  distance_mi=0.4, age_days=12, address="1 A St")
+    assert c.price_per_sqft == 250.0
+    v = Valuation(sufficient_data=True, estimate=1.0,
+                  as_of="2026-06-05T00:00:00Z", recent_activity="3 new in 30d")
+    assert v.as_of == "2026-06-05T00:00:00Z"
+    assert v.recent_activity == "3 new in 30d"
