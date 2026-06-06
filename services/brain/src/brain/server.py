@@ -47,7 +47,8 @@ class ValuationServicer(rpc.ValuationServicer):
             f = request.features
             record = record_from_features(
                 address=request.address,
-                beds=f.beds, baths=f.baths, sqft=f.sqft, lot_sqft=f.lot_sqft,
+                beds=f.beds, baths=f.baths, sqft=f.sqft,
+                lot_sqft=f.lot_sqft or None,
                 year_built=f.year_built or None,
                 latitude=f.latitude or None, longitude=f.longitude or None,
                 garage_spaces=f.garage_spaces or None,

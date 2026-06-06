@@ -16,7 +16,7 @@ class MarketActivity
 
     parts = []
     parts << "#{snap.new_listings} new listing#{'s' unless snap.new_listings == 1} recently" if snap.new_listings.present?
-    parts << "median $#{ActiveSupport::NumberHelper.number_to_delimited(snap.median_price.to_i)}" if snap.median_price.present?
+    parts << "median list $#{ActiveSupport::NumberHelper.number_to_delimited(snap.median_price.to_i)}" if snap.median_price.present?
     parts << "avg #{snap.avg_days_on_market.to_i} days on market" if snap.avg_days_on_market.present?
     summary = parts.any? ? parts.join(" · ") : "Market snapshot available."
     Result.new(as_of: snap.as_of, summary: summary)
