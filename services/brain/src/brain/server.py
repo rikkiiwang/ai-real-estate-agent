@@ -23,22 +23,46 @@ from brain.valuation import estimate_value
 
 class ValuationServicer(rpc.ValuationServicer):
     def GetValuation(self, request, context):
-        v = estimate_value(request.address)
+        v = self._value(request)
         return pb.GetValuationResponse(
             sufficient_data=v.sufficient_data,
             estimate=v.estimate,
             low=v.low,
             high=v.high,
             facts=[
-                pb.SourceFact(
-                    source_id=f.source_id,
-                    kind=f.kind,
-                    description=f.description,
-                    contribution=f.contribution,
-                )
+                pb.SourceFact(source_id=f.source_id, kind=f.kind,
+                              description=f.description, contribution=f.contribution)
                 for f in v.facts
             ],
+            as_of=v.as_of or "",
+            recent_activity=v.recent_activity or "",
         )
+
+    @staticmethod
+    def _value(request):
+        if request.HasField("features"):
+            from brain.valuation import value_record
+            from brain.valuation.features import record_from_features
+            from brain.valuation.schema import CompInput
+            f = request.features
+            record = record_from_features(
+                address=request.address,
+                beds=f.beds, baths=f.baths, sqft=f.sqft, lot_sqft=f.lot_sqft,
+                year_built=f.year_built or None,
+                latitude=f.latitude or None, longitude=f.longitude or None,
+                garage_spaces=f.garage_spaces or None,
+                condition=f.condition if f.has_condition else None,
+            )
+            comps = [
+                CompInput(id=c.id, price=c.price, sqft=c.sqft, beds=c.beds,
+                          baths=c.baths, distance_mi=c.distance_mi,
+                          age_days=c.age_days, address=c.address)
+                for c in request.comps
+            ]
+            return value_record(record, comps=comps or None,
+                                as_of=request.as_of or None,
+                                recent_activity=request.recent_activity or None)
+        return estimate_value(request.address)
 
 
 class VerificationServicer(rpc.VerificationServicer):
