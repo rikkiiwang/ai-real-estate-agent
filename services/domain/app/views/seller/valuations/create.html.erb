@@ -60,7 +60,7 @@
     <% if @valuation.respond_to?(:recent_activity) && @valuation.recent_activity.present? %>
       <p class="mk-meta">&#128200; <%= @valuation.recent_activity %></p>
     <% end %>
-    <% comp_facts = Array(@valuation.facts).select { |f| f.kind == "comp:active_listing" } %>
+    <% comp_facts = @valuation.respond_to?(:facts) ? Array(@valuation.facts).select { |f| f.kind == "comp:active_listing" } : [] %>
     <% if comp_facts.any? %>
       <details class="mk-comps">
         <summary>Comparable active listings used (<%= comp_facts.size %>)</summary>
