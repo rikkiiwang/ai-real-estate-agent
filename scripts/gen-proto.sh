@@ -19,7 +19,7 @@ protoc -I "$PROTO_DIR" \
 echo "→ Python stubs"
 PY_OUT=services/brain/src/genproto
 mkdir -p "$PY_OUT"
-python3 -m grpc_tools.protoc -I "$PROTO_DIR" \
+"${PYTHON:-python3}" -m grpc_tools.protoc -I "$PROTO_DIR" \
   --python_out="$PY_OUT" \
   --grpc_python_out="$PY_OUT" \
   $PROTO_FILES
