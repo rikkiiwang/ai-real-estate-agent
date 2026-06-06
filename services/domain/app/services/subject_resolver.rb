@@ -19,7 +19,9 @@ class SubjectResolver
   private
 
   def from_property
-    p = Property.where("lower(address) = ?", @address.downcase).order(retired_at: :asc).first
+    p = Property.where("lower(address) = ?", @address.downcase)
+                .where(retired_at: nil)
+                .first
     return nil unless p&.sqft.present?
 
     Subject.new(
