@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_05_000005) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_06_000001) do
   create_table "audit_events", force: :cascade do |t|
     t.text "claim"
     t.string "content_hash", null: false
@@ -165,6 +165,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_05_000005) do
     t.index ["list_price"], name: "index_properties_on_list_price"
     t.index ["region"], name: "index_properties_on_region"
     t.index ["retired_at"], name: "index_properties_on_retired_at"
+  end
+
+  create_table "property_record_caches", force: :cascade do |t|
+    t.string "address", null: false
+    t.decimal "baths", precision: 3, scale: 1
+    t.datetime "captured_at"
+    t.datetime "created_at", null: false
+    t.decimal "garage_spaces", precision: 4, scale: 1
+    t.decimal "lat", precision: 10, scale: 6
+    t.decimal "lng", precision: 10, scale: 6
+    t.decimal "lot_sqft", precision: 12, scale: 1
+    t.integer "beds"
+    t.string "region"
+    t.integer "sqft"
+    t.decimal "tax_assessed_value", precision: 12, scale: 2
+    t.datetime "updated_at", null: false
+    t.integer "year_built"
+    t.index ["address"], name: "index_property_record_caches_on_address", unique: true
   end
 
   create_table "visitors", force: :cascade do |t|
