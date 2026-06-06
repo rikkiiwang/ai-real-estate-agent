@@ -32,6 +32,15 @@ class RentCastClient
     body.is_a?(Hash) ? (body["saleData"] || body) : nil
   end
 
+  # A single property's record (real attributes + tax assessment) for one
+  # address. ONE request per address — callers MUST cache (PropertyRecordCache).
+  # Returns the first matching record hash, or nil.
+  def property_record(address:)
+    body = get("/properties", address: address)
+    rec = body.is_a?(Array) ? body.first : body
+    rec.is_a?(Hash) ? rec : nil
+  end
+
   private
 
   def get(path, **params)
