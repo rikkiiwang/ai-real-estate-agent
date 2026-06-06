@@ -105,6 +105,27 @@ curl -fsI "https://are-domain.fly.dev/"                    # 200 — browsable c
 curl -fs -o /dev/null -w '%{http_code}\n' "https://are-domain.fly.dev/broker/dashboard"  # 302 -> /session/new when signed out
 ```
 
+## Valuation quota note
+
+The valuation request path (seller workspace + buyer agent sidebar) **never calls
+RentCast** — it reads the `Property` comp pool and `MarketSnapshot` freshness
+from the DB. The demo is pre-warmed for the seeded listings, so it costs zero
+RentCast calls.
+
+After a `rake rentcast:import` that brings in new addresses you may optionally
+warm arbitrary-address coverage once:
+
+```bash
+# On the deployed domain machine (or locally with a DATABASE_URL pointed at prod):
+fly ssh console --app are-domain -C \
+  "cd /app && bundle exec rake rentcast:prewarm MAX_CALLS=50"
+```
+
+This is capped (hard limit via `MAX_CALLS`) and cache-first (already-fresh rows
+are skipped without a call), so it spends a bounded, logged number of RentCast
+requests — never per web request. Pass `ADDRESSES='a;b;c'` to target specific
+addresses; omit it to warm the browsable catalog's un-cached rows up to the cap.
+
 ## Notes & decisions
 
 - **Postgres is a plain pgvector container, not Fly Managed Postgres** — it

@@ -362,7 +362,7 @@ single migrator. Full runbook, secrets, and per-app `fly.toml` in
 
 | Component | Status | Production seam |
 |---|---|---|
-| Valuation model | real model, **synthetic** training data | live MLS/feature pipeline |
+| Valuation model | real gradient-boosting model; estimate **grounded in real comps + per-ZIP freshness** — `ValuationAssembly` (Rails) resolves the subject's real attributes (`SubjectResolver`: existing `Property` or `PropertyRecordCache`), picks ACTIVE comparable listings (`CompsSelector`), reads an honest "as of" + recent-activity summary (`MarketActivity` from `MarketSnapshot`), and calls the brain with features + comps + recency. The brain anchors the estimate on a recency-weighted comp price-per-sqft blend (`market.py`, comps dominant), returns comp citations + freshness. Request path reads DB only (zero RentCast). Arbitrary-address coverage via a capped, cache-first `rake rentcast:prewarm` (each unique address ≤ 1 RentCast call; pre-warmed demo = 0 calls). Uncovered addresses fall back to address-hash + lower-confidence flag. | live MLS/feature pipeline; `PropertyRecordCache` is the current arbitrary-address seam |
 | RAG store | real (`InMemoryVectorStore`) | `PgVectorStore` (present, lazy-connecting) |
 | Embedder | deterministic `FakeEmbedder` | `RealEmbedder` (injected) |
 | Entailer (Critic) | deterministic token-overlap | real-LLM entailer (injected) |
@@ -370,7 +370,7 @@ single migrator. Full runbook, secrets, and per-app `fly.toml` in
 | Handoff / offer sinks | fakes in tests | Rails gRPC (wired for offer/handoff) |
 | Contract generation | real TREC fill | reachable via `Closer.GenerateContract` (wired to the marketplace) |
 | Closing counterparty sink | fake | gRPC sink (`NotImplementedError` today) |
-| Listings | real listings + market stats imported from the **RentCast API** — a third-party listing-data feed (aggregated active listings + market stats), not a direct MLS connection — via `rake rentcast:import` (source-labeled; seeded sample as offline fallback) | direct MLS provenance + listing photos behind `ListingSource` |
+| Listings | real ACTIVE listings + per-ZIP market stats imported from the **RentCast API** via `rake rentcast:import` (source-labeled; seeded sample as offline fallback); these same `Property` rows are the **comp pool** for the valuation path — comps are asking-price active listings (never described as closed sales). `PropertyRecordCache` holds per-address real attributes (beds/baths/sqft/geo/tax) fetched by the prewarm task and consumed by `SubjectResolver`. | direct MLS provenance + listing photos behind `ListingSource` |
 | Channel transport (SMS/Email) | **Voice & Chat are live** (in-browser); SMS/Email run on a `Simulated` transport behind the `ChannelTransport` adapter — the agent still replies in-thread and renders a `simulated` delivery note, but nothing is texted/emailed | drop-in `TwilioSms` / `SendgridEmail` classes auto-engage once `TWILIO_*` / `SENDGRID_API_KEY` are set (+ an inbound webhook for true two-way) |
 | Intent triaging | real — `IntentTriage` qualifies a visitor (looky-loo vs high-intent) on the **profile** from a neutral allow-list (financing pre-approval + ≤30-day move); high-intent auto-routes to the broker queue | broaden signals / connect a CRM scoring model |
 
@@ -382,18 +382,24 @@ production-shaped; the data and a few external integrations are deferred.
 ## 14. Testing strategy
 
 - **Hermetic by default.** Fakes + in-memory stores + `MemorySaver` mean the
-  whole agent loop runs with no network and no Postgres. The brain suite (197
-  tests) covers valuation, RAG, the Critic, Fair Housing, confidence, handoff,
-  the orchestrator (happy / critical / Fair-Housing / regenerate / resumability),
-  the Closer, the closing orchestration, the demo spine, the `Conversation`
-  servicer mapping, and the `Closer.GenerateContract` servicer (TREC fill +
-  UPL-refusal path).
+  whole agent loop runs with no network and no Postgres. The brain suite (206
+  tests) covers valuation (including the real-features path, comp anchoring,
+  freshness, and the `GetValuation` gRPC real-features path), RAG, the Critic,
+  Fair Housing, confidence, handoff, the orchestrator (happy / critical /
+  Fair-Housing / regenerate / resumability), the Closer, the closing
+  orchestration, the demo spine, the `Conversation` servicer mapping, and the
+  `Closer.GenerateContract` servicer (TREC fill + UPL-refusal path).
 - **Cross-language smoke** (`make smoke`) exercises a real gateway → brain gRPC
   round-trip and returns a live valuation.
-- **Rails** tests (196) cover the domain models and the full consumer marketplace, including the **Ask Atlas chatbot** omnichannel (channel switch + voice input + the `ChannelTransport` SMS/Email seam) and profile-based intent triaging
-  — listings/search, the agent sidebar (DI fake brain), the cited decision bundle,
-  the buyer/seller offer flows, contract generation + fallback, and the
-  broker-gate lifecycle — against SQLite.
+- **Rails** tests (216) cover the domain models and the full consumer marketplace,
+  including the real-time valuation path (`CompsSelector`, `MarketActivity`,
+  `SubjectResolver`, `ValuationAssembly`, `BrainValuationClient` with
+  features/comps, `PropertyRecordCache`, capped prewarm), the **Ask Atlas
+  chatbot** omnichannel (channel switch + voice input + the `ChannelTransport`
+  SMS/Email seam) and profile-based intent triaging — listings/search, the agent
+  sidebar (DI fake brain), the cited decision bundle, the buyer/seller offer
+  flows, contract generation + fallback, and the broker-gate lifecycle — against
+  SQLite.
 
 ```bash
 make test     # Go + Python

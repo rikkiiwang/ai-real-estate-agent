@@ -173,7 +173,7 @@ is not the same as it being *reachable by a user*:
 | Consumer | Buyer decision bundle (rate / comps / tax / monthly), cited | ✅ reachable — each figure sourced; no fabricated comps |
 | Consumer | Buyer offer → broker queue | ✅ reachable — lands `awaiting_broker`, not binding until signed |
 | Consumer | Seller valuation + platform cash offer, cited | ✅ reachable — live AVM, no-fabrication on insufficient data |
-| Brain | Real-time per-address valuation (AVM) | ✅ reachable; AVM 🟠 synthetic-trained, but the catalog now carries **real, dated RentCast market data** (median / $psf / active / DOM) |
+| Brain | Real-time per-address valuation (AVM) — **R3** | ✅ reachable; AVM grounded in **real comps + per-ZIP market freshness**: the model is anchored on a recency-weighted blend of real comparable ACTIVE listings from our DB (never described as closed sales), carries an honest **"Data as of …"** freshness label + recent-activity summary from the ZIP market snapshot, and cites each comparable listing used. For addresses in the browsable catalog the request path reads the DB only (zero RentCast calls). Arbitrary typed addresses are covered via a **capped, cache-first** `rake rentcast:prewarm` (each unique address ≤ 1 RentCast call ever; demo is pre-warmed = 0 calls). When the address is not yet in cache the estimate is shown at lower confidence rather than fabricated. |
 | Consumer | Market intelligence (real, dated) | ✅ reachable — live RentCast market snapshot per ZIP, shown with its as-of date |
 | Brain | Multi-source ingestion (MLS + TCAD + news) | 🟡 **real listing data via the RentCast API** (a third-party listing-data feed, not a direct MLS connection; periodically refreshed) + TCAD/GIS + synthetic-trained AVM; **direct MLS + news ingestion ❌** |
 | Brain | Visual property analysis (photos) | 🟡 real design (Gemini structured output), model unbound + unexposed in prod |
@@ -235,7 +235,7 @@ make up          # full stack via docker compose (Postgres+pgvector + all servic
 ```
 
 Per-suite toolchains (the Makefile vars let you point at the right ones):
-- **Brain (Python):** needs a Python with `pytest` + the brain deps — `make brain-test PYTHON=/opt/anaconda3/bin/python3` if your `python3` lacks them (197 tests).
+- **Brain (Python):** needs a Python with `pytest` + the brain deps — `make brain-test PYTHON=/opt/anaconda3/bin/python3` if your `python3` lacks them (206 tests).
 - **Rails (domain):** needs Ruby 3.3.11 (`services/domain/.ruby-version`, via rbenv) + `bundle install` — `make rails-test` (tests run on SQLite; no Postgres needed).
 - **Go:** `make go-test` (build + vet + tests).
 
@@ -290,8 +290,16 @@ and verification commands.
 
 ## What's real vs. synthetic (so reviewers aren't surprised)
 
-- The **valuation model** is a real gradient-boosting regressor, but trained on a
-  **hermetic synthetic dataset** (deterministic, no live MLS feed).
+- The **valuation model** is a real gradient-boosting regressor trained on a
+  hermetic synthetic dataset, but the **estimate is now grounded in real data**:
+  it is anchored on a recency-weighted blend of real comparable ACTIVE listings
+  from the DB (asking prices, cited per comp) and carries an honest per-ZIP
+  freshness label ("Data as of …" from the `MarketSnapshot` table, refreshed on
+  import — not a live stream). For browsable catalog addresses the entire request
+  path reads the DB only; arbitrary addresses can be covered by running
+  `rake rentcast:prewarm` (capped, cache-first: each unique address costs at most
+  one RentCast call, the demo is pre-warmed). When no record is found the
+  estimate falls back to the address-hash path and is flagged lower-confidence.
 - The **RAG / Critic** pipeline is real; the entailer in the deployed path is a
   deterministic token-overlap implementation (a real-LLM entailer is dependency-injected and deferred).
 - **Vision** is wired to Gemini structured output but runs against a fake unless a `GEMINI_API_KEY` is provided.
@@ -309,5 +317,5 @@ Two-sided MVP built across Go/Python/Rails, deployed live on Fly.io. The
 LangGraph orchestrator is exposed end-to-end through the consumer **marketplace**
 (agent sidebar) and **chat** app and the gateway `/orchestrate` API; the Closer's
 TREC paperwork is reachable via `Closer.GenerateContract`. Tests: Go green,
-Python brain **197** passing, Rails **196** passing. See `docs/ARCHITECTURE.md`
+Python brain **206** passing, Rails **216** passing. See `docs/ARCHITECTURE.md`
 for design and `docs/plans/` for the plans and remaining deferred seams.
