@@ -39,3 +39,21 @@ def test_no_comps_returns_model_estimate_unchanged():
                       contributions=[0.0])
     out = anchor_and_blend(pred, subject_sqft=2000.0, comps=[])
     assert out.estimate == 500_000.0 and out.facts == []
+
+
+def test_value_record_with_comps_and_freshness():
+    from brain.valuation import value_record
+    from brain.valuation.features import record_from_features
+    from brain.valuation.schema import CompInput
+
+    rec = record_from_features(address="9 Oak", beds=4.0, baths=2.0,
+                               sqft=2000.0, year_built=2000)
+    comps = [CompInput(id="a", price=400_000.0, sqft=2000.0, age_days=5, address="1 A")]
+    v = value_record(rec, comps=comps, as_of="2026-06-05T00:00:00Z",
+                     recent_activity="3 new listings in 30d")
+    assert v.sufficient_data is True
+    assert v.as_of == "2026-06-05T00:00:00Z"
+    assert v.recent_activity == "3 new listings in 30d"
+    # Carries both the model's feature facts AND the comp facts.
+    assert any(f.kind.startswith("feature:") for f in v.facts)
+    assert any(f.kind == "comp:active_listing" for f in v.facts)

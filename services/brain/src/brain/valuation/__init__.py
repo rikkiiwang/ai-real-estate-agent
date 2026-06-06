@@ -16,10 +16,12 @@ from __future__ import annotations
 from typing import Optional
 
 from . import features as _features
+from .market import anchor_and_blend
 from .model import get_model
-from .schema import Fact, PropertyRecord, Valuation
+from .schema import CompInput, Fact, PropertyRecord, Valuation
 
 __all__ = [
+    "CompInput",
     "Fact",
     "Valuation",
     "PropertyRecord",
@@ -72,11 +74,18 @@ def _facts_from_contributions(
     return facts
 
 
-def value_record(record: PropertyRecord) -> Valuation:
+def value_record(
+    record: PropertyRecord,
+    *,
+    comps: Optional[list["CompInput"]] = None,
+    as_of: Optional[str] = None,
+    recent_activity: Optional[str] = None,
+) -> Valuation:
     """Value a normalized :class:`PropertyRecord` with the AVM.
 
-    Exposed for U2/U5 to call once the real ingestion join produces records
-    directly, without going through address-derivation.
+    When ``comps`` are supplied the estimate is anchored on the recency-weighted
+    comp price-per-sqft (comps dominant) and the comp citations are attached;
+    ``as_of`` / ``recent_activity`` carry honest freshness metadata through.
     """
     model = get_model()
     imputed_condition = record.condition is None
@@ -88,12 +97,21 @@ def value_record(record: PropertyRecord) -> Valuation:
     facts = _facts_from_contributions(
         record, prediction.contributions, imputed_condition=imputed_condition
     )
+
+    estimate, low, high = prediction.estimate, prediction.low, prediction.high
+    if comps:
+        market = anchor_and_blend(prediction, subject_sqft=record.sqft, comps=comps)
+        estimate, low, high = market.estimate, market.low, market.high
+        facts = facts + market.facts
+
     return Valuation(
         sufficient_data=True,
-        estimate=round(prediction.estimate, 2),
-        low=round(prediction.low, 2),
-        high=round(prediction.high, 2),
+        estimate=round(estimate, 2),
+        low=round(low, 2),
+        high=round(high, 2),
         facts=facts,
+        as_of=as_of,
+        recent_activity=recent_activity,
     )
 
 
