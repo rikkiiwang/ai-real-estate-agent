@@ -525,3 +525,119 @@ var Domain_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "realestate/v1/realestate.proto",
 }
+
+const (
+	Closer_GenerateContract_FullMethodName = "/realestate.v1.Closer/GenerateContract"
+)
+
+// CloserClient is the client API for Closer service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// ── Closer (TREC paperwork, blanks-only — served by the brain) ───────────────
+//
+// Makes the previously-unreachable Closer reachable: fills a PROMULGATED TREC
+// form (factual blanks only) via brain.lawyer.trec_form.fill_trec_form. A
+// request for a custom clause / non-standard term is REFUSED (UplViolation) and
+// surfaced as a handoff — the agent never authors clause language (UPL line).
+type CloserClient interface {
+	GenerateContract(ctx context.Context, in *GenerateContractRequest, opts ...grpc.CallOption) (*GenerateContractResponse, error)
+}
+
+type closerClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewCloserClient(cc grpc.ClientConnInterface) CloserClient {
+	return &closerClient{cc}
+}
+
+func (c *closerClient) GenerateContract(ctx context.Context, in *GenerateContractRequest, opts ...grpc.CallOption) (*GenerateContractResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GenerateContractResponse)
+	err := c.cc.Invoke(ctx, Closer_GenerateContract_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CloserServer is the server API for Closer service.
+// All implementations must embed UnimplementedCloserServer
+// for forward compatibility.
+//
+// ── Closer (TREC paperwork, blanks-only — served by the brain) ───────────────
+//
+// Makes the previously-unreachable Closer reachable: fills a PROMULGATED TREC
+// form (factual blanks only) via brain.lawyer.trec_form.fill_trec_form. A
+// request for a custom clause / non-standard term is REFUSED (UplViolation) and
+// surfaced as a handoff — the agent never authors clause language (UPL line).
+type CloserServer interface {
+	GenerateContract(context.Context, *GenerateContractRequest) (*GenerateContractResponse, error)
+	mustEmbedUnimplementedCloserServer()
+}
+
+// UnimplementedCloserServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedCloserServer struct{}
+
+func (UnimplementedCloserServer) GenerateContract(context.Context, *GenerateContractRequest) (*GenerateContractResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GenerateContract not implemented")
+}
+func (UnimplementedCloserServer) mustEmbedUnimplementedCloserServer() {}
+func (UnimplementedCloserServer) testEmbeddedByValue()                {}
+
+// UnsafeCloserServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CloserServer will
+// result in compilation errors.
+type UnsafeCloserServer interface {
+	mustEmbedUnimplementedCloserServer()
+}
+
+func RegisterCloserServer(s grpc.ServiceRegistrar, srv CloserServer) {
+	// If the following call panics, it indicates UnimplementedCloserServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&Closer_ServiceDesc, srv)
+}
+
+func _Closer_GenerateContract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateContractRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CloserServer).GenerateContract(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Closer_GenerateContract_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CloserServer).GenerateContract(ctx, req.(*GenerateContractRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Closer_ServiceDesc is the grpc.ServiceDesc for Closer service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Closer_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "realestate.v1.Closer",
+	HandlerType: (*CloserServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GenerateContract",
+			Handler:    _Closer_GenerateContract_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "realestate/v1/realestate.proto",
+}

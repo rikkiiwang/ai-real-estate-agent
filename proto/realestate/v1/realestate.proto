@@ -11,8 +11,36 @@ service Valuation {
   rpc GetValuation(GetValuationRequest) returns (GetValuationResponse);
 }
 
+message PropertyFeatures {
+  double beds = 1;
+  double baths = 2;
+  double sqft = 3;
+  double lot_sqft = 4;
+  int32 year_built = 5;
+  double latitude = 6;
+  double longitude = 7;
+  double garage_spaces = 8;
+  double condition = 9;       // photo-derived [0,1]; 0 with has_condition=false means unknown
+  bool has_condition = 10;
+}
+
+message CompInput {
+  string id = 1;
+  double price = 2;
+  double sqft = 3;
+  double beds = 4;
+  double baths = 5;
+  double distance_mi = 6;
+  int32 age_days = 7;
+  string address = 8;
+}
+
 message GetValuationRequest {
   string address = 1;
+  PropertyFeatures features = 2;   // optional; absent => address-hash fallback
+  repeated CompInput comps = 3;    // optional; empty => model-only
+  string as_of = 4;                // optional freshness label (ISO 8601)
+  string recent_activity = 5;      // optional human-readable recent-activity summary
 }
 
 // A single fact backing a valuation, carrying provenance for citation by the
@@ -30,6 +58,8 @@ message GetValuationResponse {
   double low = 3;                 // uncertainty band low
   double high = 4;                // uncertainty band high
   repeated SourceFact facts = 5;  // source-backed features for citation
+  string as_of = 6;            // echoed freshness label
+  string recent_activity = 7;  // echoed recent-activity summary
 }
 
 // ── Verification (the "Lawyer") ──────────────────────────────────────────────
