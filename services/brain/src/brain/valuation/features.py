@@ -125,6 +125,50 @@ def derive_record(
     )
 
 
+# Neutral fallbacks when a real listing omits a field (kept honest: a missing
+# lot/year widens nothing here — the band already widens on sparse condition).
+_DEFAULT_LOT_SQFT: float = 6000.0
+_DEFAULT_YEAR_BUILT: int = 1990
+
+
+def record_from_features(
+    address: str,
+    *,
+    beds: float,
+    baths: float,
+    sqft: float,
+    lot_sqft: Optional[float] = None,
+    year_built: Optional[int] = None,
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    garage_spaces: Optional[float] = None,
+    condition: Optional[float] = None,
+) -> PropertyRecord:
+    """Build a :class:`PropertyRecord` from REAL listing/record attributes.
+
+    Sibling to :func:`derive_record` (which hashes the address). This is the
+    path used once the Rails ingestion join supplies a subject's true beds/
+    baths/sqft/geo, so the AVM reasons over real data rather than a hash.
+    Missing optional fields fall back to neutral defaults so the fixed-order
+    feature vector is always valid.
+    """
+    if condition is not None:
+        condition = max(0.0, min(1.0, float(condition)))
+    return PropertyRecord(
+        address=(address or "").strip(),
+        beds=float(beds),
+        baths=float(baths),
+        sqft=float(sqft),
+        lot_sqft=float(lot_sqft) if lot_sqft else _DEFAULT_LOT_SQFT,
+        year_built=int(year_built) if year_built else _DEFAULT_YEAR_BUILT,
+        latitude=float(latitude) if latitude is not None else _LAT_CENTER,
+        longitude=float(longitude) if longitude is not None else _LON_CENTER,
+        garage_spaces=float(garage_spaces) if garage_spaces else 0.0,
+        condition=condition,
+        source_ids=("listing:rentcast",),
+    )
+
+
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Great-circle distance in km. Pure-Python (no numpy needed for one call)."""
     import math
