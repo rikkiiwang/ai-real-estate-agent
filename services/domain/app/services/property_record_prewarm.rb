@@ -33,7 +33,7 @@ class PropertyRecordPrewarm
   private
 
   def upsert(address, rec)
-    cache = PropertyRecordCache.find_or_initialize_by(address: address)
+    cache = PropertyRecordCache.find_by("lower(address) = ?", address.downcase) || PropertyRecordCache.new(address: address)
     cache.assign_attributes(
       region: rec["zipCode"].present? ? "Austin #{rec["zipCode"]}" : cache.region,
       beds: rec["bedrooms"]&.to_i, baths: rec["bathrooms"], sqft: rec["squareFootage"]&.to_i,
@@ -50,7 +50,7 @@ class PropertyRecordPrewarm
   def latest_assessment(rec)
     assessments = rec["taxAssessments"]
     return nil unless assessments.is_a?(Hash) && assessments.any?
-    year = assessments.keys.max
+    year = assessments.keys.max_by(&:to_i)
     assessments.dig(year, "value")
   end
 end

@@ -21,6 +21,16 @@ class SubjectResolverTest < ActiveSupport::TestCase
     assert_nil SubjectResolver.new(address: "999 Unknown Rd").call
   end
 
+  test "resolves from PropertyRecordCache when no Property exists" do
+    PropertyRecordCache.create!(address: "5 Cache St", region: "Austin 78704",
+      beds: 3, baths: 2, sqft: 1800, year_built: 2005, lat: 30.25, lng: -97.76,
+      captured_at: Time.current)
+    s = SubjectResolver.new(address: "5 Cache St").call
+    assert s.present?
+    assert_equal 1800, s.sqft
+    assert_equal "Austin 78704", s.region
+  end
+
   test "prefers the active listing over a retired one at the same address" do
     Property.create!(address: "1 Oak St", state: "listed", region: "Austin 78704",
                      list_price: 300_000, sqft: 1400, beds: 3, baths: 1.0,
