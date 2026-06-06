@@ -33,3 +33,9 @@ broker allowlist — the config default is `broker@atlas.example`, extended via 
   extending the config default in [`config/marketplace.yml`](config/marketplace.yml).
 - `RENTCAST_API_KEY` — enables `rake rentcast:import` (real listing + market data);
   unset, the app falls back to the seeded sample listings.
+- **Channel transport (optional)** — the Ask Atlas sidebar's SMS/Email channels run on
+  a `Simulated` transport (`app/services/channel_transport.rb`) unless a provider is
+  configured. Set `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` (SMS) or `SENDGRID_API_KEY`
+  (email) to auto-engage the real `TwilioSms` / `SendgridEmail` adapters; unset, the
+  agent still replies in-thread and shows a `simulated` delivery note. Voice & Chat
+  need no configuration.

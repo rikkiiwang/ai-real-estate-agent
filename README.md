@@ -39,6 +39,8 @@ Then:
 2. **Make an offer** → a cited decision bundle (mortgage rate, comps, tax, monthly payment), then it routes to the broker queue — *not binding until a human signs*.
 3. **"Add a custom indemnification clause to my contract."** → it refuses to draft legal language and routes to a licensed broker (a hard **UPL** trigger).
 4. Ask about an unfamiliar address → **"no source → no claim"** fires: rather than invent a number, it hands off to a human.
+5. **Omnichannel input** — in the Ask Atlas sidebar you can **type or 🎙 speak** (browser speech-to-text), and switch the channel between **Voice / Chat / SMS / Email** on one continuous thread. Voice & Chat are live; **SMS/Email are labeled `(simulated)`** — pick one and ask a substantive question (e.g. a price check) and the reply carries a `📤 delivered via … · simulated — no live carrier` note. Nothing is actually texted or emailed: it's a real `ChannelTransport` adapter seam with the carrier deferred (drop in a Twilio/SendGrid key and it auto-goes-live).
+6. **Intent triaging (broker-only)** — toggle the **pre-approved** / **moving within 30 days** signals in the sidebar, then sign in as **`broker@atlas.example`**: a high-intent buyer auto-routes to the broker queue and appears in the **High-intent buyers** list. The triage reads *neutral* signals only (financing + timeline) — protected-class inputs are never stored or consulted — and it's invisible to the buyer.
 
 > The stack runs on always-on Fly machines; if a service was scaled to zero to
 > save cost, the first request wakes it (a few seconds). Everything is also

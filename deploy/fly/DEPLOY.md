@@ -51,6 +51,8 @@ Generate and export these before deploying. They are staged with
 | `GATEWAY_AUTH_SECRET` | gateway | `openssl rand -hex 32` |
 | `GEMINI_API_KEY` | brain (optional) | from Google AI Studio; omit to keep vision on the fake model |
 | `BROKER_EMAILS` | domain (optional) | comma-separated emails allowed into the broker dashboard, **extending** the config default (`broker@atlas.example`). Brokers sign in through the same passwordless consumer login; a server-side allowlist (`require_broker`) is the boundary, so unlisted visitors are redirected away even though the app is public. |
+| `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` | domain (optional) | engage the real `TwilioSms` adapter for the SMS channel; unset, SMS stays on the **simulated** transport (the agent still replies in-thread). |
+| `SENDGRID_API_KEY` | domain (optional) | engage the real `SendgridEmail` adapter for the Email channel; unset, Email stays on the **simulated** transport. |
 
 `DATABASE_URL` values are derived by `deploy.sh` from `POSTGRES_PASSWORD`
 (RAG db `realestate`, Rails db `domain_production`) — do not set them by hand.

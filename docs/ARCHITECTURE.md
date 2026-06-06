@@ -371,6 +371,8 @@ single migrator. Full runbook, secrets, and per-app `fly.toml` in
 | Contract generation | real TREC fill | reachable via `Closer.GenerateContract` (wired to the marketplace) |
 | Closing counterparty sink | fake | gRPC sink (`NotImplementedError` today) |
 | Listings | real listings + market stats imported from the **RentCast API** — a third-party listing-data feed (aggregated active listings + market stats), not a direct MLS connection — via `rake rentcast:import` (source-labeled; seeded sample as offline fallback) | direct MLS provenance + listing photos behind `ListingSource` |
+| Channel transport (SMS/Email) | **Voice & Chat are live** (in-browser); SMS/Email run on a `Simulated` transport behind the `ChannelTransport` adapter — the agent still replies in-thread and renders a `simulated` delivery note, but nothing is texted/emailed | drop-in `TwilioSms` / `SendgridEmail` classes auto-engage once `TWILIO_*` / `SENDGRID_API_KEY` are set (+ an inbound webhook for true two-way) |
+| Intent triaging | real — `IntentTriage` qualifies a visitor (looky-loo vs high-intent) on the **profile** from a neutral allow-list (financing pre-approval + ≤30-day move); high-intent auto-routes to the broker queue | broaden signals / connect a CRM scoring model |
 
 Every seam is dependency-injected and documented — the architecture is
 production-shaped; the data and a few external integrations are deferred.
