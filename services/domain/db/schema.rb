@@ -10,7 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_06_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_06_000002) do
+  create_table "appointments", force: :cascade do |t|
+    t.string "broker_email"
+    t.datetime "confirmed_at"
+    t.datetime "created_at", null: false
+    t.datetime "declined_at"
+    t.datetime "ends_at", null: false
+    t.string "kind", default: "tour", null: false
+    t.integer "lead_id"
+    t.text "notes"
+    t.integer "property_id", null: false
+    t.string "requester_email"
+    t.string "requester_name"
+    t.datetime "starts_at", null: false
+    t.string "status", default: "requested", null: false
+    t.datetime "updated_at", null: false
+    t.index ["lead_id"], name: "index_appointments_on_lead_id"
+    t.index ["property_id", "starts_at"], name: "index_appointments_on_property_id_and_starts_at"
+    t.index ["property_id"], name: "index_appointments_on_property_id"
+    t.index ["status"], name: "index_appointments_on_status"
+  end
+
   create_table "audit_events", force: :cascade do |t|
     t.text "claim"
     t.string "content_hash", null: false
@@ -196,6 +217,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_06_000001) do
     t.index ["email"], name: "index_visitors_on_email", unique: true
   end
 
+  add_foreign_key "appointments", "leads"
+  add_foreign_key "appointments", "properties"
   add_foreign_key "comps", "properties"
   add_foreign_key "consents", "leads"
   add_foreign_key "contracts", "offers"
