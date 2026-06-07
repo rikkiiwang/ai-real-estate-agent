@@ -11,6 +11,8 @@ module Broker
       @high_intent_buyers = Visitor.where("intent LIKE 'high%'").order(updated_at: :desc)
       # Requested showings awaiting a broker's confirm/decline (R6).
       @pending_showings = Appointment.pending.includes(:property, :lead)
+      # Photo red-flags routed to a human — never shown to buyers (R2).
+      @flagged_photos = PhotoAnalysis.includes(:property).reject { |pa| pa.review_findings.empty? }
     end
   end
 end

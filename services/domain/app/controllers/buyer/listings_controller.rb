@@ -22,6 +22,8 @@ module Buyer
       # Cross-source neighborhood pulse from cached market data (R1). No valuation
       # needed — market/tax only; renders when a market snapshot exists.
       @reconciliation = CrossSourceReconciliation.for(property: @listing)
+      # Cached photo analysis for the "What the photos show" panel (R2). DB-only.
+      @photo_analysis = PhotoAnalysis.find_by("lower(address) = ?", @listing.address.downcase)
     end
   end
 end

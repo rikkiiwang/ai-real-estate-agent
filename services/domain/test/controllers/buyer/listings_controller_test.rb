@@ -99,6 +99,25 @@ class Buyer::ListingsControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/Neighborhood pulse/, @response.body)
   end
 
+  test "detail page shows photo findings but never a red-flag (R2)" do
+    PhotoAnalysis.create!(address: @mueller.address, property: @mueller, provenance: "sample",
+      condition: 0.74, analyzed_at: Time.current,
+      findings: [{ "kind" => "feature", "label" => "updated_kitchen", "confidence" => 0.9, "evidence_photo_id" => "x" }],
+      needs_review: [{ "kind" => "red_flag", "label" => "water_stain_ceiling", "confidence" => 0.8, "evidence_photo_id" => "x" }])
+
+    get buyer_listing_path(@mueller)
+    assert_response :success
+    assert_match "What the photos show", @response.body
+    assert_match(/Updated kitchen/i, @response.body)         # buyer-safe feature shown
+    assert_no_match(/water.stain/i, @response.body)          # red-flag NEVER shown to the buyer
+  end
+
+  test "detail page omits the photo panel when no analysis is cached" do
+    get buyer_listing_path(@mueller)
+    assert_response :success
+    assert_no_match(/What the photos show/, @response.body)
+  end
+
   test "detail 404s for non-browsable properties" do
     get buyer_listing_path(@acquired)
     assert_response :not_found

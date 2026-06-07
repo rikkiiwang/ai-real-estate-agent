@@ -46,4 +46,32 @@ class ValuationAssemblyTest < ActiveSupport::TestCase
     assert_nil captured[:features] # honest: no real data => hash fallback, lower confidence
     assert result.low_confidence?
   end
+
+  test "sends the cached photo-derived condition to the brain (R2)" do
+    seed_pool
+    PhotoAnalysis.create!(address: "1 Oak St", condition: 0.82, provenance: "claude",
+                          findings: [], needs_review: [], analyzed_at: Time.current)
+    captured = nil
+    client = Object.new
+    client.define_singleton_method(:valuation) do |address:, features: nil, **kw|
+      captured = { features: features }
+      BrainValuationClient::Result.new(sufficient_data: true, estimate: 480_000, facts: [])
+    end
+
+    ValuationAssembly.new(address: "1 Oak St", client: client).call
+    assert_in_delta 0.82, captured[:features][:condition], 0.001 # real condition flows to the AVM
+  end
+
+  test "no cached photo analysis => condition is nil (AVM imputes)" do
+    seed_pool
+    captured = nil
+    client = Object.new
+    client.define_singleton_method(:valuation) do |address:, features: nil, **kw|
+      captured = { features: features }
+      BrainValuationClient::Result.new(sufficient_data: true, estimate: 480_000, facts: [])
+    end
+
+    ValuationAssembly.new(address: "1 Oak St", client: client).call
+    assert_nil captured[:features][:condition]
+  end
 end

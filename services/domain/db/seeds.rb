@@ -59,6 +59,11 @@ puts "Seeded #{Property.browsable.count} browsable listings and #{Comp.count} co
 SampleCrossSourceSeed.call
 puts "Seeded #{MarketSnapshot.count} market snapshots and #{PropertyRecordCache.count} tax records (sample)."
 
+# R2: labeled SAMPLE photo analysis so the "What the photos show" panel + the
+# photo-derived condition driver demo offline. Overwritten by `rake vision:analyze`.
+SampleVisionSeed.call
+puts "Seeded #{PhotoAnalysis.count} photo analyses (sample)."
+
 # A demo high-intent buyer profile so the broker dashboard has a ready lead.
 demo = Visitor.sign_in(name: "Dana Demo", email: "demo-buyer@example.com")
 demo.record_engagement(signals: { "preapproval" => "true", "move_timeline_days" => "21" }, side: "buyer")

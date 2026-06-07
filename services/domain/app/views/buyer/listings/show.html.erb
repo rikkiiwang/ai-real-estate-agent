@@ -72,6 +72,24 @@
   </div>
 <% end %>
 
+<% if @photo_analysis&.feature_findings&.any? %>
+  <div class="mk-card-section" id="photo-analysis">
+    <h2>📸 What the photos show</h2>
+    <ul class="mk-photo-findings">
+      <% @photo_analysis.feature_findings.each do |f| %>
+        <li>
+          <span><%= f["label"].to_s.tr("_", " ").capitalize %></span>
+          <span class="mk-badge mk-badge--good"><%= (f["confidence"].to_f * 100).round %>% confident</span>
+        </li>
+      <% end %>
+    </ul>
+    <% if @photo_analysis.condition.present? %>
+      <p class="mk-muted">Photo-derived condition: <strong><%= (@photo_analysis.condition.to_f * 100).round %>/100</strong> — feeds Atlas's valuation.</p>
+    <% end %>
+    <p class="mk-source">Source: <%= @photo_analysis.from_claude? ? "Claude vision analysis" : "sample analysis (demo)" %>. Each finding is tied to a listing photo; any visible defects are routed to a licensed broker, never asserted here.</p>
+  </div>
+<% end %>
+
 <div class="mk-card-section">
   <h2>About this home</h2>
   <p class="mk-muted"><%= @listing.description %></p>

@@ -67,6 +67,19 @@ class Broker::DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_select "a.mk-nav-link--broker", text: "Dashboard"
   end
 
+  test "photo red-flags are surfaced to the broker (R2), not to buyers" do
+    sign_in_broker
+    prop = Property.create!(address: "7 Pine St", state: "listed", list_price: 500_000)
+    PhotoAnalysis.create!(address: prop.address, property: prop, provenance: "claude",
+      condition: 0.4, analyzed_at: Time.current, findings: [],
+      needs_review: [{ "kind" => "red_flag", "label" => "water_stain_ceiling", "confidence" => 0.8, "evidence_photo_id" => "x" }])
+
+    get broker_dashboard_path
+    assert_response :success
+    assert_select "section#flagged-photos tr.flagged-photo", 1
+    assert_match(/water.stain/i, @response.body)
+  end
+
   test "surfaces time-to-offer per side and aggregate" do
     sign_in_broker
     seller = Lead.create!(side: "seller", address: "12 Cedar", intent: "high")

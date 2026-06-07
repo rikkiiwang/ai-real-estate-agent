@@ -122,6 +122,31 @@
   <% end %>
 </section>
 
+<section id="flagged-photos" class="mk-card-section">
+  <h2>Photo red-flags for review <span class="mk-badge mk-badge--warn"><%= @flagged_photos.sum { |pa| pa.review_findings.size } %></span></h2>
+  <p class="mk-muted" style="font-size:.85em;">Visible defects the vision model surfaced. These are <strong>never</strong> asserted to buyers — a licensed broker reviews them.</p>
+  <% if @flagged_photos.any? %>
+    <table class="mk-table">
+      <thead>
+        <tr><th>Property</th><th>Finding</th><th>Confidence</th></tr>
+      </thead>
+      <tbody>
+        <% @flagged_photos.each do |pa| %>
+          <% pa.review_findings.each do |f| %>
+            <tr class="flagged-photo">
+              <td><%= pa.property&.address || pa.address %></td>
+              <td><%= f["label"].to_s.tr("_", " ") %></td>
+              <td><%= (f["confidence"].to_f * 100).round %>%</td>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty mk-muted">No photo red-flags flagged.</p>
+  <% end %>
+</section>
+
 <section id="pending-showings" class="mk-card-section">
   <h2>Pending showings <span class="mk-badge mk-badge--warn"><%= @pending_showings.size %></span></h2>
   <% if @pending_showings.any? %>

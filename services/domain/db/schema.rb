@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_06_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_07_000001) do
   create_table "appointments", force: :cascade do |t|
     t.string "broker_email"
     t.datetime "confirmed_at"
@@ -164,6 +164,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_06_000002) do
     t.index ["status"], name: "index_offers_on_status"
   end
 
+  create_table "photo_analyses", force: :cascade do |t|
+    t.string "address", null: false
+    t.datetime "analyzed_at"
+    t.decimal "condition", precision: 4, scale: 3
+    t.datetime "created_at", null: false
+    t.json "findings", default: []
+    t.json "needs_review", default: []
+    t.integer "property_id"
+    t.string "provenance"
+    t.datetime "updated_at", null: false
+    t.index ["address"], name: "index_photo_analyses_on_address", unique: true
+    t.index ["property_id"], name: "index_photo_analyses_on_property_id"
+  end
+
   create_table "properties", force: :cascade do |t|
     t.string "address", null: false
     t.decimal "baths", precision: 3, scale: 1
@@ -219,6 +233,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_06_000002) do
 
   add_foreign_key "appointments", "leads"
   add_foreign_key "appointments", "properties"
+  add_foreign_key "photo_analyses", "properties"
   add_foreign_key "comps", "properties"
   add_foreign_key "consents", "leads"
   add_foreign_key "contracts", "offers"

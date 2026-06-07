@@ -34,6 +34,8 @@ class ValuationAssembly
         lot_sqft: subject.lot_sqft, year_built: subject.year_built,
         latitude: subject.latitude, longitude: subject.longitude,
         garage_spaces: subject.garage_spaces,
+        # R2: real photo-derived condition from the cache (DB-only); nil → AVM imputes.
+        condition: photo_condition(subject.address),
       },
       comps: comps,
       as_of: activity.as_of&.to_s,
@@ -43,6 +45,13 @@ class ValuationAssembly
   end
 
   private
+
+  # The cached photo-derived condition for this address, or nil (AVM imputes).
+  def photo_condition(address)
+    return nil unless defined?(PhotoAnalysis)
+
+    PhotoAnalysis.find_by("lower(address) = ?", address.to_s.downcase)&.condition&.to_f
+  end
 
   def value_unknown
     result = @client.valuation(address: @address)
