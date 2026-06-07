@@ -19,6 +19,11 @@ class Appointment < ApplicationRecord
   validates :status, inclusion: { in: STATUSES }
   validates :starts_at, :ends_at, presence: true
   validate :ends_after_starts
+  # Race guard: two active (requested/confirmed) showings can't both occupy an
+  # overlapping slot on the same property (or the same broker). The booking and
+  # broker-confirm paths re-check ShowingScheduler.slot_free? before writing; this
+  # is the model-level backstop so a concurrent double-book is rejected at save.
+  validate :no_active_double_booking, on: :create
 
   # Active = still occupies a slot. Declined/cancelled/completed free it.
   scope :active, -> { where(status: ACTIVE_STATUSES) }
@@ -38,5 +43,20 @@ class Appointment < ApplicationRecord
     return if starts_at.blank? || ends_at.blank?
 
     errors.add(:ends_at, "must be after starts_at") if ends_at <= starts_at
+  end
+
+  def no_active_double_booking
+    return unless ACTIVE_STATUSES.include?(status)
+    return if starts_at.blank? || ends_at.blank? || property.blank?
+
+    if Appointment.active.for_property(property).any? { |a| a.overlaps?(starts_at, ends_at) }
+      errors.add(:base, "overlaps an existing showing for this property")
+      return
+    end
+
+    return if broker_email.blank?
+    if Appointment.active.for_broker(broker_email).any? { |a| a.overlaps?(starts_at, ends_at) }
+      errors.add(:base, "overlaps another showing for this broker")
+    end
   end
 end

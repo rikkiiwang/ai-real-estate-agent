@@ -9,6 +9,8 @@ module Broker
       @time_to_offer = OfferMetric.summary
       # Intent triaging lives on the visitor profile; surface ready leads here.
       @high_intent_buyers = Visitor.where("intent LIKE 'high%'").order(updated_at: :desc)
+      # Requested showings awaiting a broker's confirm/decline (R6).
+      @pending_showings = Appointment.pending.includes(:property, :lead)
     end
   end
 end

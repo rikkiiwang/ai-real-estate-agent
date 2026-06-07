@@ -15,6 +15,13 @@ Rails.application.routes.draw do
     resources :offers, only: [] do
       post :sign, on: :member
     end
+    # Broker confirms or declines a requested showing.
+    resources :appointments, only: [] do
+      member do
+        post :confirm
+        post :decline
+      end
+    end
   end
 
   # A signed-in visitor's delivered contract drafts.
@@ -27,6 +34,7 @@ Rails.application.routes.draw do
   namespace :buyer do
     resources :listings, only: %i[index show] do
       resource :offer, only: %i[new create]
+      resources :showings, only: %i[create] # request a tour/inspection slot
     end
   end
 
