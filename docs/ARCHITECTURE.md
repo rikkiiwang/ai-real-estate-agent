@@ -373,6 +373,7 @@ single migrator. Full runbook, secrets, and per-app `fly.toml` in
 | Listings | real ACTIVE listings + per-ZIP market stats imported from the **RentCast API** via `rake rentcast:import` (source-labeled; seeded sample as offline fallback); these same `Property` rows are the **comp pool** for the valuation path — comps are asking-price active listings (never described as closed sales). `PropertyRecordCache` holds per-address real attributes (beds/baths/sqft/geo/tax) fetched by the prewarm task and consumed by `SubjectResolver`. | direct MLS provenance + listing photos behind `ListingSource` |
 | Channel transport (SMS/Email) | **Voice & Chat are live** (in-browser); SMS/Email run on a `Simulated` transport behind the `ChannelTransport` adapter — the agent still replies in-thread and renders a `simulated` delivery note, but nothing is texted/emailed | drop-in `TwilioSms` / `SendgridEmail` classes auto-engage once `TWILIO_*` / `SENDGRID_API_KEY` are set (+ an inbound webhook for true two-way) |
 | Intent triaging | real — `IntentTriage` qualifies a visitor (looky-loo vs high-intent) on the **profile** from a neutral allow-list (financing pre-approval + ≤30-day move); high-intent auto-routes to the broker queue | broaden signals / connect a CRM scoring model |
+| Tour/inspection scheduling | real **collision-avoidance engine** — `ShowingScheduler` (Rails) generates deterministic business-hours slots over a 7-day horizon and subtracts past times, property + broker double-bookings, and blacked-out (under-offer/sold/retired) listings; `now` is injected (no wall-clock in the algorithm). Buyers book from the listing page or via the agent sidebar (`ShowingIntent` mirrors the brain's `scheduling.classify_scheduling_intent`); the booking and broker-confirm both re-check `slot_free?` and a model race-guard rejects overlapping active rows. Broker confirms/declines from the dashboard `pending` queue; every transition audited. **DB-only — no external calendar, slots computed not faked.** | a broker-managed availability/blackout editor, travel-time routing, real calendar sync, and SMS/email reminders (the R4 carrier seam) |
 
 Every seam is dependency-injected and documented — the architecture is
 production-shaped; the data and a few external integrations are deferred.
@@ -382,7 +383,7 @@ production-shaped; the data and a few external integrations are deferred.
 ## 14. Testing strategy
 
 - **Hermetic by default.** Fakes + in-memory stores + `MemorySaver` mean the
-  whole agent loop runs with no network and no Postgres. The brain suite (206
+  whole agent loop runs with no network and no Postgres. The brain suite (224
   tests) covers valuation (including the real-features path, comp anchoring,
   freshness, and the `GetValuation` gRPC real-features path), RAG, the Critic,
   Fair Housing, confidence, handoff, the orchestrator (happy / critical /
@@ -391,15 +392,18 @@ production-shaped; the data and a few external integrations are deferred.
   `Closer.GenerateContract` servicer (TREC fill + UPL-refusal path).
 - **Cross-language smoke** (`make smoke`) exercises a real gateway → brain gRPC
   round-trip and returns a live valuation.
-- **Rails** tests (216) cover the domain models and the full consumer marketplace,
+- **Rails** tests (252) cover the domain models and the full consumer marketplace,
   including the real-time valuation path (`CompsSelector`, `MarketActivity`,
   `SubjectResolver`, `ValuationAssembly`, `BrainValuationClient` with
   features/comps, `PropertyRecordCache`, capped prewarm), the **Ask Atlas
   chatbot** omnichannel (channel switch + voice input + the `ChannelTransport`
   SMS/Email seam) and profile-based intent triaging — listings/search, the agent
   sidebar (DI fake brain), the cited decision bundle, the buyer/seller offer
-  flows, contract generation + fallback, and the broker-gate lifecycle — against
-  SQLite.
+  flows, contract generation + fallback, the broker-gate lifecycle, and the
+  **dynamic-scheduling** path (`ShowingScheduler` collision/blackout/determinism,
+  `ShowingIntent`, `Appointment` race-guard, the buyer booking + broker
+  confirm/decline controllers) — against SQLite. The brain suite adds the
+  `scheduling.classify_scheduling_intent` classifier (Fair-Housing-safe).
 
 ```bash
 make test     # Go + Python

@@ -63,3 +63,33 @@ rake rentcast:prewarm MAX_CALLS=50
 The `PropertyRecordCache` table stores the result (real beds/baths/sqft/geo/tax);
 `SubjectResolver` reads it. The demo is pre-warmed for the seeded listings, so
 the live site and demo spend **zero RentCast calls** during normal use.
+
+## Dynamic scheduling (tours / inspections)
+
+A real collision-avoidance engine — DB-only, no external calendar, no network.
+
+- **`Appointment`** model — a requested/confirmed showing occupying a half-open
+  `[starts_at, ends_at)` slot on a property (and optionally a broker). `active`
+  (requested+confirmed) rows occupy slots; `declined`/`cancelled`/`completed`
+  free them. A `validate :no_active_double_booking, on: :create` race-guard
+  rejects overlapping active rows.
+- **`ShowingScheduler`** — `available_slots(property:, now:, broker_email:, kind:)`
+  generates business-hours slots (30-min, 9–18, 7-day horizon) and subtracts past
+  times, property + broker double-bookings, and blacked-out (under_offer/sold/
+  retired) listings; `slot_free?(...)` is the commit-time re-check. **`now` is
+  injected — the algorithm never reads the wall clock**, so it is deterministic.
+- **`ShowingIntent`** — Rails-side mirror of the brain's
+  `scheduling.classify_scheduling_intent`; lets the agent sidebar answer "can I
+  tour this Friday?" with real openings.
+
+Routes:
+
+```
+POST /buyer/listings/:listing_id/showings          # buyer requests a slot (public)
+POST /broker/appointments/:id/confirm              # broker confirms (re-checks collision)
+POST /broker/appointments/:id/decline              # broker declines
+```
+
+Booked slots are surfaced on the listing page and in the agent sidebar; the
+broker's dashboard has a **Pending showings** confirm/decline queue. Every
+transition is written to the append-only audit log.

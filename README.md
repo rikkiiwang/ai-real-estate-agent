@@ -179,7 +179,7 @@ is not the same as it being *reachable by a user*:
 | Brain | Visual property analysis (photos) | 🟡 real design (Gemini structured output), model unbound + unexposed in prod |
 | Voice (engagement pillar¹) | Intent triaging — looky-loo vs high-intent (R5) | ✅ reachable — triaged on the **visitor profile** from **neutral signals only** (financing pre-approval + ≤30-day move; equal-service: protected-class inputs are never stored or consulted); high-intent auto-routes to the broker queue and shows in the broker's **High-intent buyers** list |
 | Voice (engagement pillar¹) | Omnichannel: one thread across Voice/SMS/Email/Chat (R6) | ✅ reachable — built into the **Ask Atlas chatbot**: a channel switcher + **🎙 voice input** (browser speech-to-text) on one continuous thread, per-channel AI disclosure. **Voice & Chat are live**; **SMS/Email run on a simulated transport** behind a real `ChannelTransport` seam — drop-in `TwilioSms` / `SendgridEmail` entry points auto-engage once their keys are set (⏸ deferred) |
-| Voice (engagement pillar¹) | Tour / inspection scheduling vs availability (R7) | ❌ not built — the one genuine gap in this pillar |
+| Voice (engagement pillar¹) | Tour / inspection scheduling vs availability (R7) | ✅ reachable — a real **collision-avoidance engine** (`ShowingScheduler`): generates business-hours slots over a 7-day horizon and subtracts past times, property + broker double-bookings, and under-offer/sold/retired listings. Buyers request a slot from the listing page **or by asking the agent** ("can I tour this Friday?" → `ShowingIntent` surfaces real openings); the broker confirms/declines from the dashboard queue. **DB-only, deterministic, no external calendar** — slots are computed, never faked |
 | Closer | TREC document generation (blanks-only, UPL-safe) | ✅ reachable — `Closer.GenerateContract` RPC; broker-sign delivers the draft in-app |
 | Closer | Automated negotiation within a price band | ✅ reachable — seller can counter the cash offer; the agent auto-accepts within the authorized band (opening offer → valuation ceiling) or escalates above it, recording a `Negotiation` either way |
 | Closer | Closing orchestration (escrow/title/lender pings) | 🟡 built; real sink raises `NotImplementedError`; not wired |
@@ -187,7 +187,7 @@ is not the same as it being *reachable by a user*:
 | **Lawyer** | **Truth-verification (Critic/RAG)** | ✅ reachable — every turn (deterministic entailer; real-LLM deferred) |
 | **Lawyer** | **HITL handoff triggers** | ✅ reachable — legal / human-request handoffs + every offer broker-gated |
 
-> ¹ "Voice" is the spec's name for the **engagement & qualification** pillar, not literal telephony. Both capabilities live in the **Ask Atlas chatbot** itself: you can **type or 🎙 speak** to it, switch the channel (Voice/SMS/Email/Chat) while keeping one thread (R6), and the grounded glass-box agent answers in-thread. Intent triaging (R5) runs on your **visitor profile** from neutral signals (pre-approval + ≤30-day move) and surfaces high-intent buyers to the broker. Channel **transport is simulated** behind a swappable adapter — real low-latency carriers (Twilio/SendGrid) are deferred by design — so the only genuine unbuilt gap in the pillar is tour scheduling (R7).
+> ¹ "Voice" is the spec's name for the **engagement & qualification** pillar, not literal telephony. Both capabilities live in the **Ask Atlas chatbot** itself: you can **type or 🎙 speak** to it, switch the channel (Voice/SMS/Email/Chat) while keeping one thread (R6), and the grounded glass-box agent answers in-thread. Intent triaging (R5) runs on your **visitor profile** from neutral signals (pre-approval + ≤30-day move) and surfaces high-intent buyers to the broker. Tour/inspection scheduling (R7) is now built — a real collision-avoidance engine, bookable from the listing page or by asking the agent, broker-confirmed. Channel **transport is simulated** behind a swappable adapter — real low-latency carriers (Twilio/SendGrid) are deferred by design — so the remaining seam in the pillar is live SMS/Email carriers.
 
 **Bottom line:** the entire **Lawyer** pillar, per-address valuation, the full
 **buyer/seller journey**, the **Closer's** TREC paperwork, and **in-band seller
@@ -196,7 +196,8 @@ including the previously-unreachable Closer (now exposed via
 `Closer.GenerateContract`) and the previously-unused `Negotiation` model (now
 driven by the seller counter loop). Still deferred: post-signature **closing
 orchestration** (built, sink raises `NotImplementedError`), and **news
-ingestion, SMS/email, and calendar scheduling** (genuinely unbuilt) — see the
+ingestion and live SMS/email carriers** (genuinely unbuilt; tour scheduling is
+now built) — see the
 [Autonomy boundary](#autonomy-boundary--by-design-vs-deferred) for why the human
 broker signature is deliberate, not a gap.
 
@@ -235,7 +236,7 @@ make up          # full stack via docker compose (Postgres+pgvector + all servic
 ```
 
 Per-suite toolchains (the Makefile vars let you point at the right ones):
-- **Brain (Python):** needs a Python with `pytest` + the brain deps — `make brain-test PYTHON=/opt/anaconda3/bin/python3` if your `python3` lacks them (206 tests).
+- **Brain (Python):** needs a Python with `pytest` + the brain deps — `make brain-test PYTHON=/opt/anaconda3/bin/python3` if your `python3` lacks them (224 tests).
 - **Rails (domain):** needs Ruby 3.3.11 (`services/domain/.ruby-version`, via rbenv) + `bundle install` — `make rails-test` (tests run on SQLite; no Postgres needed).
 - **Go:** `make go-test` (build + vet + tests).
 
@@ -317,5 +318,5 @@ Two-sided MVP built across Go/Python/Rails, deployed live on Fly.io. The
 LangGraph orchestrator is exposed end-to-end through the consumer **marketplace**
 (agent sidebar) and **chat** app and the gateway `/orchestrate` API; the Closer's
 TREC paperwork is reachable via `Closer.GenerateContract`. Tests: Go green,
-Python brain **206** passing, Rails **216** passing. See `docs/ARCHITECTURE.md`
+Python brain **224** passing, Rails **252** passing. See `docs/ARCHITECTURE.md`
 for design and `docs/plans/` for the plans and remaining deferred seams.
