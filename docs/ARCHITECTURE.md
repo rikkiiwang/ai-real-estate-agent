@@ -95,7 +95,7 @@ agent sidebar — all first-party gRPC clients on the internal network.
 
 ## 4. The polyglot contract
 
-`proto/realestate/v1/realestate.proto` defines five services:
+`proto/realestate/v1/realestate.proto` defines six services:
 
 | Service | Served by | RPCs |
 |---|---|---|
@@ -103,6 +103,7 @@ agent sidebar — all first-party gRPC clients on the internal network.
 | `Verification` | brain (Python) | `VerifyMessage` |
 | `Conversation` | brain (Python) | `Orchestrate` — runs one full agent turn, returns the whole reasoning trace |
 | `Closer` | brain (Python) | `GenerateContract` — fills a promulgated TREC form (factual blanks only; a custom-clause request ⇒ UPL refusal + escalate) |
+| `Vision` | brain (Python) | `AnalyzePhotos` — Claude vision over listing photos → structured findings + condition (called only by the capped `vision:analyze` task) |
 | `Domain` | domain (Rails) | `CreateLead`, `EnqueueHandoff`, `CreateOffer` |
 
 `Conversation.Orchestrate` is the RPC that makes the glass box possible — its
@@ -367,7 +368,7 @@ single migrator. Full runbook, secrets, and per-app `fly.toml` in
 | RAG store | real (`InMemoryVectorStore`) | `PgVectorStore` (present, lazy-connecting) |
 | Embedder | deterministic `FakeEmbedder` | `RealEmbedder` (injected) |
 | Entailer (Critic) | deterministic token-overlap | real-LLM entailer (injected) |
-| Vision | real protocol + fake | Gemini structured output (needs key) |
+| Vision | real — **Claude vision** (`ClaudeVisionModel`, forced findings tool, no prose) → image-cited findings + a photo-derived `condition` that feeds the AVM via the existing features path; buyer-safe features shown as "What the photos show", red-flags routed broker-only. Computed by the capped, cache-first `rake vision:analyze` task → `PhotoAnalysis` cache; **request path = zero Anthropic calls**. Key-gated (`ANTHROPIC_API_KEY`); fake model + labeled "(sample)" `SampleVisionSeed` keep the UI populated offline. | swap `ANTHROPIC_MODEL`; real listing photos beyond the sample imagery; bbox overlays |
 | Handoff / offer sinks | fakes in tests | Rails gRPC (wired for offer/handoff) |
 | Contract generation | real TREC fill | reachable via `Closer.GenerateContract` (wired to the marketplace) |
 | Closing counterparty sink | fake | gRPC sink (`NotImplementedError` today) |
@@ -384,7 +385,7 @@ production-shaped; the data and a few external integrations are deferred.
 ## 14. Testing strategy
 
 - **Hermetic by default.** Fakes + in-memory stores + `MemorySaver` mean the
-  whole agent loop runs with no network and no Postgres. The brain suite (224
+  whole agent loop runs with no network and no Postgres. The brain suite (238
   tests) covers valuation (including the real-features path, comp anchoring,
   freshness, and the `GetValuation` gRPC real-features path), RAG, the Critic,
   Fair Housing, confidence, handoff, the orchestrator (happy / critical /
@@ -393,7 +394,7 @@ production-shaped; the data and a few external integrations are deferred.
   `Closer.GenerateContract` servicer (TREC fill + UPL-refusal path).
 - **Cross-language smoke** (`make smoke`) exercises a real gateway → brain gRPC
   round-trip and returns a live valuation.
-- **Rails** tests (267) cover the domain models and the full consumer marketplace,
+- **Rails** tests (283) cover the domain models and the full consumer marketplace,
   including the real-time valuation path (`CompsSelector`, `MarketActivity`,
   `SubjectResolver`, `ValuationAssembly`, `BrainValuationClient` with
   features/comps, `PropertyRecordCache`, capped prewarm), the **Ask Atlas

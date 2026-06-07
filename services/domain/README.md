@@ -83,6 +83,23 @@ reported, never invented. Rails owns this; the brain stays a pure AVM.
   cross-source view demos without a RentCast key; the real `rentcast:import` /
   `rentcast:prewarm` path overwrites them with live data.
 
+## Visual property analysis (R2)
+
+Listing photos are analyzed by **Claude vision** (in the brain) into structured,
+image-cited findings. Value-features feed the AVM's photo-derived `condition` and
+show on the listing as "What the photos show"; red-flags route to a **broker-only**
+review queue and are never shown to buyers.
+
+- `PhotoAnalysis` cache (condition + findings + needs_review + provenance) is read on
+  the request path — **zero Anthropic calls on a web request** (like the RentCast path).
+- `rake vision:analyze MAX_CALLS=25` (capped, cache-first) is the only Anthropic spend.
+  It needs `ANTHROPIC_API_KEY` set **on the brain** (`fly secrets set ANTHROPIC_API_KEY=…
+  --app are-brain`); without it the brain returns a deterministic fake analysis.
+- Offline demo: `SampleVisionSeed` (run by `db/seeds.rb`) writes labeled "(sample)"
+  `PhotoAnalysis` so the panel + condition demo with no key; `vision:analyze` overwrites
+  with real Claude analysis. `ValuationAssembly` reads the cached condition into the
+  existing `PropertyFeatures.condition` (no GetValuation proto change).
+
 ## Dynamic scheduling (tours / inspections)
 
 A real collision-avoidance engine — DB-only, no external calendar, no network.

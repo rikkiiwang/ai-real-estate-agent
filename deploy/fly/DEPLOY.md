@@ -49,7 +49,7 @@ Generate and export these before deploying. They are staged with
 | `POSTGRES_PASSWORD` | db, brain, domain, domain-grpc, ingestion | `openssl rand -hex 24` |
 | `RAILS_MASTER_KEY` | domain, domain-grpc | `cat services/domain/config/master.key` |
 | `GATEWAY_AUTH_SECRET` | gateway | `openssl rand -hex 32` |
-| `GEMINI_API_KEY` | brain (optional) | from Google AI Studio; omit to keep vision on the fake model |
+| `ANTHROPIC_API_KEY` | brain (optional) | enables real **Claude** photo analysis (R2); omit to keep vision on the deterministic fake model. After setting it, run `fly ssh console --app are-domain -C "bin/rails vision:analyze MAX_CALLS=25"` to populate the cache. Optional `ANTHROPIC_MODEL` overrides the default `claude-opus-4-8`. |
 | `BROKER_EMAILS` | domain (optional) | comma-separated emails allowed into the broker dashboard, **extending** the config default (`broker@atlas.example`). Brokers sign in through the same passwordless consumer login; a server-side allowlist (`require_broker`) is the boundary, so unlisted visitors are redirected away even though the app is public. |
 | `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` | domain (optional) | engage the real `TwilioSms` adapter for the SMS channel; unset, SMS stays on the **simulated** transport (the agent still replies in-thread). |
 | `SENDGRID_API_KEY` | domain (optional) | engage the real `SendgridEmail` adapter for the Email channel; unset, Email stays on the **simulated** transport. |
