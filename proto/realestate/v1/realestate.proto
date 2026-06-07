@@ -251,3 +251,32 @@ message GenerateContractResponse {
   bool upl_blocked = 6;            // true when a custom clause was requested
   string handoff_reason = 7;       // why it escalated (UPL or invalid facts)
 }
+
+// ── Vision (the "Brain") ─────────────────────────────────────────────────────
+
+// Vision analyzes listing photos into structured, image-cited findings (R2).
+// Called off the request path by the capped `rake vision:analyze` task; the
+// result is cached and the live valuation/UI read the cache (zero Anthropic
+// calls on the request path).
+service Vision {
+  rpc AnalyzePhotos(AnalyzePhotosRequest) returns (AnalyzePhotosResponse);
+}
+
+message VisionFinding {
+  string kind = 1;                 // "feature" | "red_flag"
+  string label = 2;                // stable machine token, e.g. updated_kitchen
+  double confidence = 3;           // [0, 1]
+  string evidence_photo_id = 4;    // the photo this finding is cited against
+}
+
+message AnalyzePhotosRequest {
+  string address = 1;
+  repeated string photo_urls = 2;
+}
+
+message AnalyzePhotosResponse {
+  repeated VisionFinding findings = 1;       // buyer-safe value-features
+  double condition = 2;                      // photo-derived AVM condition [0, 1]
+  repeated VisionFinding needs_review = 3;   // red-flags / low-confidence — broker only
+  string provenance = 4;                     // "claude" | "fake"
+}

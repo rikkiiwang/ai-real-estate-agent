@@ -532,3 +532,93 @@ class Closer(object):
             timeout,
             metadata,
             _registered_method=True)
+
+
+class VisionStub(object):
+    """── Vision (the "Brain") ─────────────────────────────────────────────────────
+
+    Vision analyzes listing photos into structured, image-cited findings (R2).
+    Called off the request path by the capped `rake vision:analyze` task; the
+    result is cached and the live valuation/UI read the cache (zero Anthropic
+    calls on the request path).
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.AnalyzePhotos = channel.unary_unary(
+                '/realestate.v1.Vision/AnalyzePhotos',
+                request_serializer=realestate_dot_v1_dot_realestate__pb2.AnalyzePhotosRequest.SerializeToString,
+                response_deserializer=realestate_dot_v1_dot_realestate__pb2.AnalyzePhotosResponse.FromString,
+                _registered_method=True)
+
+
+class VisionServicer(object):
+    """── Vision (the "Brain") ─────────────────────────────────────────────────────
+
+    Vision analyzes listing photos into structured, image-cited findings (R2).
+    Called off the request path by the capped `rake vision:analyze` task; the
+    result is cached and the live valuation/UI read the cache (zero Anthropic
+    calls on the request path).
+    """
+
+    def AnalyzePhotos(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_VisionServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'AnalyzePhotos': grpc.unary_unary_rpc_method_handler(
+                    servicer.AnalyzePhotos,
+                    request_deserializer=realestate_dot_v1_dot_realestate__pb2.AnalyzePhotosRequest.FromString,
+                    response_serializer=realestate_dot_v1_dot_realestate__pb2.AnalyzePhotosResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'realestate.v1.Vision', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('realestate.v1.Vision', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Vision(object):
+    """── Vision (the "Brain") ─────────────────────────────────────────────────────
+
+    Vision analyzes listing photos into structured, image-cited findings (R2).
+    Called off the request path by the capped `rake vision:analyze` task; the
+    result is cached and the live valuation/UI read the cache (zero Anthropic
+    calls on the request path).
+    """
+
+    @staticmethod
+    def AnalyzePhotos(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/realestate.v1.Vision/AnalyzePhotos',
+            realestate_dot_v1_dot_realestate__pb2.AnalyzePhotosRequest.SerializeToString,
+            realestate_dot_v1_dot_realestate__pb2.AnalyzePhotosResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)

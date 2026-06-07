@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import threading
+import urllib.request
 from concurrent import futures
 
 import grpc
@@ -19,6 +20,14 @@ from genproto.realestate.v1 import realestate_pb2_grpc as rpc
 from brain.closer_service import CloserServicer
 from brain.orchestrator import build_orchestrator
 from brain.valuation import estimate_value
+from brain.vision import (
+    ClaudeVisionModel,
+    FakeVisionModel,
+    PhotoAnalyzer,
+    claude_vision_model_or_none,
+    condition_from_findings,
+)
+from brain.vision.schema import PhotoRef
 
 
 class ValuationServicer(rpc.ValuationServicer):
@@ -64,6 +73,52 @@ class ValuationServicer(rpc.ValuationServicer):
                                 as_of=request.as_of or None,
                                 recent_activity=request.recent_activity or None)
         return estimate_value(request.address)
+
+
+def _fetch_image(url: str, *, timeout: float = 10.0, max_bytes: int = 10_000_000):
+    """GET an image URL → bytes (capped), or None on any failure. Off the request
+    path (only the analyze task calls this), so a bad URL is skipped, not fatal."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "atlas-vision/1"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310
+            return resp.read(max_bytes)
+    except Exception:
+        return None
+
+
+def _pb_finding(f) -> "pb.VisionFinding":
+    return pb.VisionFinding(
+        kind=f.kind, label=f.label, confidence=float(f.confidence),
+        evidence_photo_id=f.evidence_photo_id,
+    )
+
+
+class VisionServicer(rpc.VisionServicer):
+    """Analyze a listing's photos into structured findings + a condition (R2).
+
+    Uses real Claude vision when ``ANTHROPIC_API_KEY`` is set, else the
+    deterministic ``FakeVisionModel`` (provenance says which). Fetches photos here
+    — this RPC is only called by the capped, off-request-path analyze task."""
+
+    def AnalyzePhotos(self, request, context):
+        model = claude_vision_model_or_none() or FakeVisionModel()
+        analyzer = PhotoAnalyzer(model)
+
+        photos = []
+        for i, url in enumerate(request.photo_urls):
+            photos.append((PhotoRef(photo_id=url or f"photo-{i}", uri=url), _fetch_image(url)))
+
+        result = analyzer.analyze(photos)
+        red_flags = [f for f in result.all_findings if f.is_red_flag]
+        condition = condition_from_findings(result.features, red_flags)
+        provenance = "claude" if isinstance(model, ClaudeVisionModel) else "fake"
+
+        return pb.AnalyzePhotosResponse(
+            findings=[_pb_finding(f) for f in result.features],
+            condition=condition,
+            needs_review=[_pb_finding(f) for f in result.needs_review],
+            provenance=provenance,
+        )
 
 
 class VerificationServicer(rpc.VerificationServicer):
@@ -222,6 +277,7 @@ class ConversationServicer(rpc.ConversationServicer):
 def build_server(address: str) -> grpc.Server:
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=8))
     rpc.add_ValuationServicer_to_server(ValuationServicer(), server)
+    rpc.add_VisionServicer_to_server(VisionServicer(), server)
     rpc.add_VerificationServicer_to_server(VerificationServicer(), server)
     rpc.add_ConversationServicer_to_server(ConversationServicer(), server)
     rpc.add_CloserServicer_to_server(CloserServicer(), server)

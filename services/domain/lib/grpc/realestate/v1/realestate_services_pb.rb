@@ -101,5 +101,25 @@ module Realestate
 
       Stub = Service.rpc_stub_class
     end
+    module Vision
+      # ── Vision (the "Brain") ─────────────────────────────────────────────────────
+      #
+      # Vision analyzes listing photos into structured, image-cited findings (R2).
+      # Called off the request path by the capped `rake vision:analyze` task; the
+      # result is cached and the live valuation/UI read the cache (zero Anthropic
+      # calls on the request path).
+      class Service
+
+        include ::GRPC::GenericService
+
+        self.marshal_class_method = :encode
+        self.unmarshal_class_method = :decode
+        self.service_name = 'realestate.v1.Vision'
+
+        rpc :AnalyzePhotos, ::Realestate::V1::AnalyzePhotosRequest, ::Realestate::V1::AnalyzePhotosResponse
+      end
+
+      Stub = Service.rpc_stub_class
+    end
   end
 end

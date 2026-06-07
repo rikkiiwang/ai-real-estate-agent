@@ -641,3 +641,115 @@ var Closer_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "realestate/v1/realestate.proto",
 }
+
+const (
+	Vision_AnalyzePhotos_FullMethodName = "/realestate.v1.Vision/AnalyzePhotos"
+)
+
+// VisionClient is the client API for Vision service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// Vision analyzes listing photos into structured, image-cited findings (R2).
+// Called off the request path by the capped `rake vision:analyze` task; the
+// result is cached and the live valuation/UI read the cache (zero Anthropic
+// calls on the request path).
+type VisionClient interface {
+	AnalyzePhotos(ctx context.Context, in *AnalyzePhotosRequest, opts ...grpc.CallOption) (*AnalyzePhotosResponse, error)
+}
+
+type visionClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewVisionClient(cc grpc.ClientConnInterface) VisionClient {
+	return &visionClient{cc}
+}
+
+func (c *visionClient) AnalyzePhotos(ctx context.Context, in *AnalyzePhotosRequest, opts ...grpc.CallOption) (*AnalyzePhotosResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AnalyzePhotosResponse)
+	err := c.cc.Invoke(ctx, Vision_AnalyzePhotos_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// VisionServer is the server API for Vision service.
+// All implementations must embed UnimplementedVisionServer
+// for forward compatibility.
+//
+// Vision analyzes listing photos into structured, image-cited findings (R2).
+// Called off the request path by the capped `rake vision:analyze` task; the
+// result is cached and the live valuation/UI read the cache (zero Anthropic
+// calls on the request path).
+type VisionServer interface {
+	AnalyzePhotos(context.Context, *AnalyzePhotosRequest) (*AnalyzePhotosResponse, error)
+	mustEmbedUnimplementedVisionServer()
+}
+
+// UnimplementedVisionServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedVisionServer struct{}
+
+func (UnimplementedVisionServer) AnalyzePhotos(context.Context, *AnalyzePhotosRequest) (*AnalyzePhotosResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AnalyzePhotos not implemented")
+}
+func (UnimplementedVisionServer) mustEmbedUnimplementedVisionServer() {}
+func (UnimplementedVisionServer) testEmbeddedByValue()                {}
+
+// UnsafeVisionServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to VisionServer will
+// result in compilation errors.
+type UnsafeVisionServer interface {
+	mustEmbedUnimplementedVisionServer()
+}
+
+func RegisterVisionServer(s grpc.ServiceRegistrar, srv VisionServer) {
+	// If the following call panics, it indicates UnimplementedVisionServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&Vision_ServiceDesc, srv)
+}
+
+func _Vision_AnalyzePhotos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AnalyzePhotosRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VisionServer).AnalyzePhotos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Vision_AnalyzePhotos_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VisionServer).AnalyzePhotos(ctx, req.(*AnalyzePhotosRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Vision_ServiceDesc is the grpc.ServiceDesc for Vision service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Vision_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "realestate.v1.Vision",
+	HandlerType: (*VisionServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AnalyzePhotos",
+			Handler:    _Vision_AnalyzePhotos_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "realestate/v1/realestate.proto",
+}
