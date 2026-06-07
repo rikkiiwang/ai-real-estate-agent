@@ -17,6 +17,7 @@ class PriceCheck
   Result = Struct.new(
     :asking, :estimate, :low, :high, :comps, :comp_median,
     :vs_estimate_pct, :vs_estimate_word, :vs_comps_word, :verdict, :facts, :usable,
+    :reconciliation,
     keyword_init: true
   ) do
     def usable? = usable
@@ -55,7 +56,10 @@ class PriceCheck
       low: valuation.low.to_i, high: valuation.high.to_i,
       comps: comps, comp_median: median, vs_estimate_pct: pct.abs,
       vs_estimate_word: vs_estimate, vs_comps_word: vs_comps,
-      verdict: verdict, facts: valuation.facts
+      verdict: verdict, facts: valuation.facts,
+      # R1: reconcile asking against the other independent sources (tax/market)
+      # for the cited cross-source block + neighborhood signal.
+      reconciliation: CrossSourceReconciliation.for(property: property, valuation: valuation)
     )
   end
 end

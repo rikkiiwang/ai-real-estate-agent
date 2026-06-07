@@ -81,6 +81,24 @@ class Buyer::ListingsControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?]", buyer_listing_showings_path(@mueller), minimum: 1
   end
 
+  test "detail page shows a neighborhood pulse from cached market data (R1)" do
+    # @mueller's address has no ZIP, so reconciliation resolves the market by area.
+    MarketSnapshot.create!(zip: "78723", area: @mueller.region, median_price: 720_000,
+                           avg_price_per_sqft: 360, avg_days_on_market: 16, new_listings: 5,
+                           as_of: Date.new(2026, 6, 5), source: "Curated Austin sample")
+    get buyer_listing_path(@mueller)
+    assert_response :success
+    assert_match "Neighborhood pulse", @response.body
+    assert_match(/\$360/, @response.body)              # market $/sqft
+    assert_match(/Curated Austin sample|market:rentcast/, @response.body) # cited source
+  end
+
+  test "detail page omits the pulse when there is no market snapshot" do
+    get buyer_listing_path(@mueller)
+    assert_response :success
+    assert_no_match(/Neighborhood pulse/, @response.body)
+  end
+
   test "detail 404s for non-browsable properties" do
     get buyer_listing_path(@acquired)
     assert_response :not_found

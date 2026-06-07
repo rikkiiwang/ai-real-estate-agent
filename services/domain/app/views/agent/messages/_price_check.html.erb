@@ -25,6 +25,32 @@
       <% badge = pc.verdict == "looks well-priced" ? "mk-badge--good" : (pc.verdict == "priced at a premium" ? "mk-badge--warn" : "mk-badge--good") %>
       <span class="mk-badge <%= badge %>"><%= pc.verdict %></span>
     </p>
+
+    <%# R1: cross-source reconciliation — asking vs the other independent sources. %>
+    <% rec = pc.respond_to?(:reconciliation) ? pc.reconciliation : nil %>
+    <% if rec&.available? %>
+      <div class="agent-crosscheck">
+        <p class="mk-muted" style="font-weight:600;">Cross-source check</p>
+        <ul class="agent-claims">
+          <% rec.sources.each do |s| %>
+            <li>
+              <span class="agent-claim-text"><%= s.label %>: <strong><%= number_to_currency(s.value, precision: 0) %></strong></span>
+              <span class="agent-cite">— <%= s.source_id %><% if s.as_of.present? %> · as of <%= s.as_of.to_date.strftime("%b %-d, %Y") rescue s.as_of %><% end %></span>
+            </li>
+          <% end %>
+        </ul>
+        <% if rec.asking_vs_tax_pct %>
+          <p class="mk-meta">Asking is <strong><%= rec.asking_vs_tax_pct.abs %>% <%= rec.asking_vs_tax_pct >= 0 ? "above" : "below" %></strong> the county tax assessment.</p>
+        <% end %>
+        <% if rec.subject_ppsf && rec.market_ppsf %>
+          <p class="mk-meta">This home is <strong>$<%= rec.subject_ppsf %>/sqft</strong> vs the ZIP market's <strong>$<%= rec.market_ppsf %>/sqft</strong><% if rec.subject_ppsf_vs_market_pct %> (<%= rec.subject_ppsf_vs_market_pct.abs %>% <%= rec.subject_ppsf_vs_market_pct >= 0 ? "above" : "below" %>)<% end %>.</p>
+        <% end %>
+        <% if rec.signal %>
+          <% sig_badge = rec.signal == :cool ? "mk-badge--good" : (rec.signal == :hot ? "mk-badge--warn" : "mk-badge--good") %>
+          <p class="agent-verdict"><span class="mk-badge <%= sig_badge %>"><%= rec.signal == :hot ? "Seller's market" : (rec.signal == :cool ? "Room to negotiate" : "Balanced market") %></span> <span class="mk-muted" style="font-size:.85em;"><%= rec.signal_reason %></span></p>
+        <% end %>
+      </div>
+    <% end %>
   </div>
 
   <% val = local_assigns.fetch(:valuation, @valuation) %>

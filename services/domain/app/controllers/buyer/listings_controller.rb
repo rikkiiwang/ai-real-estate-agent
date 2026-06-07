@@ -19,6 +19,9 @@ module Buyer
       @comps = Comp.in_region(@listing.region).recent_first.limit(3)
       # Real, collision-aware showing slots for the request form (R6).
       @showings = ShowingScheduler.available_slots(property: @listing, now: Time.current)
+      # Cross-source neighborhood pulse from cached market data (R1). No valuation
+      # needed — market/tax only; renders when a market snapshot exists.
+      @reconciliation = CrossSourceReconciliation.for(property: @listing)
     end
   end
 end

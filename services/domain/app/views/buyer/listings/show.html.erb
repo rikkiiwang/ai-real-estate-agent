@@ -50,6 +50,28 @@
   </div>
 <% end %>
 
+<% if @reconciliation&.market_ppsf %>
+  <div class="mk-card-section" id="neighborhood-pulse">
+    <h2>📊 Neighborhood pulse</h2>
+    <div class="mk-detail-facts">
+      <span>Market <b>$<%= @reconciliation.market_ppsf %></b>/sqft</span>
+      <% if @reconciliation.subject_ppsf %><span>This home <b>$<%= @reconciliation.subject_ppsf %></b>/sqft</span><% end %>
+      <% if @reconciliation.market_median %><span>ZIP median <b><%= number_to_currency(@reconciliation.market_median, precision: 0) %></b></span><% end %>
+    </div>
+    <% if @reconciliation.signal %>
+      <% sig_badge = @reconciliation.signal == :cool ? "mk-badge--good" : (@reconciliation.signal == :hot ? "mk-badge--warn" : "mk-badge--good") %>
+      <p>
+        <span class="mk-badge <%= sig_badge %>"><%= @reconciliation.signal == :hot ? "Seller's market" : (@reconciliation.signal == :cool ? "Room to negotiate" : "Balanced market") %></span>
+        <span class="mk-muted"><%= @reconciliation.signal_reason %></span>
+      </p>
+    <% end %>
+    <% market_src = @reconciliation.sources.find { |s| s.source_id.to_s.start_with?("market:") } %>
+    <% if market_src %>
+      <p class="mk-source">Source: <%= market_src.source_id %><% if market_src.as_of.present? %> · as of <%= market_src.as_of.to_date.strftime("%b %-d, %Y") rescue market_src.as_of %><% end %>. Sample market data for this demo.</p>
+    <% end %>
+  </div>
+<% end %>
+
 <div class="mk-card-section">
   <h2>About this home</h2>
   <p class="mk-muted"><%= @listing.description %></p>

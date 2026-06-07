@@ -240,6 +240,28 @@ class Agent::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/Active listing/i, @response.body)  # comp citation surfaced
   end
 
+  test "a price check reconciles asking against tax assessment + ZIP market (R1 cross-source)" do
+    listing = Property.create!(address: "1 Oak St, Austin, TX 78704", state: "listed", region: "Zilker",
+                               list_price: 600_000, sqft: 2000, beds: 4, baths: 2.5, year_built: 1998,
+                               photo_urls: ["x"], source_name: "RentCast (live listing data)", captured_at: Time.current)
+    PropertyRecordCache.create!(address: "1 Oak St, Austin, TX 78704", region: "Zilker", sqft: 2000,
+                                tax_assessed_value: 500_000, captured_at: Time.current)
+    MarketSnapshot.create!(zip: "78704", area: "Zilker", median_price: 580_000, avg_price_per_sqft: 270,
+                           avg_days_on_market: 18, new_listings: 4, as_of: Date.new(2026, 6, 5), source: "Curated Austin sample")
+
+    use_valuation(usable_valuation(620_000)) do
+      post agent_messages_path, params: { query: "Is this fairly priced?", listing_id: listing.id }, as: :turbo_stream
+    end
+
+    assert_response :success
+    assert_match "Cross-source check", @response.body
+    assert_match "County tax assessment", @response.body  # captured-but-unused source now surfaced
+    assert_match "tax:tcad", @response.body                # cited
+    assert_match(/county tax assessment/i, @response.body) # asking-vs-tax delta line
+    assert_match(/\$300\/sqft/, @response.body)            # subject $/sqft vs market
+    assert_match(/Priced above the neighborhood/, @response.body) # hot signal reason (300 vs 270)
+  end
+
   test "a scheduling request on a listing surfaces real available slots, no brain call" do
     listing = Property.create!(address: "7 Tour St", state: "listed", region: "Austin 78704",
                                list_price: 500_000, sqft: 2000, beds: 3, baths: 2)
