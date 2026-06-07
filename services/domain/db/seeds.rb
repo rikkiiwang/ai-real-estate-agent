@@ -53,6 +53,12 @@ end
 
 puts "Seeded #{Property.browsable.count} browsable listings and #{Comp.count} comps."
 
+# R1: labeled SAMPLE cross-source data (per-region market snapshots + per-listing
+# tax assessments) so the cross-source check + neighborhood pulse demo offline.
+# Idempotent; overwritten by the real rentcast:import / prewarm path.
+SampleCrossSourceSeed.call
+puts "Seeded #{MarketSnapshot.count} market snapshots and #{PropertyRecordCache.count} tax records (sample)."
+
 # A demo high-intent buyer profile so the broker dashboard has a ready lead.
 demo = Visitor.sign_in(name: "Dana Demo", email: "demo-buyer@example.com")
 demo.record_engagement(signals: { "preapproval" => "true", "move_timeline_days" => "21" }, side: "buyer")
