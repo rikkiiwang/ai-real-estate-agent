@@ -108,9 +108,11 @@ class CrossSourceReconciliation
   end
 
   # ZIP from the address (seeded regions are neighborhood names; the ZIP lives in
-  # the address), else fall back to a snapshot keyed by the region name.
+  # the address), else fall back to a snapshot keyed by the region name. Take the
+  # LAST 5-digit token so a 5-digit street number ("12345 Research Blvd ... 78759")
+  # is never mistaken for the ZIP.
   def market_snapshot
-    zip = @property.address.to_s[/\b(\d{5})\b/, 1]
+    zip = @property.address.to_s.scan(/\b\d{5}\b/).last
     (zip && MarketSnapshot.find_by(zip: zip)) || MarketSnapshot.find_by(area: @property.region)
   end
 

@@ -82,6 +82,14 @@ class CrossSourceReconciliationTest < ActiveSupport::TestCase
     assert_equal 580_000, r.market_median
   end
 
+  test "a 5-digit street number is not mistaken for the ZIP" do
+    prop = listing(address: "12345 Research Blvd, Austin, TX 78759", region: "Zilker")
+    market!(zip: "78759", area: "Nowhere")       # the real ZIP
+    market!(zip: "12345", area: "AlsoNowhere", median: 999_999) # the street number, as a trap
+    r = CrossSourceReconciliation.for(property: prop)
+    assert_equal 580_000, r.market_median        # resolved by the trailing ZIP 78759, not 12345
+  end
+
   test "market falls back to the region name when no ZIP matches" do
     prop = listing(address: "5 River Rd, Austin TX", region: "Crestview") # no 5-digit zip
     market!(zip: "73301", area: "Crestview")

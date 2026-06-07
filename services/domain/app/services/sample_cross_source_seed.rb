@@ -68,8 +68,10 @@ module SampleCrossSourceSeed
     count
   end
 
+  # The LAST 5-digit token is the ZIP; a 5-digit street number comes first and
+  # must not be mistaken for it.
   def zip_of(property)
-    property.address.to_s[/\b(\d{5})\b/, 1]
+    property.address.to_s.scan(/\b\d{5}\b/).last
   end
 
   def median_of(values)
