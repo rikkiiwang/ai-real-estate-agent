@@ -62,6 +62,16 @@ class Buyer::ShowingsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/available time/, flash[:alert])
   end
 
+  test "a malformed time string is rejected, not a 500" do
+    # "99:99" makes BOTH Time.iso8601 and the Time.zone.parse fallback raise —
+    # the double-raise that must not escape as a 500.
+    assert_no_difference -> { Appointment.count } do
+      post buyer_listing_showings_path(listing), params: { starts_at: "99:99" }
+    end
+    assert_redirected_to buyer_listing_path(listing)
+    assert_match(/available time/, flash[:alert])
+  end
+
   test "a non-browsable listing is not found" do
     retired = Property.create!(address: "9 Gone St", state: "listed", list_price: 500_000, retired_at: Time.current)
     post buyer_listing_showings_path(retired), params: { starts_at: SLOT.iso8601 }

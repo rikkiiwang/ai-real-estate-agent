@@ -44,12 +44,19 @@ module Buyer
       redirect_to buyer_listing_path(@listing), alert: message
     end
 
+    # Parse the submitted slot time. Returns nil (→ a friendly "pick a time"
+    # redirect) for anything unparseable — including malformed-but-plausible
+    # strings like "2026-02-30T10:00" that make the fallback itself raise.
     def parse_time(value)
       return nil if value.blank?
 
-      Time.iso8601(value.to_s)
+      begin
+        Time.iso8601(value.to_s)
+      rescue ArgumentError
+        Time.zone.parse(value.to_s)
+      end
     rescue ArgumentError
-      Time.zone.parse(value.to_s)
+      nil
     end
 
     def format_slot(time)
