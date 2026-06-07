@@ -64,6 +64,25 @@ The `PropertyRecordCache` table stores the result (real beds/baths/sqft/geo/tax)
 `SubjectResolver` reads it. The demo is pre-warmed for the seeded listings, so
 the live site and demo spend **zero RentCast calls** during normal use.
 
+## Cross-source reconciliation (R1)
+
+`CrossSourceReconciliation.for(property:, valuation:)` reconciles the independent
+sources we already hold — **asking price** (listing), **county tax assessment**
+(`PropertyRecordCache.tax_assessed_value`), **AVM estimate** (brain), and the
+**ZIP market** (`MarketSnapshot`: median + `avg_price_per_sqft` + days-on-market)
+— into one cited view plus an honest neighborhood signal (hot / balanced / cool,
+from $/sqft vs the ZIP market). DB-only (zero RentCast); a missing source is
+reported, never invented. Rails owns this; the brain stays a pure AVM.
+
+- Surfaced in the **agent price-check sidebar** (a "Cross-source check" block) and
+  a listing-page **"Neighborhood pulse"** card.
+- Market lookup: ZIP parsed from the property address → `MarketSnapshot` by zip,
+  falling back to a snapshot keyed by the region name.
+- Offline demo data: `SampleCrossSourceSeed` (run by `db/seeds.rb`) seeds labeled
+  **"(sample)"** per-ZIP market snapshots + per-listing tax assessments so the
+  cross-source view demos without a RentCast key; the real `rentcast:import` /
+  `rentcast:prewarm` path overwrites them with live data.
+
 ## Dynamic scheduling (tours / inspections)
 
 A real collision-avoidance engine — DB-only, no external calendar, no network.

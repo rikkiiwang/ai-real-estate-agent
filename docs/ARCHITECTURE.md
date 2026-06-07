@@ -363,6 +363,7 @@ single migrator. Full runbook, secrets, and per-app `fly.toml` in
 | Component | Status | Production seam |
 |---|---|---|
 | Valuation model | real gradient-boosting model; estimate **grounded in real comps + per-ZIP freshness** — `ValuationAssembly` (Rails) resolves the subject's real attributes (`SubjectResolver`: existing `Property` or `PropertyRecordCache`), picks ACTIVE comparable listings (`CompsSelector`), reads an honest "as of" + recent-activity summary (`MarketActivity` from `MarketSnapshot`), and calls the brain with features + comps + recency. The brain anchors the estimate on a recency-weighted comp price-per-sqft blend (`market.py`, comps dominant), returns comp citations + freshness. Request path reads DB only (zero RentCast). Arbitrary-address coverage via a capped, cache-first `rake rentcast:prewarm` (each unique address ≤ 1 RentCast call; pre-warmed demo = 0 calls). Uncovered addresses fall back to address-hash + lower-confidence flag. | live MLS/feature pipeline; `PropertyRecordCache` is the current arbitrary-address seam |
+| Cross-source reconciliation | real — `CrossSourceReconciliation` (Rails) reconciles the asking price against the **county tax assessment** (`PropertyRecordCache.tax_assessed_value`, previously captured-but-unused), the **AVM** estimate, and the **ZIP market** (`MarketSnapshot`: median + $/sqft + days-on-market), emitting cited `Source`s (listing:rentcast / avm:atlas / tax:tcad / market:rentcast:<zip>) + an honest neighborhood signal (hot/balanced/cool from $/sqft vs market). DB-only; the **brain stays a pure AVM** (no tax/market input). Surfaced in the agent price-check (cross-source block) + a listing **Neighborhood pulse**. Missing source ⇒ reported, never invented. Offline demo seeds labeled "(sample)" tax + market via `SampleCrossSourceSeed`. | a **live neighborhood-news** feed (no API — documented gap); wiring tax value into the AVM as a model anchor (Phase-2 ingestion join) |
 | RAG store | real (`InMemoryVectorStore`) | `PgVectorStore` (present, lazy-connecting) |
 | Embedder | deterministic `FakeEmbedder` | `RealEmbedder` (injected) |
 | Entailer (Critic) | deterministic token-overlap | real-LLM entailer (injected) |
@@ -392,7 +393,7 @@ production-shaped; the data and a few external integrations are deferred.
   `Closer.GenerateContract` servicer (TREC fill + UPL-refusal path).
 - **Cross-language smoke** (`make smoke`) exercises a real gateway → brain gRPC
   round-trip and returns a live valuation.
-- **Rails** tests (252) cover the domain models and the full consumer marketplace,
+- **Rails** tests (267) cover the domain models and the full consumer marketplace,
   including the real-time valuation path (`CompsSelector`, `MarketActivity`,
   `SubjectResolver`, `ValuationAssembly`, `BrainValuationClient` with
   features/comps, `PropertyRecordCache`, capped prewarm), the **Ask Atlas
