@@ -24,6 +24,9 @@ module Agent
       elsif (@price_check = price_check_for(@listing, @query))
         # A pricing question on a listing gets a real comparison: asking price vs
         # Atlas's valuation vs nearby comps, with a plain verdict (see PriceCheck).
+      elsif (@showing = showing_for(@listing, @query))
+        # A scheduling request ("can I tour this Friday?") on a pinned listing
+        # surfaces real, collision-aware slots (R6) — Rails-side, no brain round-trip.
       else
         # Everything else is a grounded orchestrator turn (the glass box).
         @result = brain_client.orchestrate(query: @query, address: @address, thread_id: agent_thread_id)
@@ -58,8 +61,21 @@ module Agent
     def view_for
       return "search" if @intent
       return "price_check" if @price_check
+      return "showing" if @showing
 
       "create"
+    end
+
+    # Returns a ShowingScheduler::Result of real available slots when the message
+    # is a scheduling request on a pinned listing, else nil (falls through to the
+    # orchestrator). Honest even when empty — surfaces the blackout/no-openings
+    # reason rather than a generic answer. Sets @showing_kind for the view.
+    def showing_for(listing, query)
+      intent = listing && ShowingIntent.detect(query)
+      return nil unless intent
+
+      @showing_kind = intent.kind
+      ShowingScheduler.available_slots(property: listing, now: Time.current, kind: intent.kind)
     end
 
     # Returns a usable PriceCheck::Result for a pricing question on a listing,

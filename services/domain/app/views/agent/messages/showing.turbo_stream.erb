@@ -1,0 +1,11 @@
+<%# A scheduling request on a listing: echo it, then offer real, collision-aware slots. %>
+<%= turbo_stream.append "agent-messages" do %>
+  <div class="agent-msg agent-msg--user">
+    <div class="agent-bubble"><%= @query %></div>
+    <% if @listing %><div class="agent-ctx">about <%= @listing.address %></div><% end %>
+  </div>
+<% end %>
+
+<%= turbo_stream.append "agent-messages" do %>
+  <%= render "agent/messages/showing", showing: @showing, listing: @listing, kind: @showing_kind %>
+<% end %>

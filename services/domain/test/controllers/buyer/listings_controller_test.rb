@@ -74,6 +74,13 @@ class Buyer::ListingsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Sample", @response.body # provenance label
   end
 
+  test "detail page offers real showing slots that post to the booking endpoint (R6)" do
+    get buyer_listing_path(@mueller)
+    assert_response :success
+    assert_match "Schedule a showing", @response.body
+    assert_select "form[action=?]", buyer_listing_showings_path(@mueller), minimum: 1
+  end
+
   test "detail 404s for non-browsable properties" do
     get buyer_listing_path(@acquired)
     assert_response :not_found

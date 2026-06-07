@@ -121,3 +121,36 @@
     <p class="empty mk-muted">No offers awaiting signature.</p>
   <% end %>
 </section>
+
+<section id="pending-showings" class="mk-card-section">
+  <h2>Pending showings <span class="mk-badge mk-badge--warn"><%= @pending_showings.size %></span></h2>
+  <% if @pending_showings.any? %>
+    <table class="mk-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Requested time</th>
+          <th>Requester</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @pending_showings.each do |appt| %>
+          <tr class="pending-showing">
+            <td><%= appt.property.address %></td>
+            <td><%= appt.kind %></td>
+            <td><%= appt.starts_at.strftime("%a %b %-d, %-l:%M %p") %></td>
+            <td class="mk-muted"><%= appt.requester_name.presence || appt.requester_email.presence || "—" %></td>
+            <td>
+              <%= button_to "Confirm", confirm_broker_appointment_path(appt), method: :post, class: "mk-btn" %>
+              <%= button_to "Decline", decline_broker_appointment_path(appt), method: :post, class: "mk-btn mk-btn--ghost" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty mk-muted">No showings awaiting confirmation.</p>
+  <% end %>
+</section>

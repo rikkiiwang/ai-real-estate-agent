@@ -17,6 +17,8 @@ module Buyer
     def show
       @listing = Property.browsable.find(params[:id])
       @comps = Comp.in_region(@listing.region).recent_first.limit(3)
+      # Real, collision-aware showing slots for the request form (R6).
+      @showings = ShowingScheduler.available_slots(property: @listing, now: Time.current)
     end
   end
 end

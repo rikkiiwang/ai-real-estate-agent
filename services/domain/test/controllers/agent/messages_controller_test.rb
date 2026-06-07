@@ -239,4 +239,34 @@ class Agent::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match(/Active listing/i, @response.body)  # comp citation surfaced
   end
+
+  test "a scheduling request on a listing surfaces real available slots, no brain call" do
+    listing = Property.create!(address: "7 Tour St", state: "listed", region: "Austin 78704",
+                               list_price: 500_000, sqft: 2000, beds: 3, baths: 2)
+    # No client_factory set: a brain round-trip would use the real client. The
+    # scheduling path answers Rails-side instead.
+    post agent_messages_path, params: { query: "Can I tour this house Friday?", listing_id: listing.id }, as: :turbo_stream
+
+    assert_response :success
+    assert_match(/open tour times/i, @response.body)
+    # bookable slot buttons post to the buyer showings endpoint
+    assert_match(%r{/buyer/listings/#{listing.id}/showings}, @response.body)
+  end
+
+  test "a scheduling request without a pinned listing falls through to the orchestrator" do
+    use_client(FakeClient.new(grounded)) do
+      post agent_messages_path, params: { query: "I'd like to schedule a showing" }, as: :turbo_stream
+    end
+    assert_match "competitively priced", @response.body # the orchestrator's (fake) message
+  end
+
+  test "a blacked-out listing shows an honest no-slots reason in the sidebar" do
+    listing = Property.create!(address: "8 Sold St", state: "under_offer", region: "Austin 78704",
+                               list_price: 500_000, sqft: 2000, beds: 3, baths: 2)
+    post agent_messages_path, params: { query: "can I tour it?", listing_id: listing.id }, as: :turbo_stream
+
+    assert_response :success
+    assert_match(/can't offer tour times/i, @response.body)
+    assert_match(/under_offer/, @response.body)
+  end
 end

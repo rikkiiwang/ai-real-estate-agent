@@ -31,6 +31,25 @@
 
 <p><%= link_to "Make an offer →", new_buyer_listing_offer_path(@listing), class: "mk-btn" %></p>
 
+<% if @showings %>
+  <div class="mk-card-section" id="schedule-showing">
+    <h2>📅 Schedule a showing</h2>
+    <% if @showings.any? %>
+      <div class="mk-slot-grid">
+        <% @showings.slots.first(6).each do |slot| %>
+          <%= button_to slot.starts_at.strftime("%a %b %-d, %-l:%M %p"),
+                buyer_listing_showings_path(@listing),
+                params: { starts_at: slot.starts_at.iso8601, kind: "tour" },
+                class: "mk-btn mk-btn--ghost" %>
+        <% end %>
+      </div>
+      <p class="mk-muted">Pick a time to request a tour — a licensed broker confirms it. Booked slots are already filtered out.</p>
+    <% else %>
+      <p class="mk-muted"><%= @showings.reason %></p>
+    <% end %>
+  </div>
+<% end %>
+
 <div class="mk-card-section">
   <h2>About this home</h2>
   <p class="mk-muted"><%= @listing.description %></p>

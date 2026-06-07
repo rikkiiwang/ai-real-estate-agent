@@ -1,0 +1,22 @@
+<%# showing = ShowingScheduler::Result. Offers real free slots (collision-aware,
+    DB-only) for the pinned listing; honest empty-state when none. Booking a slot
+    routes it to the broker's pending queue — not confirmed until a broker acts. %>
+<div class="agent-msg agent-msg--bot">
+  <div class="agent-bubble">
+    <% label = (kind == "inspection" ? "inspection" : "tour") %>
+    <% if showing.any? %>
+      <p>Here are the next open <%= label %> times for <strong><%= listing.address %></strong>. Pick one to request it — a licensed broker confirms before it's booked.</p>
+      <div class="agent-slots">
+        <% showing.slots.first(6).each do |slot| %>
+          <%= button_to slot.starts_at.strftime("%a %b %-d, %-l:%M %p"),
+                buyer_listing_showings_path(listing),
+                params: { starts_at: slot.starts_at.iso8601, kind: label },
+                class: "mk-badge agent-slot-btn" %>
+        <% end %>
+      </div>
+      <p class="mk-meta">Times shown are real openings — already-booked slots are filtered out.</p>
+    <% else %>
+      <p>I can't offer <%= label %> times for <strong><%= listing.address %></strong> right now: <%= showing.reason %>.</p>
+    <% end %>
+  </div>
+</div>
