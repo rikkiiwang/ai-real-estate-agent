@@ -8,8 +8,15 @@ point. Covers U4 (plan R3).
 from __future__ import annotations
 
 from .schema import BBox, Finding, FindingKind, PhotoRef
-from .model import GeminiVisionModel, FakeVisionModel, VisionModel
+from .model import (
+    GeminiVisionModel,
+    FakeVisionModel,
+    VisionModel,
+    ClaudeVisionModel,
+    claude_vision_model_or_none,
+)
 from .analyzer import PhotoAnalyzer, AnalysisResult, DEFAULT_REDFLAG_CONFIDENCE
+from .condition import condition_from_findings
 
 __all__ = [
     "BBox",
@@ -19,7 +26,10 @@ __all__ = [
     "VisionModel",
     "GeminiVisionModel",
     "FakeVisionModel",
+    "ClaudeVisionModel",
+    "claude_vision_model_or_none",
     "PhotoAnalyzer",
     "AnalysisResult",
     "DEFAULT_REDFLAG_CONFIDENCE",
+    "condition_from_findings",
 ]
