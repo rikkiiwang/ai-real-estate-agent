@@ -19,14 +19,33 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/airealestate/realestate/internal/health"
 )
 
-// server wires the HTTP conversation API over an in-memory session Manager.
+// server wires the HTTP conversation API over an in-memory session Manager. When
+// a relay is configured (DOMAIN_URL set), each turn also joins the Rails shared
+// cross-channel thread (R4).
 type server struct {
 	manager *Manager
+	relay   ThreadRelay
+}
+
+// relayReply forwards the turn to the shared thread (if a relay is configured)
+// and appends the agent's reply to the session. Returns ("", false) when there
+// is no relay or the call fails (voice degrades to standalone).
+func (s *server) relayReply(sessionID, text string) (string, bool) {
+	if s.relay == nil {
+		return "", false
+	}
+	reply, err := s.relay.Reply("voice-"+sessionID, text)
+	if err != nil || reply == "" {
+		return "", false
+	}
+	s.manager.AppendTurn(sessionID, RoleAgent, reply, nil)
+	return reply, true
 }
 
 // messageRequest is the body of POST /session/{id}/message.
@@ -86,6 +105,14 @@ func (s *server) handleMessage(w http.ResponseWriter, r *http.Request) {
 	if !found {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "session not found"})
 		return
+	}
+
+	// Join the Rails shared thread (if configured): append the agent's reply and
+	// return the refreshed session so the thread includes both turns.
+	if _, ok := s.relayReply(id, req.Text); ok {
+		if refreshed, ok := s.manager.Get(id); ok {
+			sess = refreshed
+		}
 	}
 
 	writeJSON(w, http.StatusOK, messageResponse{
@@ -158,6 +185,9 @@ func newMux(s *server) *http.ServeMux {
 func main() {
 	addr := health.Getenv("VOICE_ADDR", ":8082")
 	s := &server{manager: NewManager()}
+	if url := os.Getenv("DOMAIN_URL"); url != "" {
+		s.relay = HTTPRelay{URL: url, Token: os.Getenv("INBOUND_WEBHOOK_TOKEN")}
+	}
 	mux := newMux(s)
 	log.Printf("voice listening on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, mux))
