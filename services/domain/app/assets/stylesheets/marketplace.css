@@ -225,3 +225,16 @@ body.mk {
 
 /* Reasoning / sidebar primitives reused later */
 .mk-muted { color: var(--ink-soft); }
+
+/* Closing pipeline — deal cards + step table */
+.mk-closing-deal { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.mk-closing-deal:last-child { border-bottom: 0; padding-bottom: 0; }
+.mk-closing-deal-title { font-size: 15px; margin: 0 0 2px; }
+.mk-closing-deal-sub { font-size: 13px; color: var(--ink-soft); margin-bottom: 10px; }
+.mk-closing-table { margin-bottom: 12px; }
+.mk-closing-table td .mk-source { margin: 4px 0 0; }
+.mk-closing-table tr.is-pending td { color: var(--ink-soft); }
+.mk-step-num { display: inline-block; width: 18px; height: 18px; line-height: 18px;
+  text-align: center; border-radius: 99px; background: var(--line); color: var(--ink-soft);
+  font-size: 11px; font-weight: 700; margin-right: 8px; }
+.closing-step.is-done .mk-step-num { background: #ecfdf5; color: var(--good); }

@@ -1,20 +1,33 @@
-<%# Read-only closing progress for a deal. Shared by the broker panel and the
-    buyer's contract page. Buttons are rendered by the broker view, not here. %>
+<%# Read-only closing progress for one deal, as a clear table. Shared by the
+    broker panel and the buyer's contract page. The broker view adds the action
+    button; this partial never renders controls. %>
 <% recorded = offer.closing_milestones.index_by(&:milestone) %>
-<ol class="mk-closing-steps">
-  <% Offer::MILESTONE_ORDER.each do |m| %>
-    <% cm = recorded[m] %>
-    <li class="closing-step <%= cm ? "is-done" : "is-pending" %>" data-step="<%= m %>">
-      <span class="step-name"><%= m.humanize %></span>
-      <% if cm %>
-        <span class="mk-badge mk-badge--good">✓ <%= cm.counterparty_label %> notified</span>
-        <span class="mk-source">
-          <%= cm.ping_status == "pending" ? "ping pending (orchestrator unreachable)" : "notified" %>
-          · <%= cm.recorded_at.strftime("%b %-d, %Y %-l:%M %p") %>
-        </span>
-      <% else %>
-        <span class="mk-muted">pending</span>
-      <% end %>
-    </li>
-  <% end %>
-</ol>
+<table class="mk-table mk-closing-table">
+  <thead>
+    <tr>
+      <th>Step</th>
+      <th>Notifies</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% Offer::MILESTONE_ORDER.each_with_index do |m, i| %>
+      <% cm = recorded[m] %>
+      <tr class="closing-step <%= cm ? "is-done" : "is-pending" %>" data-step="<%= m %>">
+        <td><span class="mk-step-num"><%= i + 1 %></span> <%= m.humanize %></td>
+        <td><%= cm&.counterparty_label || ClosingMilestone.counterparty_label_for(m) %></td>
+        <td>
+          <% if cm.nil? %>
+            <span class="mk-badge">Not started</span>
+          <% elsif cm.ping_status == "pending" %>
+            <span class="mk-badge mk-badge--warn">⚠ Notification not sent</span>
+            <div class="mk-source">recorded <%= cm.recorded_at.strftime("%b %-d, %-l:%M %p") %> · ping will retry</div>
+          <% else %>
+            <span class="mk-badge mk-badge--good">✓ Notified</span>
+            <div class="mk-source"><%= cm.recorded_at.strftime("%b %-d, %-l:%M %p") %></div>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

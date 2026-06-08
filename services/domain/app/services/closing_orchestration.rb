@@ -5,10 +5,7 @@
 # (simulated) ping. If the brain is unreachable we still record the milestone,
 # routing locally and marking the ping "pending" — honest, never a dead-end.
 class ClosingOrchestration
-  RAILS_ROUTING = {
-    "inspection_cleared" => "escrow", "earnest_deposited" => "escrow",
-    "title_cleared" => "title", "funded" => "lender"
-  }.freeze
+  RAILS_ROUTING = ClosingMilestone::MILESTONE_COUNTERPARTY
   ACTION = {
     "inspection_cleared" => "inspection cleared — releasing contingency",
     "earnest_deposited" => "earnest-money deposit triggered",

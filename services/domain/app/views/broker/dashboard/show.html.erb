@@ -34,12 +34,15 @@
   <% if @closing_deals.any? %>
     <% @closing_deals.each do |offer| %>
       <div class="mk-closing-deal" data-offer="<%= offer.id %>">
-        <h3><%= offer.property&.address || "Deal #{offer.id}" %> · <%= offer.deal_id %></h3>
+        <h3 class="mk-closing-deal-title"><%= offer.property&.address || "Offer ##{offer.id}" %></h3>
+        <div class="mk-closing-deal-sub">
+          <%= offer.side.capitalize %> offer · <%= offer.lead.contact %><% if offer.amount %> · <%= number_to_currency(offer.amount, precision: 0) %><% end %>
+        </div>
         <%= render "shared/closing_tracker", offer: offer %>
         <% if offer.closing_complete? %>
-          <p class="mk-badge mk-badge--good">✅ Closed — funded.</p>
+          <p class="mk-badge mk-badge--good" style="margin-top:10px;">✅ Closed — funded.</p>
         <% else %>
-          <%= button_to "Mark: #{offer.next_closing_milestone.humanize}",
+          <%= button_to "Record next step: #{offer.next_closing_milestone.humanize} →",
                 record_milestone_broker_offer_path(offer),
                 params: { milestone: offer.next_closing_milestone }, class: "mk-btn" %>
         <% end %>
