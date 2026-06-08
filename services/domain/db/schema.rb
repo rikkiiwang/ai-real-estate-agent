@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_08_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_08_000003) do
   create_table "appointments", force: :cascade do |t|
     t.string "broker_email"
     t.datetime "confirmed_at"
@@ -99,6 +99,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_000002) do
     t.string "title"
     t.datetime "updated_at", null: false
     t.index ["offer_id"], name: "index_contracts_on_offer_id", unique: true
+  end
+
+  create_table "conversations", force: :cascade do |t|
+    t.string "contact", null: false
+    t.datetime "created_at", null: false
+    t.string "last_channel"
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.index ["contact"], name: "index_conversations_on_contact", unique: true
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.boolean "ai_disclosed", default: false, null: false
+    t.text "body"
+    t.string "channel", null: false
+    t.integer "conversation_id", null: false
+    t.datetime "created_at", null: false
+    t.string "role", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id"], name: "index_messages_on_conversation_id"
   end
 
   create_table "handoff_packets", force: :cascade do |t|
@@ -256,6 +276,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_000002) do
   add_foreign_key "photo_analyses", "properties"
   add_foreign_key "comps", "properties"
   add_foreign_key "consents", "leads"
+  add_foreign_key "messages", "conversations"
   add_foreign_key "contracts", "offers"
   add_foreign_key "handoff_packets", "leads"
   add_foreign_key "negotiations", "offers"
