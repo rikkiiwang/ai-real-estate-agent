@@ -15,6 +15,13 @@ module Agent
 
       @channel = Channel.valid?(params[:channel]) ? params[:channel] : "chat"
 
+      # Omnichannel (R4): a signed-in visitor's turns persist on one durable
+      # cross-channel thread; the brain is keyed to it so context carries across
+      # channels. Anonymous use stays ephemeral (no contact, no thread).
+      @conversation = current_visitor && Conversation.for(contact: current_visitor.email, name: current_visitor.name)
+      @conversation&.append(channel: @channel, role: "user", body: @query,
+                            ai_disclosed: Channel.mandatory_disclosure?(@channel))
+
       if handle_insight
         # A suggested-prompt chip: a deterministic, cited, DB-only answer about the
         # pinned listing (no brain round-trip). Sets the ivar its view reads.
@@ -30,10 +37,20 @@ module Agent
         # surfaces real, collision-aware slots (R6) — Rails-side, no brain round-trip.
       else
         # Everything else is a grounded orchestrator turn (the glass box).
-        @result = brain_client.orchestrate(query: @query, address: @address, thread_id: agent_thread_id)
+        @result = brain_client.orchestrate(query: @query, address: @address, thread_id: thread_id)
         # On an out-of-band channel (SMS/Email) the reply is "delivered" through
         # the transport seam — simulated until a real carrier is configured.
         @delivery = ChannelTransport.deliver(channel: @channel, to: current_visitor&.email || "buyer", body: @result.message)
+      end
+
+      # Record the agent's turn on the durable thread (full text for chat/
+      # orchestrate, a one-line summary for card answers).
+      if @conversation
+        @conversation.append(channel: @channel, role: "agent",
+          body: AgentReplySummary.line(result: @result, price_check: @price_check,
+            neighborhood: @neighborhood, photo_insight: @photo_insight, showing: @showing,
+            listings: @listings, insight_key: @insight_key, query: @query, address: @address),
+          ai_disclosed: Channel.mandatory_disclosure?(@channel))
       end
 
       respond_to do |format|
@@ -105,8 +122,10 @@ module Agent
       end
     end
 
-    def agent_thread_id
-      session[:agent_thread_id] ||= SecureRandom.uuid
+    # The brain thread handle: the durable conversation for a signed-in visitor,
+    # else an ephemeral per-session id for anonymous use.
+    def thread_id
+      @conversation&.thread_id || (session[:agent_thread_id] ||= SecureRandom.uuid)
     end
 
     # Seam for tests to inject a fake brain.

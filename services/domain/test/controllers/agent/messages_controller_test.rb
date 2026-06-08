@@ -332,4 +332,23 @@ class Agent::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match(/competitively priced/, @response.body) # the orchestrator's (fake) message
   end
+
+  test "a signed-in turn persists user + agent messages and reuses the conversation thread_id" do
+    post session_path, params: { name: "Bea", email: "bea@example.com" }
+    fake = FakeClient.new(grounded)
+    use_client(fake) do
+      post agent_messages_path, params: { query: "tell me about schools" }, as: :turbo_stream
+    end
+    convo = Conversation.for(contact: "bea@example.com")
+    assert_equal ["tell me about schools", "It's competitively priced."], convo.messages.map(&:body)
+    assert_equal %w[user agent], convo.messages.map(&:role)
+    assert_equal "conv-#{convo.id}", fake.last_args[:thread_id]   # brain keyed to the durable thread
+  end
+
+  test "an anonymous turn persists no conversation" do
+    use_client(FakeClient.new(grounded)) do
+      post agent_messages_path, params: { query: "hello" }, as: :turbo_stream
+    end
+    assert_equal 0, Conversation.count
+  end
 end

@@ -28,6 +28,9 @@ class Visitor < ApplicationRecord
     intent.to_s.start_with?("high")
   end
 
+  # The visitor's durable cross-channel conversation thread (R4), keyed by email.
+  def conversation = Conversation.find_by(contact: Conversation.normalize_contact(email))
+
   # Build the neutral buyer signal hash IntentTriage reads, from the profile
   # columns. Only allow-listed keys; empty values are dropped so they don't count.
   def buyer_signals
