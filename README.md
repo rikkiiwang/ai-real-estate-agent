@@ -147,11 +147,13 @@ a gap. Be explicit about which is which:
   licensing). "Fully autonomous through signature, no human" wouldn't be a
   higher bar — it'd be a **compliance defect**. So the agent is autonomous up to
   the legal line; the human gate at signing is the thesis, not a shortfall.
-- **Deferred integration seams (honest MVP gaps).** A live MLS feed, a real-LLM
-  entailer/generator, and the post-signature **closing orchestration**
-  (escrow/title/lender milestone pings — a sink that currently raises
-  `NotImplementedError`) are genuinely not production-integrated yet. They are
-  dependency-injected seams, documented below, not hand-waved.
+- **Deferred integration seams (honest MVP gaps).** A live MLS feed and a
+  real-LLM entailer/generator are genuinely not production-integrated yet. The
+  post-signature **closing orchestration** is now wired end-to-end
+  (`Closer.RecordMilestone`; broker-driven milestones + audited, simulated
+  escrow/title/lender pings), but the **real carrier integrations** behind those
+  pings remain a documented seam. They are dependency-injected seams, documented
+  below, not hand-waved.
 
 So the honest framing is **autonomous lead → *broker-ready* close**: capture →
 valuation → cited reasoning → in-band offer/negotiation → TREC contract draft,
@@ -182,7 +184,7 @@ is not the same as it being *reachable by a user*:
 | Voice (engagement pillar¹) | Tour / inspection scheduling vs availability (R7) | ✅ reachable — a real **collision-avoidance engine** (`ShowingScheduler`): generates business-hours slots over a 7-day horizon and subtracts past times, property + broker double-bookings, and under-offer/sold/retired listings. Buyers request a slot from the listing page **or by asking the agent** ("can I tour this Friday?" → `ShowingIntent` surfaces real openings); the broker confirms/declines from the dashboard queue. **DB-only, deterministic, no external calendar** — slots are computed, never faked |
 | Closer | TREC document generation (blanks-only, UPL-safe) | ✅ reachable — `Closer.GenerateContract` RPC; broker-sign delivers the draft in-app |
 | Closer | Automated negotiation within a price band | ✅ reachable — seller can counter the cash offer; the agent auto-accepts within the authorized band (opening offer → valuation ceiling) or escalates above it, recording a `Negotiation` either way |
-| Closer | Closing orchestration (escrow/title/lender pings) | 🟡 built; real sink raises `NotImplementedError`; not wired |
+| Closer | Closing orchestration (escrow/title/lender pings) | ✅ reachable — `Closer.RecordMilestone` RPC; broker advances signed deals through milestones (inspection→earnest→title→funded), each pings its counterparty (simulated + audited); buyer sees a read-only tracker. Real escrow/title/lender carriers remain a documented seam |
 | **Lawyer** | **Fair Housing compliance** | ✅ reachable — runs every turn |
 | **Lawyer** | **Truth-verification (Critic/RAG)** | ✅ reachable — every turn (deterministic entailer; real-LLM deferred) |
 | **Lawyer** | **HITL handoff triggers** | ✅ reachable — legal / human-request handoffs + every offer broker-gated |
@@ -318,5 +320,5 @@ Two-sided MVP built across Go/Python/Rails, deployed live on Fly.io. The
 LangGraph orchestrator is exposed end-to-end through the consumer **marketplace**
 (agent sidebar) and **chat** app and the gateway `/orchestrate` API; the Closer's
 TREC paperwork is reachable via `Closer.GenerateContract`. Tests: Go green,
-Python brain **238** passing, Rails **289** passing. See `docs/ARCHITECTURE.md`
+Python brain **241** passing, Rails **304** passing. See `docs/ARCHITECTURE.md`
 for design and `docs/plans/` for the plans and remaining deferred seams.

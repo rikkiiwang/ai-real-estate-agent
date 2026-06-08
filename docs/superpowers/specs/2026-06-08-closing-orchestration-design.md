@@ -1,7 +1,7 @@
 # Closing Orchestration Wiring — Design
 
 Date: 2026-06-08
-Status: Approved (brainstorm) — pending spec review
+Status: Implemented
 Cluster: 2 (closing orchestration #9). Decided: **Full** scope (broker buttons +
 inspection auto-link + buyer-visible tracker); **extend the `Closer` service**;
 **enforce milestone order**.

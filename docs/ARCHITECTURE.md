@@ -284,9 +284,14 @@ called by the Rails consumer marketplace when a broker signs an offer — it fil
 the promulgated TREC form and the marketplace delivers the draft in-app to both
 parties (with a Rails-side fallback fill if the brain is unreachable, so the flow
 never dead-ends). The `Negotiation` Rails model is now wired through the seller
-counter loop (above). Still unwired: the `ClosingOrchestrator` (milestone →
-escrow/title/lender pings, `closing.py`) exists and is tested against fakes, but
-its real sinks/flows are not yet connected.
+counter loop (above). The `ClosingOrchestrator` (milestone → escrow/title/lender
+pings, `closing.py`) is now reachable via `Closer.RecordMilestone`: the broker
+dashboard advances a signed deal through its milestones (Rails owns state, order,
+and idempotency via `ClosingMilestone`), each recorded milestone pings its
+counterparty (simulated + audited; brain-unreachable falls back to a local route
+marked `pending`), a completed inspection auto-clears the first milestone, and the
+buyer sees a read-only tracker. The **real** escrow/title/lender carrier bindings
+behind the simulated ping remain the documented seam.
 
 ---
 

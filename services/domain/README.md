@@ -116,6 +116,19 @@ pre-approval / move-in timeline / budget), edited after the passwordless sign-in
 Saving runs `IntentTriage` (R5) and routes a high-intent lead to the broker; the
 old per-message sidebar checkboxes are gone.
 
+## Closing orchestration (R10)
+
+After a broker signs an offer, the deal advances through four milestones
+(inspection cleared → earnest deposited → title cleared → funded) on the broker
+dashboard's **Closing pipeline**. Each recorded milestone calls the brain's
+`Closer.RecordMilestone` RPC, which routes the (simulated) counterparty ping —
+escrow / title / lender — and Rails persists it on `ClosingMilestone` and writes
+an append-only `AuditEvent`. Rails owns idempotency + canonical order; if the
+brain is unreachable the milestone is still recorded, routed locally, and marked
+`pending` (honest). Completing a linked **inspection** appointment auto-clears the
+first milestone. The buyer sees a **read-only** closing tracker on their contract;
+real escrow/title/lender integrations remain a documented seam.
+
 ## Dynamic scheduling (tours / inspections)
 
 A real collision-avoidance engine — DB-only, no external calendar, no network.
