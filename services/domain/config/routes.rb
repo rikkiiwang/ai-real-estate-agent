@@ -13,13 +13,17 @@ Rails.application.routes.draw do
   namespace :broker do
     get "dashboard", to: "dashboard#show"
     resources :offers, only: [] do
-      post :sign, on: :member
+      member do
+        post :sign
+        post :record_milestone, to: "closings#create"
+      end
     end
-    # Broker confirms or declines a requested showing.
+    # Broker confirms, declines, or completes a requested showing.
     resources :appointments, only: [] do
       member do
         post :confirm
         post :decline
+        post :complete
       end
     end
   end

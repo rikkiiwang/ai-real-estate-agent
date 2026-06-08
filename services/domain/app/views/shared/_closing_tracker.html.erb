@@ -1,0 +1,20 @@
+<%# Read-only closing progress for a deal. Shared by the broker panel and the
+    buyer's contract page. Buttons are rendered by the broker view, not here. %>
+<% recorded = offer.closing_milestones.index_by(&:milestone) %>
+<ol class="mk-closing-steps">
+  <% Offer::MILESTONE_ORDER.each do |m| %>
+    <% cm = recorded[m] %>
+    <li class="closing-step <%= cm ? "is-done" : "is-pending" %>" data-step="<%= m %>">
+      <span class="step-name"><%= m.humanize %></span>
+      <% if cm %>
+        <span class="mk-badge mk-badge--good">✓ <%= cm.counterparty_label %> notified</span>
+        <span class="mk-source">
+          <%= cm.ping_status == "pending" ? "ping pending (orchestrator unreachable)" : "notified" %>
+          · <%= cm.recorded_at.strftime("%b %-d, %Y %-l:%M %p") %>
+        </span>
+      <% else %>
+        <span class="mk-muted">pending</span>
+      <% end %>
+    </li>
+  <% end %>
+</ol>

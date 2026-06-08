@@ -13,6 +13,8 @@ module Broker
       @pending_showings = Appointment.pending.includes(:property, :lead)
       # Photo red-flags routed to a human — never shown to buyers (R2).
       @flagged_photos = PhotoAnalysis.includes(:property).reject { |pa| pa.review_findings.empty? }
+      # Closing pipeline: signed deals advancing through their milestones (R10).
+      @closing_deals = Offer.where(status: "signed").includes(:closing_milestones, :property, :lead).order(:id)
     end
   end
 end

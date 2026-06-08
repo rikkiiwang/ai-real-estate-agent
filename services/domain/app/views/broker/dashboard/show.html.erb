@@ -29,6 +29,27 @@
   </table>
 </section>
 
+<section id="closing-deals" class="mk-card-section">
+  <h2>Closing pipeline</h2>
+  <% if @closing_deals.any? %>
+    <% @closing_deals.each do |offer| %>
+      <div class="mk-closing-deal" data-offer="<%= offer.id %>">
+        <h3><%= offer.property&.address || "Deal #{offer.id}" %> · <%= offer.deal_id %></h3>
+        <%= render "shared/closing_tracker", offer: offer %>
+        <% if offer.closing_complete? %>
+          <p class="mk-badge mk-badge--good">✅ Closed — funded.</p>
+        <% else %>
+          <%= button_to "Mark: #{offer.next_closing_milestone.humanize}",
+                record_milestone_broker_offer_path(offer),
+                params: { milestone: offer.next_closing_milestone }, class: "mk-btn" %>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="mk-muted">No signed deals in closing yet.</p>
+  <% end %>
+</section>
+
 <section id="handoff-queue" class="mk-card-section">
   <h2>Handoff queue <span class="mk-badge mk-badge--warn"><%= @handoffs.size %></span></h2>
   <% if @handoffs.any? %>
