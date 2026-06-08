@@ -50,63 +50,11 @@
   </div>
 <% end %>
 
-<% if @reconciliation&.market_ppsf %>
-  <div class="mk-card-section" id="neighborhood-pulse">
-    <h2>📊 Neighborhood pulse</h2>
-    <div class="mk-detail-facts">
-      <span>Market <b>$<%= @reconciliation.market_ppsf %></b>/sqft</span>
-      <% if @reconciliation.subject_ppsf %><span>This home <b>$<%= @reconciliation.subject_ppsf %></b>/sqft</span><% end %>
-      <% if @reconciliation.market_median %><span>ZIP median <b><%= number_to_currency(@reconciliation.market_median, precision: 0) %></b></span><% end %>
-    </div>
-    <% if @reconciliation.signal %>
-      <% sig_badge = @reconciliation.signal == :cool ? "mk-badge--good" : (@reconciliation.signal == :hot ? "mk-badge--warn" : "mk-badge--good") %>
-      <p>
-        <span class="mk-badge <%= sig_badge %>"><%= @reconciliation.signal == :hot ? "Seller's market" : (@reconciliation.signal == :cool ? "Room to negotiate" : "Balanced market") %></span>
-        <span class="mk-muted"><%= @reconciliation.signal_reason %></span>
-      </p>
-    <% end %>
-    <% market_src = @reconciliation.sources.find { |s| s.source_id.to_s.start_with?("market:") } %>
-    <% if market_src %>
-      <p class="mk-source">Source: <%= market_src.source_id %><% if market_src.as_of.present? %> · as of <%= market_src.as_of.to_date.strftime("%b %-d, %Y") rescue market_src.as_of %><% end %>. Sample market data for this demo.</p>
-    <% end %>
-  </div>
-<% end %>
-
-<% if @photo_analysis&.feature_findings&.any? %>
-  <div class="mk-card-section" id="photo-analysis">
-    <h2>📸 What the photos show</h2>
-    <ul class="mk-photo-findings">
-      <% @photo_analysis.feature_findings.each do |f| %>
-        <li>
-          <span><%= f["label"].to_s.tr("_", " ").capitalize %></span>
-          <span class="mk-badge mk-badge--good"><%= (f["confidence"].to_f * 100).round %>% confident</span>
-        </li>
-      <% end %>
-    </ul>
-    <% if @photo_analysis.condition.present? %>
-      <p class="mk-muted">Photo-derived condition: <strong><%= (@photo_analysis.condition.to_f * 100).round %>/100</strong> — feeds Atlas's valuation.</p>
-    <% end %>
-    <p class="mk-source">Source: <%= @photo_analysis.from_claude? ? "Claude vision analysis" : "sample analysis (demo)" %>. Each finding is tied to a listing photo; any visible defects are routed to a licensed broker, never asserted here.</p>
-  </div>
-<% end %>
-
 <div class="mk-card-section">
   <h2>About this home</h2>
   <p class="mk-muted"><%= @listing.description %></p>
+  <p class="mk-muted">Curious about price, the neighborhood, or the photos? Ask Atlas →</p>
 </div>
-
-<% if @comps.any? %>
-  <div class="mk-card-section">
-    <h2>Recent nearby sales</h2>
-    <% @comps.each do |comp| %>
-      <div class="mk-comp-row">
-        <span><%= comp.address %> · <%= comp.region %></span>
-        <span><b><%= number_to_currency(comp.sale_price, precision: 0) %></b> · <%= comp.sale_date.strftime("%b %Y") %></span>
-      </div>
-    <% end %>
-    <p class="mk-source">Source: <%= @comps.first.source_name %></p>
-  </div>
-<% end %>
 
 <p class="mk-source">
   Listing data: <%= @listing.source_name %> ·

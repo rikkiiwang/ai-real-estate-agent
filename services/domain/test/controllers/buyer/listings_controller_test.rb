@@ -66,12 +66,16 @@ class Buyer::ListingsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".mk-empty"
   end
 
-  test "detail page renders photos, facts, comps and provenance" do
+  test "detail page renders photos, facts and provenance (analysis lives in Ask Atlas)" do
     get buyer_listing_path(@mueller)
     assert_response :success
     assert_match @mueller.address, @response.body
-    assert_match "Recent nearby sales", @response.body
     assert_match "Sample", @response.body # provenance label
+    # The neighborhood / photos / comps analysis is now answered on demand by
+    # Ask Atlas (see the agent chip tests), not stacked on the page.
+    assert_no_match(/Recent nearby sales/, @response.body)
+    assert_no_match(/Neighborhood pulse/, @response.body)
+    assert_no_match(/What the photos show/, @response.body)
   end
 
   test "detail page offers real showing slots that post to the booking endpoint (R6)" do
@@ -79,43 +83,6 @@ class Buyer::ListingsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Schedule a showing", @response.body
     assert_select "form[action=?]", buyer_listing_showings_path(@mueller), minimum: 1
-  end
-
-  test "detail page shows a neighborhood pulse from cached market data (R1)" do
-    # @mueller's address has no ZIP, so reconciliation resolves the market by area.
-    MarketSnapshot.create!(zip: "78723", area: @mueller.region, median_price: 720_000,
-                           avg_price_per_sqft: 360, avg_days_on_market: 16, new_listings: 5,
-                           as_of: Date.new(2026, 6, 5), source: "Curated Austin sample")
-    get buyer_listing_path(@mueller)
-    assert_response :success
-    assert_match "Neighborhood pulse", @response.body
-    assert_match(/\$360/, @response.body)              # market $/sqft
-    assert_match(/Curated Austin sample|market:rentcast/, @response.body) # cited source
-  end
-
-  test "detail page omits the pulse when there is no market snapshot" do
-    get buyer_listing_path(@mueller)
-    assert_response :success
-    assert_no_match(/Neighborhood pulse/, @response.body)
-  end
-
-  test "detail page shows photo findings but never a red-flag (R2)" do
-    PhotoAnalysis.create!(address: @mueller.address, property: @mueller, provenance: "sample",
-      condition: 0.74, analyzed_at: Time.current,
-      findings: [{ "kind" => "feature", "label" => "updated_kitchen", "confidence" => 0.9, "evidence_photo_id" => "x" }],
-      needs_review: [{ "kind" => "red_flag", "label" => "water_stain_ceiling", "confidence" => 0.8, "evidence_photo_id" => "x" }])
-
-    get buyer_listing_path(@mueller)
-    assert_response :success
-    assert_match "What the photos show", @response.body
-    assert_match(/Updated kitchen/i, @response.body)         # buyer-safe feature shown
-    assert_no_match(/water.stain/i, @response.body)          # red-flag NEVER shown to the buyer
-  end
-
-  test "detail page omits the photo panel when no analysis is cached" do
-    get buyer_listing_path(@mueller)
-    assert_response :success
-    assert_no_match(/What the photos show/, @response.body)
   end
 
   test "detail 404s for non-browsable properties" do

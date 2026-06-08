@@ -16,14 +16,10 @@ module Buyer
 
     def show
       @listing = Property.browsable.find(params[:id])
-      @comps = Comp.in_region(@listing.region).recent_first.limit(3)
       # Real, collision-aware showing slots for the request form (R6).
       @showings = ShowingScheduler.available_slots(property: @listing, now: Time.current)
-      # Cross-source neighborhood pulse from cached market data (R1). No valuation
-      # needed — market/tax only; renders when a market snapshot exists.
-      @reconciliation = CrossSourceReconciliation.for(property: @listing)
-      # Cached photo analysis for the "What the photos show" panel (R2). DB-only.
-      @photo_analysis = PhotoAnalysis.find_by("lower(address) = ?", @listing.address.downcase)
+      # Listing analysis (neighborhood / photos / price / comps) is now answered on
+      # demand through Ask Atlas, not stacked on the page.
     end
   end
 end
