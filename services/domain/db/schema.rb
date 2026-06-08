@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_07_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_08_000001) do
   create_table "appointments", force: :cascade do |t|
     t.string "broker_email"
     t.datetime "confirmed_at"
@@ -44,6 +44,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_000002) do
     t.string "subject_id"
     t.string "subject_type"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "closing_milestones", force: :cascade do |t|
+    t.string "counterparty"
+    t.datetime "created_at", null: false
+    t.string "milestone", null: false
+    t.integer "offer_id", null: false
+    t.string "ping_message"
+    t.string "ping_status", default: "simulated", null: false
+    t.datetime "recorded_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["offer_id", "milestone"], name: "index_closing_milestones_on_offer_id_and_milestone", unique: true
+    t.index ["offer_id"], name: "index_closing_milestones_on_offer_id"
   end
 
   create_table "comps", force: :cascade do |t|
@@ -236,6 +249,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_000002) do
 
   add_foreign_key "appointments", "leads"
   add_foreign_key "appointments", "properties"
+  add_foreign_key "closing_milestones", "offers"
   add_foreign_key "photo_analyses", "properties"
   add_foreign_key "comps", "properties"
   add_foreign_key "consents", "leads"
