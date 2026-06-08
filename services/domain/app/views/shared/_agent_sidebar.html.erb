@@ -8,12 +8,24 @@
   </div>
 
   <div id="agent-messages" class="agent-messages" data-agent-sidebar-target="messages">
-    <div class="agent-msg agent-msg--bot">
-      <div class="agent-bubble">
-        Hi — I'm Atlas. Ask me about a neighborhood, a price, or whether a home is a good deal.
-        Open a listing and I'll know which home you mean.
+    <% history = (current_visitor&.conversation&.messages || []) %>
+    <% if history.any? %>
+      <% history.each do |m| %>
+        <div class="agent-msg agent-msg--<%= m.role == "user" ? "user" : "bot" %>">
+          <div class="agent-bubble">
+            <% if m.channel != "chat" %><span class="mk-badge agent-channel"><%= m.channel %></span><% end %>
+            <%= m.body %>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="agent-msg agent-msg--bot">
+        <div class="agent-bubble">
+          Hi — I'm Atlas. Ask me about a neighborhood, a price, or whether a home is a good deal.
+          Open a listing and I'll know which home you mean.
+        </div>
       </div>
-    </div>
+    <% end %>
   </div>
 
   <div class="agent-thinking" data-agent-sidebar-target="thinking" hidden>
