@@ -12,13 +12,44 @@ from __future__ import annotations
 import json
 import logging
 
+import grpc
+
 from genproto.realestate.v1 import realestate_pb2 as pb
 from genproto.realestate.v1 import realestate_pb2_grpc as rpc
 
 from brain.lawyer.trec_form import TrecTerms, UplViolation, fill_trec_form
 from brain.orchestrator.closer import DEFAULT_EARNEST_MONEY_RATE
+from brain.orchestrator.closing import (
+    ClosingOrchestrator,
+    Counterparty,
+    CounterpartyPing,
+    Milestone,
+)
 
 logger = logging.getLogger(__name__)
+
+
+# Human-readable action per milestone, for the counterparty ping message.
+_MILESTONE_ACTION = {
+    Milestone.INSPECTION_CLEARED: "inspection cleared — releasing contingency",
+    Milestone.EARNEST_DEPOSITED: "earnest-money deposit triggered",
+    Milestone.TITLE_CLEARED: "title cleared — preparing settlement",
+    Milestone.FUNDED: "loan funded — ready to disburse",
+}
+
+
+class _CapturingSink:
+    """A CounterpartySink that captures the single emitted ping for the RPC."""
+
+    def __init__(self) -> None:
+        self.ping_obj: CounterpartyPing | None = None
+
+    def ping(self, ping: CounterpartyPing) -> None:
+        self.ping_obj = ping
+
+
+def _ping_message(milestone: Milestone, counterparty: Counterparty, deal_id: str) -> str:
+    return f"Notified {counterparty.value}: {_MILESTONE_ACTION[milestone]} for {deal_id}."
 
 
 class CloserServicer(rpc.CloserServicer):
@@ -66,4 +97,31 @@ class CloserServicer(rpc.CloserServicer):
             title=form.title,
             form_json=json.dumps(form.to_dict()),
             status="awaiting_broker",
+        )
+
+    def RecordMilestone(self, request, context):  # noqa: N802 (gRPC naming)
+        """Route a met closing milestone to its counterparty and emit the ping.
+
+        Stateless per call (Rails owns idempotency/order): the orchestrator
+        records the milestone as met against a fresh capturing sink and we
+        return which counterparty was notified, plus a human message. An unknown
+        milestone string is an INVALID_ARGUMENT.
+        """
+        try:
+            milestone = Milestone(request.milestone)
+        except ValueError:
+            context.abort(
+                grpc.StatusCode.INVALID_ARGUMENT,
+                f"unknown milestone: {request.milestone!r}",
+            )
+            return pb.RecordMilestoneResponse()  # unreachable (abort raises)
+
+        sink = _CapturingSink()
+        orchestrator = ClosingOrchestrator(deal_id=request.deal_id, sink=sink)
+        pinged = orchestrator.record(milestone, met=True)
+        counterparty = sink.ping_obj.counterparty if sink.ping_obj else None
+        return pb.RecordMilestoneResponse(
+            pinged=pinged,
+            counterparty=counterparty.value if counterparty else "",
+            message=_ping_message(milestone, counterparty, request.deal_id) if counterparty else "",
         )
