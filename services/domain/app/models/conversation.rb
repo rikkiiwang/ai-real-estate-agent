@@ -8,10 +8,14 @@ class Conversation < ApplicationRecord
   validates :contact, presence: true, uniqueness: { case_sensitive: false }
   normalizes :contact, with: ->(c) { Conversation.normalize_contact(c) }
 
-  # Email → lowercased; anything else treated as a phone → keep digits and '+'.
+  # Email → lowercased; a phone-shaped value → digits and '+' only; any other
+  # identifier (e.g. a synthetic "voice-<id>") → kept, lowercased.
   def self.normalize_contact(raw)
     s = raw.to_s.strip
-    s.include?("@") ? s.downcase : s.gsub(/[^\d+]/, "")
+    return s.downcase if s.include?("@")
+    return s.gsub(/[^\d+]/, "") if s.match?(/\A[\d\s+().\-]+\z/)
+
+    s.downcase
   end
 
   def self.for(contact:, name: nil)
