@@ -42,14 +42,6 @@
               data-agent-sidebar-target="mic" data-action="agent-sidebar#dictate" hidden>🎙</button>
     </div>
 
-    <%# Neutral buyer signals — feed intent triaging on your profile (R5). %>
-    <% if signed_in? %>
-      <div class="agent-signals-toggles">
-        <label><%= check_box_tag :preapproval, "1", false %> Pre-approved</label>
-        <label><%= check_box_tag :move_soon, "1", false %> Move ≤30 days</label>
-      </div>
-    <% end %>
-
     <%= f.submit "Ask", class: "mk-btn agent-send" %>
   <% end %>
 </div>

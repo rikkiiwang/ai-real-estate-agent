@@ -14,7 +14,6 @@ module Agent
       return head(:bad_request) if @query.blank?
 
       @channel = Channel.valid?(params[:channel]) ? params[:channel] : "chat"
-      triage_visitor # intent triaging lives on the profile (R5); broker-visible
 
       @intent = SearchIntent.detect(@query)
       if @intent
@@ -42,21 +41,6 @@ module Agent
     end
 
     private
-
-    # Update the signed-in visitor's profile from neutral signals supplied in the
-    # chat (pre-approval + near-term move), re-triage, and route high-intent leads
-    # to the broker. No-op for anonymous visitors or when no signals are present.
-    def triage_visitor
-      return unless current_visitor
-
-      signals = {}
-      signals["preapproval"] = "true" if params[:preapproval].present?
-      signals["move_timeline_days"] = "20" if params[:move_soon].present?
-      signals["address"] = @address if @address.present?
-      return if signals.empty?
-
-      current_visitor.record_engagement(signals: signals, side: "buyer")
-    end
 
     def view_for
       return "search" if @intent
