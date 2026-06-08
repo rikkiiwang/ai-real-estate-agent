@@ -283,4 +283,53 @@ class Agent::MessagesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/can't offer tour times/i, @response.body)
     assert_match(/under_offer/, @response.body)
   end
+
+  # --- suggested-prompt chips: deterministic, cited, DB-only (no brain call) ---
+
+  def make_listing
+    Property.create!(address: "9 Demo St, Austin TX 78704", state: "listed", region: "Zilker",
+                     list_price: 625_000, sqft: 1850, beds: 3, baths: 2,
+                     photo_urls: ["https://example.test/a.jpg"], source_name: "S", captured_at: Time.current)
+  end
+
+  # A brain factory that fails the test if the orchestrator is ever called.
+  def forbid_brain!
+    Agent::MessagesController.client_factory = lambda {
+      Class.new { def orchestrate(**) = raise("brain should not be called for an insight chip") }.new
+    }
+  end
+
+  test "neighborhood chip answers from cross-source data without calling the brain" do
+    forbid_brain!
+    l = make_listing
+    MarketSnapshot.create!(zip: "78704", area: "Zilker", median_price: 700_000, avg_price_per_sqft: 380, avg_days_on_market: 18, as_of: Time.current)
+    post agent_messages_path, params: { query: "How's this neighborhood?", insight: "neighborhood", listing_id: l.id }, as: :turbo_stream
+    assert_response :success
+    assert_match(/sqft/, @response.body)
+  ensure
+    Agent::MessagesController.client_factory = nil
+  end
+
+  test "photos chip shows feature findings only, never red-flags" do
+    forbid_brain!
+    l = make_listing
+    PhotoAnalysis.create!(address: l.address, property: l, analyzed_at: Time.current, condition: 0.7,
+                          provenance: "sample",
+                          findings: [{ "kind" => "feature", "label" => "updated_kitchen", "confidence" => 0.9, "evidence_photo_id" => "a" }],
+                          needs_review: [{ "kind" => "red_flag", "label" => "foundation_crack", "confidence" => 0.8, "evidence_photo_id" => "a" }])
+    post agent_messages_path, params: { query: "What do the photos show?", insight: "photos", listing_id: l.id }, as: :turbo_stream
+    assert_response :success
+    assert_match(/updated kitchen/i, @response.body)
+    refute_match(/foundation/i, @response.body) # red-flag never reaches the buyer
+  ensure
+    Agent::MessagesController.client_factory = nil
+  end
+
+  test "free text without an insight key still reaches the brain" do
+    use_client(FakeClient.new(grounded)) do
+      post agent_messages_path, params: { query: "tell me about schools" }, as: :turbo_stream
+    end
+    assert_response :success
+    assert_match(/competitively priced/, @response.body) # the orchestrator's (fake) message
+  end
 end

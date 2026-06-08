@@ -15,8 +15,10 @@ module Agent
 
       @channel = Channel.valid?(params[:channel]) ? params[:channel] : "chat"
 
-      @intent = SearchIntent.detect(@query)
-      if @intent
+      if handle_insight
+        # A suggested-prompt chip: a deterministic, cited, DB-only answer about the
+        # pinned listing (no brain round-trip). Sets the ivar its view reads.
+      elsif (@intent = SearchIntent.detect(@query))
         # A browse request ("3-bed under $700k in Mueller") surfaces matching
         # listings into the catalog — Rails-side, no brain round-trip.
         @listings = ListingSearch.new(**@intent.to_search_params).results
@@ -42,7 +44,27 @@ module Agent
 
     private
 
+    # A suggested-prompt chip carries an explicit `insight` key + a pinned
+    # listing → a deterministic, cited answer from data we already hold. Returns
+    # true when handled (sets the ivar its view reads), false to fall through.
+    def handle_insight
+      @insight_key = params[:insight].to_s
+      return false unless @listing && %w[price neighborhood photos tour].include?(@insight_key)
+
+      case @insight_key
+      when "price"        then @price_check = price_check_for(@listing, @query, force: true)
+      when "neighborhood" then @neighborhood = CrossSourceReconciliation.for(property: @listing)
+      when "photos"       then @photo_insight = PhotoAnalysis.find_by("lower(address) = ?", @listing.address.downcase)
+      when "tour"
+        @showing_kind = "tour"
+        @showing = ShowingScheduler.available_slots(property: @listing, now: Time.current, kind: "tour")
+      end
+      true
+    end
+
     def view_for
+      return "neighborhood" if @insight_key == "neighborhood"
+      return "photos" if @insight_key == "photos"
       return "search" if @intent
       return "price_check" if @price_check
       return "showing" if @showing
@@ -64,8 +86,8 @@ module Agent
 
     # Returns a usable PriceCheck::Result for a pricing question on a listing,
     # or nil (falls through to the orchestrator).
-    def price_check_for(listing, query)
-      return nil unless listing && PriceCheck.pricing_question?(query)
+    def price_check_for(listing, query, force: false)
+      return nil unless listing && (force || PriceCheck.pricing_question?(query))
 
       @valuation = ValuationAssembly.new(address: listing.address, client: valuation_client).call
       comps = Comp.in_region(listing.region).recent_first.limit(3)
