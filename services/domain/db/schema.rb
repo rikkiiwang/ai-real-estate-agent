@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_08_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_08_000002) do
   create_table "appointments", force: :cascade do |t|
     t.string "broker_email"
     t.datetime "confirmed_at"
@@ -20,6 +20,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_000001) do
     t.string "kind", default: "tour", null: false
     t.integer "lead_id"
     t.text "notes"
+    t.integer "offer_id"
     t.integer "property_id", null: false
     t.string "requester_email"
     t.string "requester_name"
@@ -27,6 +28,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_000001) do
     t.string "status", default: "requested", null: false
     t.datetime "updated_at", null: false
     t.index ["lead_id"], name: "index_appointments_on_lead_id"
+    t.index ["offer_id"], name: "index_appointments_on_offer_id"
     t.index ["property_id", "starts_at"], name: "index_appointments_on_property_id_and_starts_at"
     t.index ["property_id"], name: "index_appointments_on_property_id"
     t.index ["status"], name: "index_appointments_on_status"
@@ -248,6 +250,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_000001) do
   end
 
   add_foreign_key "appointments", "leads"
+  add_foreign_key "appointments", "offers"
   add_foreign_key "appointments", "properties"
   add_foreign_key "closing_milestones", "offers"
   add_foreign_key "photo_analyses", "properties"

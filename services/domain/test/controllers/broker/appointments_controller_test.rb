@@ -63,4 +63,30 @@ class Broker::AppointmentsControllerTest < ActionDispatch::IntegrationTest
     # the slot is now free again
     assert ShowingScheduler.slot_free?(property: @prop, starts_at: @appt.starts_at, ends_at: @appt.ends_at)
   end
+
+  test "completing a linked inspection auto-records inspection_cleared (R10)" do
+    sign_in_broker
+    prop = Property.create!(address: "9 Insp St", state: "listed", list_price: 500_000)
+    lead = Lead.create!(side: "buyer", address: "9 Insp St", contact: "b@x.com", intent: "high")
+    offer = Offer.create!(lead: lead, side: "buyer", status: "signed", property: prop)
+    appt = Appointment.create!(property: prop, kind: "inspection", status: "confirmed", offer: offer,
+                               starts_at: Time.utc(2099, 2, 2, 15, 0), ends_at: Time.utc(2099, 2, 2, 15, 30),
+                               broker_email: "broker@atlas.example")
+    assert_difference -> { ClosingMilestone.count }, 1 do
+      post complete_broker_appointment_path(appt)
+    end
+    assert_equal "completed", appt.reload.status
+    assert_equal "inspection_cleared", offer.closing_milestones.first.milestone
+  end
+
+  test "completing a tour records no closing milestone" do
+    sign_in_broker
+    prop = Property.create!(address: "9 Tour St", state: "listed", list_price: 500_000)
+    appt = Appointment.create!(property: prop, kind: "tour", status: "confirmed",
+                               starts_at: Time.utc(2099, 2, 3, 15, 0), ends_at: Time.utc(2099, 2, 3, 15, 30))
+    assert_no_difference -> { ClosingMilestone.count } do
+      post complete_broker_appointment_path(appt)
+    end
+    assert_equal "completed", appt.reload.status
+  end
 end

@@ -14,6 +14,7 @@ class Appointment < ApplicationRecord
 
   belongs_to :property
   belongs_to :lead, optional: true
+  belongs_to :offer, optional: true
 
   validates :kind, inclusion: { in: KINDS }
   validates :status, inclusion: { in: STATUSES }
@@ -35,6 +36,17 @@ class Appointment < ApplicationRecord
   # [other_start, other_end). Touching endpoints do not overlap.
   def overlaps?(other_start, other_end)
     starts_at < other_end && ends_at > other_start
+  end
+
+  # The signed deal this (inspection) appointment belongs to: an explicit offer,
+  # else the lone signed offer on this property — disambiguated by the requester's
+  # email when there is more than one. nil when nothing resolves.
+  def resolve_offer
+    return offer if offer
+
+    scope = Offer.where(property_id: property_id, status: "signed")
+    by_email = scope.joins(:lead).where(leads: { contact: requester_email })
+    by_email.first || (scope.count == 1 ? scope.first : nil)
   end
 
   private
