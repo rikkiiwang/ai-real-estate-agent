@@ -39,3 +39,9 @@
     Delivered to both parties <%= @contract.delivered_at&.strftime("%b %-d, %Y") %>.
   </p>
 </div>
+
+<section class="mk-card-section" id="closing-tracker">
+  <h2>Closing progress</h2>
+  <%= render "shared/closing_tracker", offer: @contract.offer %>
+  <p class="mk-source">Escrow / title / lender notifications are simulated in this demo — a licensed broker drives each step.</p>
+</section>
