@@ -116,6 +116,20 @@ pre-approval / move-in timeline / budget), edited after the passwordless sign-in
 Saving runs `IntentTriage` (R5) and routes a high-intent lead to the broker; the
 old per-message sidebar checkboxes are gone.
 
+## Omnichannel — one shared thread (R4)
+
+Every channel (chat / voice / sms / email) reads and writes one persisted
+`Conversation` (keyed by contact); each turn is a channel-tagged `Message`. The
+Ask Atlas sidebar persists a signed-in visitor's turns and renders the
+cross-channel history, and passes `conversation.thread_id` to the brain so context
+carries across channels. Real `TwilioSms` / `SendgridEmail` adapters send when
+`TWILIO_*` / `SENDGRID_*` are set; otherwise the `Simulated` transport keeps the
+demo external-call-free. Inbound webhooks (`/inbound/sms`, `/inbound/email`,
+`/inbound/voice`, guarded by `INBOUND_WEBHOOK_TOKEN`) append to the same thread,
+orchestrate, and reply on the channel; the Go voice service relays each turn to
+`/inbound/voice`. A handoff carries the full cross-channel transcript to the
+broker dashboard.
+
 ## Closing orchestration (R10)
 
 After a broker signs an offer, the deal advances through four milestones

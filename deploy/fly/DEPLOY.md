@@ -51,8 +51,10 @@ Generate and export these before deploying. They are staged with
 | `GATEWAY_AUTH_SECRET` | gateway | `openssl rand -hex 32` |
 | `ANTHROPIC_API_KEY` | brain (optional) | enables real **Claude** photo analysis (R2); omit to keep vision on the deterministic fake model. After setting it, run `fly ssh console --app are-domain -C "bin/rails vision:analyze MAX_CALLS=25"` to populate the cache. Optional `ANTHROPIC_MODEL` overrides the default `claude-opus-4-8`. |
 | `BROKER_EMAILS` | domain (optional) | comma-separated emails allowed into the broker dashboard, **extending** the config default (`broker@atlas.example`). Brokers sign in through the same passwordless consumer login; a server-side allowlist (`require_broker`) is the boundary, so unlisted visitors are redirected away even though the app is public. |
-| `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` | domain (optional) | engage the real `TwilioSms` adapter for the SMS channel; unset, SMS stays on the **simulated** transport (the agent still replies in-thread). |
-| `SENDGRID_API_KEY` | domain (optional) | engage the real `SendgridEmail` adapter for the Email channel; unset, Email stays on the **simulated** transport. |
+| `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` + `TWILIO_FROM` | domain (optional) | engage the real `TwilioSms` adapter for the SMS channel; unset, SMS stays on the **simulated** transport (the agent still replies in-thread). |
+| `SENDGRID_API_KEY` + `SENDGRID_FROM` | domain (optional) | engage the real `SendgridEmail` adapter for the Email channel; unset, Email stays on the **simulated** transport. |
+| `INBOUND_WEBHOOK_TOKEN` | domain (optional), voice (optional) | shared secret guarding the inbound webhooks (`/inbound/sms`, `/inbound/email`, `/inbound/voice`). **Inbound is off until this is set.** Point Twilio's SMS webhook + SendGrid Inbound Parse at `…/inbound/sms?token=…` / `…/inbound/email?token=…`. |
+| `DOMAIN_URL` | voice (optional) | base URL of `are-domain`; when set, the Go voice service relays each turn to `<DOMAIN_URL>/inbound/voice` so a call joins the shared cross-channel thread. |
 
 `DATABASE_URL` values are derived by `deploy.sh` from `POSTGRES_PASSWORD`
 (RAG db `realestate`, Rails db `domain_production`) — do not set them by hand.

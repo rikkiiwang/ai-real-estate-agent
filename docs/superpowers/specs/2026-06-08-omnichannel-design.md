@@ -1,7 +1,7 @@
 # Omnichannel (R4) — Design
 
 Date: 2026-06-08
-Status: Approved (brainstorm) — pending spec review
+Status: Implemented
 Cluster: 3 (R4 omnichannel — the last brain-completeness pillar). Decided: **Full**
 scope incl. voice; **shared-secret** webhook auth (signature validation a
 documented seam); **record every sidebar turn** (full text for chat/orchestrate,
