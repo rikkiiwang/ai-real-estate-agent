@@ -28,6 +28,29 @@ class Visitor < ApplicationRecord
     intent.to_s.start_with?("high")
   end
 
+  # Build the neutral buyer signal hash IntentTriage reads, from the profile
+  # columns. Only allow-listed keys; empty values are dropped so they don't count.
+  def buyer_signals
+    {
+      "preapproval"        => (pre_approved.to_s == "yes" ? "true" : ""),
+      "move_timeline_days" => move_timeline_days&.to_s.to_s,
+      "budget"             => budget_cents&.to_s.to_s
+    }.reject { |_, v| v.to_s.strip.empty? }
+  end
+
+  # Persist the buyer profile and re-triage. Like record_engagement, the FIRST
+  # time the visitor becomes high-intent we route one broker handoff (R5).
+  def record_buyer_profile(pre_approved:, move_timeline_days:, budget_cents:)
+    assign_attributes(pre_approved: pre_approved.presence,
+                      move_timeline_days: move_timeline_days,
+                      budget_cents: budget_cents)
+    triage = IntentTriage.call(signals: buyer_signals, side: "buyer")
+    self.intent = triage.intent
+    route_to_broker(triage, "buyer") if triage.high_intent? && !handed_off?
+    save!
+    triage
+  end
+
   # Record neutral engagement signals on the profile and re-triage. Returns the
   # IntentTriage::Result. The FIRST time a visitor becomes high-intent, route a
   # handoff into the broker queue (once) so a human engages the ready lead.

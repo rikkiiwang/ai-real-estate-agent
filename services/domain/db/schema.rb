@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_07_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_07_000002) do
   create_table "appointments", force: :cascade do |t|
     t.string "broker_email"
     t.datetime "confirmed_at"
@@ -221,12 +221,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_07_000001) do
   end
 
   create_table "visitors", force: :cascade do |t|
+    t.integer "budget_cents"
     t.datetime "created_at", null: false
     t.string "email", null: false
     t.json "engagement_signals", default: {}, null: false
     t.boolean "handed_off", default: false, null: false
     t.string "intent", default: "low_intent_browser", null: false
+    t.integer "move_timeline_days"
     t.string "name", null: false
+    t.string "pre_approved"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_visitors_on_email", unique: true
   end

@@ -67,4 +67,31 @@ class VisitorTest < ActiveSupport::TestCase
     assert v.reload.high_intent? # outcome unaffected by the protected key
     assert_not v.engagement_signals.key?("ethnicity") # and it was never stored
   end
+
+  # --- buyer profile drives triage (R5, profile-based) ---
+
+  test "record_buyer_profile: pre-approved AND <=30 days is high-intent and routes a handoff" do
+    v = Visitor.create!(name: "Bea", email: "bea2@example.com")
+    assert_difference -> { Lead.count }, 1 do
+      triage = v.record_buyer_profile(pre_approved: "yes", move_timeline_days: 30, budget_cents: 60_000_000)
+      assert triage.high_intent?
+    end
+    assert v.reload.high_intent?
+    assert v.handed_off?
+  end
+
+  test "record_buyer_profile: pre-approved but no near-term move is NOT high-intent" do
+    v = Visitor.create!(name: "Lou", email: "lou@example.com")
+    assert_no_difference -> { Lead.count } do
+      triage = v.record_buyer_profile(pre_approved: "yes", move_timeline_days: 90, budget_cents: nil)
+      refute triage.high_intent?
+    end
+    refute v.reload.high_intent?
+  end
+
+  test "buyer_signals maps profile columns to the neutral signal keys" do
+    v = Visitor.new(pre_approved: "yes", move_timeline_days: 30, budget_cents: 50_000_000)
+    assert_equal({ "preapproval" => "true", "move_timeline_days" => "30", "budget" => "50000000" }, v.buyer_signals)
+    assert_equal({}, Visitor.new(pre_approved: "no").buyer_signals)
+  end
 end
