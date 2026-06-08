@@ -7,6 +7,9 @@
 #
 # Web channels (chat, voice) have no out-of-band transport — the reply renders in
 # the browser — so deliver() returns nil for them.
+require "net/http"
+require "json"
+
 module ChannelTransport
   Result = Struct.new(:status, :provider, :note, keyword_init: true)
 
@@ -18,18 +21,37 @@ module ChannelTransport
   class TwilioSms
     def self.configured? = ENV["TWILIO_ACCOUNT_SID"].present? && ENV["TWILIO_AUTH_TOKEN"].present?
 
-    # Implement with twilio-ruby: client.messages.create(from:, to:, body:).
+    # POST to the Twilio Messages API (form-encoded, basic auth). Only reached
+    # when configured?; otherwise ChannelTransport.deliver uses Simulated.
     def deliver(to:, body:)
-      raise NotImplementedError, "Wire Twilio SMS here (twilio-ruby Messages.create) — and add an inbound webhook"
+      sid = ENV["TWILIO_ACCOUNT_SID"]; token = ENV["TWILIO_AUTH_TOKEN"]; from = ENV["TWILIO_FROM"]
+      ChannelTransport.http_post_form(
+        URI("https://api.twilio.com/2010-04-01/Accounts/#{sid}/Messages.json"),
+        { "From" => from.to_s, "To" => to.to_s, "Body" => body.to_s },
+        basic_auth: [sid, token]
+      )
+      Result.new(status: "sent", provider: "twilio", note: "delivered via Twilio")
+    rescue StandardError => e
+      Result.new(status: "error", provider: "twilio", note: e.message)
     end
   end
 
   class SendgridEmail
     def self.configured? = ENV["SENDGRID_API_KEY"].present?
 
-    # Implement with ActionMailer/SendGrid send; pair with an Inbound Parse webhook.
+    # POST to the SendGrid v3 mail/send API (JSON, bearer auth). Only reached when
+    # configured?; otherwise ChannelTransport.deliver uses Simulated.
     def deliver(to:, body:)
-      raise NotImplementedError, "Wire SendGrid email here (Mail send) — and add an Inbound Parse webhook"
+      payload = {
+        personalizations: [{ to: [{ email: to.to_s }] }],
+        from: { email: ENV["SENDGRID_FROM"].to_s }, subject: "Your Atlas update",
+        content: [{ type: "text/plain", value: body.to_s }]
+      }
+      ChannelTransport.http_post_json(URI("https://api.sendgrid.com/v3/mail/send"), payload,
+                                      bearer: ENV["SENDGRID_API_KEY"].to_s)
+      Result.new(status: "sent", provider: "sendgrid", note: "delivered via SendGrid")
+    rescue StandardError => e
+      Result.new(status: "error", provider: "sendgrid", note: e.message)
     end
   end
 
@@ -62,5 +84,28 @@ module ChannelTransport
   # Whether a channel is delivered out-of-band (vs. rendered in the browser).
   def out_of_band?(channel)
     REAL.key?(channel.to_s)
+  end
+
+  # Minimal HTTP posters (stubbed in tests). Only ever called when a provider is
+  # configured, so the demo (no keys) never constructs them.
+  def http_post_form(uri, fields, basic_auth: nil)
+    req = Net::HTTP::Post.new(uri)
+    req.set_form_data(fields)
+    req.basic_auth(*basic_auth) if basic_auth
+    _http_run(uri, req)
+  end
+
+  def http_post_json(uri, payload, bearer:)
+    req = Net::HTTP::Post.new(uri)
+    req["Authorization"] = "Bearer #{bearer}"
+    req["Content-Type"] = "application/json"
+    req.body = payload.to_json
+    _http_run(uri, req)
+  end
+
+  def _http_run(uri, req)
+    Net::HTTP.start(uri.host, uri.port, use_ssl: true, open_timeout: 5, read_timeout: 10) do |http|
+      http.request(req)
+    end
   end
 end
