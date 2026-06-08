@@ -36,6 +36,7 @@ Rails.application.routes.draw do
       resource :offer, only: %i[new create]
       resources :showings, only: %i[create] # request a tour/inspection slot
     end
+    resource :profile, only: %i[edit update] # buyer qualification (R5)
   end
 
   # Seller workspace (requires a signed-in visitor).

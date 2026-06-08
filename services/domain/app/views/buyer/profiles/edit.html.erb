@@ -1,0 +1,25 @@
+<% content_for :title, "Your buyer profile — Atlas" %>
+<div class="mk-card-section">
+  <h1>Your buyer profile</h1>
+  <p class="mk-muted">Tell Atlas where you are — it tailors help and brings in a licensed broker when you're ready. Optional, and only ever used to serve you better.</p>
+
+  <%= form_with url: buyer_profile_path, method: :patch, class: "mk-auth-form" do %>
+    <div class="mk-field">
+      <label>Financing</label>
+      <%= select_tag :pre_approved,
+            options_for_select([["Yes — pre-approved", "yes"], ["Not yet", "no"], ["Not sure", "unsure"]], @visitor.pre_approved),
+            include_blank: "Prefer not to say" %>
+    </div>
+    <div class="mk-field">
+      <label>Move-in timeline</label>
+      <%= select_tag :move_timeline_days,
+            options_for_select([["As soon as possible", 7], ["Within 30 days", 30], ["1–3 months", 90]], @visitor.move_timeline_days),
+            include_blank: "Just browsing" %>
+    </div>
+    <div class="mk-field">
+      <label>Budget (optional)</label>
+      <%= number_field_tag :budget, (@visitor.budget_cents ? @visitor.budget_cents / 100 : nil), min: 0, placeholder: "600000" %>
+    </div>
+    <%= submit_tag "Save profile", class: "mk-btn" %>
+  <% end %>
+</div>
