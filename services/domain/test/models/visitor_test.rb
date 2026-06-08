@@ -94,4 +94,17 @@ class VisitorTest < ActiveSupport::TestCase
     assert_equal({ "preapproval" => "true", "move_timeline_days" => "30", "budget" => "50000000" }, v.buyer_signals)
     assert_equal({}, Visitor.new(pre_approved: "no").buyer_signals)
   end
+
+  test "a handoff carries the visitor's cross-channel transcript (R4)" do
+    v = Visitor.sign_in(name: "Bea", email: "bea3@example.com")
+    convo = Conversation.for(contact: "bea3@example.com")
+    convo.append(channel: "chat", role: "user", body: "is 9 Demo St a deal?")
+    convo.append(channel: "sms", role: "agent", body: "Looks well-priced.")
+
+    v.record_buyer_profile(pre_approved: "yes", move_timeline_days: 20, budget_cents: nil)
+
+    packet = HandoffPacket.queue.first
+    assert_includes packet.transcript, "[chat] user: is 9 Demo St a deal?"
+    assert_includes packet.transcript, "[sms] agent: Looks well-priced."
+  end
 end

@@ -87,6 +87,7 @@ class Visitor < ApplicationRecord
       lead: lead,
       trigger: "high_intent",
       reason: triage.reason,
+      transcript: conversation&.transcript,
       recommended_action: "Engage high-intent #{side} (#{name}) — #{triage.signals_used.join(', ')}"
     )
     self.handed_off = true
