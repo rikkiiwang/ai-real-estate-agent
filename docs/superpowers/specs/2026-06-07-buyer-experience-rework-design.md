@@ -1,7 +1,7 @@
 # Buyer Experience Rework — Design
 
 Date: 2026-06-07
-Status: Approved (brainstorm) — pending spec review
+Status: Implemented
 Cluster: 1 of 2 (Cluster 2 = closing-orchestration wiring, separate spec)
 
 ## Problem

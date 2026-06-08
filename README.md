@@ -318,5 +318,5 @@ Two-sided MVP built across Go/Python/Rails, deployed live on Fly.io. The
 LangGraph orchestrator is exposed end-to-end through the consumer **marketplace**
 (agent sidebar) and **chat** app and the gateway `/orchestrate` API; the Closer's
 TREC paperwork is reachable via `Closer.GenerateContract`. Tests: Go green,
-Python brain **238** passing, Rails **283** passing. See `docs/ARCHITECTURE.md`
+Python brain **238** passing, Rails **289** passing. See `docs/ARCHITECTURE.md`
 for design and `docs/plans/` for the plans and remaining deferred seams.

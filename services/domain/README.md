@@ -100,6 +100,22 @@ review queue and are never shown to buyers.
   with real Claude analysis. `ValuationAssembly` reads the cached condition into the
   existing `PropertyFeatures.condition` (no GetValuation proto change).
 
+## Ask Atlas suggested prompts + buyer profile
+
+The buyer listing page stays lean (photos, price, facts, offer, schedule). Listing
+**analysis is answered on demand by Ask Atlas** via suggested-prompt chips — "Is
+this fairly priced?" (`PriceCheck` + cross-source), "How's this neighborhood?"
+(`CrossSourceReconciliation`), "What do the photos show?" (`PhotoAnalysis`
+**feature findings only** — red-flags stay broker-only), "Can I tour this week?"
+(`ShowingScheduler`). Each chip POSTs an explicit `insight` key that
+`Agent::MessagesController` routes to a deterministic, DB/cache-read answer (zero
+external calls); free text still falls through to the brain orchestrator.
+
+Buyer qualification lives on the **buyer profile** (`/buyer/profile`:
+pre-approval / move-in timeline / budget), edited after the passwordless sign-in.
+Saving runs `IntentTriage` (R5) and routes a high-intent lead to the broker; the
+old per-message sidebar checkboxes are gone.
+
 ## Dynamic scheduling (tours / inspections)
 
 A real collision-avoidance engine — DB-only, no external calendar, no network.
