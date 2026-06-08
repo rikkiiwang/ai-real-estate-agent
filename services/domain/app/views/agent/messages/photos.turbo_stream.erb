@@ -1,0 +1,10 @@
+<%= turbo_stream.append "agent-messages" do %>
+  <div class="agent-msg agent-msg--user">
+    <div class="agent-bubble"><%= @query %></div>
+    <% if @listing %><div class="agent-ctx">about <%= @listing.address %></div><% end %>
+  </div>
+<% end %>
+
+<%= turbo_stream.append "agent-messages" do %>
+  <%= render "agent/messages/photos", pa: @photo_insight %>
+<% end %>

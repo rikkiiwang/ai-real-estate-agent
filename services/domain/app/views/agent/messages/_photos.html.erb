@@ -1,0 +1,18 @@
+<div class="agent-msg agent-msg--bot">
+  <div class="agent-bubble">
+    <% if pa&.feature_findings&.any? %>
+      <p>Here's what the listing photos show:</p>
+      <ul class="agent-facts">
+        <% pa.feature_findings.each do |f| %>
+          <li><%= f["label"].to_s.tr("_", " ").capitalize %> — <%= (f["confidence"].to_f * 100).round %>% confident</li>
+        <% end %>
+      </ul>
+      <% if pa.condition.present? %>
+        <p>Photo-derived condition: <strong><%= (pa.condition.to_f * 100).round %>/100</strong> — this feeds my valuation.</p>
+      <% end %>
+      <div class="agent-ctx">Source: <%= pa.from_claude? ? "Claude vision analysis" : "sample analysis (demo)" %>. Any visible defects are routed to a licensed broker, never asserted here.</div>
+    <% else %>
+      I don't have a photo read for this home yet.
+    <% end %>
+  </div>
+</div>

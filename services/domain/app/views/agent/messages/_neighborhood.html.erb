@@ -1,0 +1,20 @@
+<div class="agent-msg agent-msg--bot">
+  <div class="agent-bubble">
+    <% if rec&.market_ppsf %>
+      <p>
+        <% if rec.signal %>
+          <strong><%= rec.signal == :hot ? "Seller's market" : (rec.signal == :cool ? "Room to negotiate" : "Balanced market") %>.</strong>
+        <% end %>
+        <%= rec.signal_reason %>
+      </p>
+      <ul class="agent-facts">
+        <li>Market <strong>$<%= rec.market_ppsf %></strong>/sqft<% if rec.subject_ppsf %> · this home <strong>$<%= rec.subject_ppsf %></strong>/sqft<% end %></li>
+        <% if rec.market_median %><li>ZIP median <strong><%= number_to_currency(rec.market_median, precision: 0) %></strong></li><% end %>
+      </ul>
+      <% market_src = rec.sources.find { |s| s.source_id.to_s.start_with?("market:") } %>
+      <% if market_src %><div class="agent-ctx">Source: <%= market_src.source_id %><% if market_src.as_of.present? %> · as of <%= market_src.as_of.to_date.strftime("%b %-d, %Y") rescue market_src.as_of %><% end %>.</div><% end %>
+    <% else %>
+      I don't have neighborhood market data for this home yet.
+    <% end %>
+  </div>
+</div>
