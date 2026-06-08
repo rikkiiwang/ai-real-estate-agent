@@ -26,6 +26,7 @@
                 class: "agent-composer" do |f| %>
     <%= hidden_field_tag :address, "", data: { agent_sidebar_target: "address" } %>
     <%= hidden_field_tag :listing_id, "", data: { agent_sidebar_target: "listingId" } %>
+    <%= hidden_field_tag :insight, "", data: { agent_sidebar_target: "insight" } %>
 
     <%# Omnichannel: reach Atlas on any channel — one continuous thread (R6). %>
     <div class="agent-channels">
@@ -33,6 +34,16 @@
             options_for_select(Channel::CHANNELS.map { |c| [ChannelTransport.out_of_band?(c) ? "#{c.upcase} (simulated)" : c.upcase, c] }, "chat"),
             data: { agent_sidebar_target: "channel" }, class: "agent-channel-select" %>
       <span class="agent-channels-note">one thread · Voice &amp; Chat live, SMS/Email simulated (provider seam ready)</span>
+    </div>
+
+    <%# Suggested prompts — deterministic, cited answers about the pinned home. %>
+    <div class="agent-chips">
+      <% [["Is this fairly priced?", "price"], ["How's this neighborhood?", "neighborhood"],
+          ["What do the photos show?", "photos"], ["Can I tour this week?", "tour"]].each do |label, key| %>
+        <button type="button" class="mk-btn mk-btn--ghost agent-chip"
+                data-insight="<%= key %>" data-preset="<%= label %>"
+                data-action="agent-sidebar#askPreset"><%= label %></button>
+      <% end %>
     </div>
 
     <div class="agent-input-row">

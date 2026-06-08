@@ -7,7 +7,7 @@ import { Controller } from "@hotwired/stimulus"
 //  - Enter sends, Shift+Enter makes a newline
 //  - keeps the conversation scrolled to the latest message
 export default class extends Controller {
-  static targets = ["messages", "input", "thinking", "address", "listingId", "form", "mic", "channel"]
+  static targets = ["messages", "input", "thinking", "address", "listingId", "form", "mic", "channel", "insight"]
 
   connect() {
     this.syncContext = this.syncContext.bind(this)
@@ -67,6 +67,15 @@ export default class extends Controller {
     }
   }
 
+  // A suggested-prompt chip: fill the box with the preset, tag the turn with its
+  // insight key, and submit. The key routes to a deterministic, cited answer.
+  askPreset(event) {
+    const el = event.currentTarget
+    this.inputTarget.value = el.dataset.preset || ""
+    if (this.hasInsightTarget) this.insightTarget.value = el.dataset.insight || ""
+    this.formTarget.requestSubmit()
+  }
+
   start() {
     if (this.hasThinkingTarget) this.thinkingTarget.hidden = false
     this.scrollToBottom()
@@ -75,6 +84,7 @@ export default class extends Controller {
   end() {
     if (this.hasThinkingTarget) this.thinkingTarget.hidden = true
     this.inputTarget.value = ""
+    if (this.hasInsightTarget) this.insightTarget.value = ""
     this.scrollToBottom()
   }
 
