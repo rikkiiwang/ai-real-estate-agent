@@ -55,6 +55,14 @@ Rails.application.routes.draw do
     resources :messages, only: %i[create]
   end
 
+  # Inbound provider webhooks (Twilio SMS, SendGrid Inbound Parse, voice relay).
+  # Guarded by INBOUND_WEBHOOK_TOKEN; off until configured.
+  namespace :inbound do
+    post "sms", to: "sms#create"
+    post "email", to: "email#create"
+    post "voice", to: "voice#create"
+  end
+
   # The consumer marketplace is the public front door; the broker dashboard
   # remains reachable at /broker/dashboard.
   root "buyer/listings#index"

@@ -5,9 +5,13 @@
 class InboundTurn
   FALLBACK = "Thanks for reaching out — a licensed Atlas broker will follow up shortly.".freeze
 
+  # Test seam: a factory returning a fake brain client. Nil in production.
+  cattr_accessor :client_factory
+
   Result = Struct.new(:conversation, :reply, keyword_init: true)
 
-  def self.call(contact:, channel:, body:, name: nil, client: BrainConversationClient.new)
+  def self.call(contact:, channel:, body:, name: nil, client: nil)
+    client ||= client_factory ? client_factory.call : BrainConversationClient.new
     convo = Conversation.for(contact: contact, name: name)
     disclosed = Channel.mandatory_disclosure?(channel)
     convo.append(channel: channel, role: "user", body: body, ai_disclosed: disclosed)
