@@ -528,6 +528,7 @@ var Domain_ServiceDesc = grpc.ServiceDesc{
 
 const (
 	Closer_GenerateContract_FullMethodName = "/realestate.v1.Closer/GenerateContract"
+	Closer_RecordMilestone_FullMethodName  = "/realestate.v1.Closer/RecordMilestone"
 )
 
 // CloserClient is the client API for Closer service.
@@ -542,6 +543,7 @@ const (
 // surfaced as a handoff — the agent never authors clause language (UPL line).
 type CloserClient interface {
 	GenerateContract(ctx context.Context, in *GenerateContractRequest, opts ...grpc.CallOption) (*GenerateContractResponse, error)
+	RecordMilestone(ctx context.Context, in *RecordMilestoneRequest, opts ...grpc.CallOption) (*RecordMilestoneResponse, error)
 }
 
 type closerClient struct {
@@ -562,6 +564,16 @@ func (c *closerClient) GenerateContract(ctx context.Context, in *GenerateContrac
 	return out, nil
 }
 
+func (c *closerClient) RecordMilestone(ctx context.Context, in *RecordMilestoneRequest, opts ...grpc.CallOption) (*RecordMilestoneResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RecordMilestoneResponse)
+	err := c.cc.Invoke(ctx, Closer_RecordMilestone_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CloserServer is the server API for Closer service.
 // All implementations must embed UnimplementedCloserServer
 // for forward compatibility.
@@ -574,6 +586,7 @@ func (c *closerClient) GenerateContract(ctx context.Context, in *GenerateContrac
 // surfaced as a handoff — the agent never authors clause language (UPL line).
 type CloserServer interface {
 	GenerateContract(context.Context, *GenerateContractRequest) (*GenerateContractResponse, error)
+	RecordMilestone(context.Context, *RecordMilestoneRequest) (*RecordMilestoneResponse, error)
 	mustEmbedUnimplementedCloserServer()
 }
 
@@ -586,6 +599,9 @@ type UnimplementedCloserServer struct{}
 
 func (UnimplementedCloserServer) GenerateContract(context.Context, *GenerateContractRequest) (*GenerateContractResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GenerateContract not implemented")
+}
+func (UnimplementedCloserServer) RecordMilestone(context.Context, *RecordMilestoneRequest) (*RecordMilestoneResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RecordMilestone not implemented")
 }
 func (UnimplementedCloserServer) mustEmbedUnimplementedCloserServer() {}
 func (UnimplementedCloserServer) testEmbeddedByValue()                {}
@@ -626,6 +642,24 @@ func _Closer_GenerateContract_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Closer_RecordMilestone_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordMilestoneRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CloserServer).RecordMilestone(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Closer_RecordMilestone_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CloserServer).RecordMilestone(ctx, req.(*RecordMilestoneRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Closer_ServiceDesc is the grpc.ServiceDesc for Closer service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -636,6 +670,10 @@ var Closer_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GenerateContract",
 			Handler:    _Closer_GenerateContract_Handler,
+		},
+		{
+			MethodName: "RecordMilestone",
+			Handler:    _Closer_RecordMilestone_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

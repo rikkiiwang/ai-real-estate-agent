@@ -1743,6 +1743,118 @@ func (x *GenerateContractResponse) GetHandoffReason() string {
 	return ""
 }
 
+type RecordMilestoneRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DealId        string                 `protobuf:"bytes,1,opt,name=deal_id,json=dealId,proto3" json:"deal_id,omitempty"`
+	Milestone     string                 `protobuf:"bytes,2,opt,name=milestone,proto3" json:"milestone,omitempty"` // inspection_cleared | earnest_deposited | title_cleared | funded
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecordMilestoneRequest) Reset() {
+	*x = RecordMilestoneRequest{}
+	mi := &file_realestate_v1_realestate_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordMilestoneRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordMilestoneRequest) ProtoMessage() {}
+
+func (x *RecordMilestoneRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_realestate_v1_realestate_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordMilestoneRequest.ProtoReflect.Descriptor instead.
+func (*RecordMilestoneRequest) Descriptor() ([]byte, []int) {
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *RecordMilestoneRequest) GetDealId() string {
+	if x != nil {
+		return x.DealId
+	}
+	return ""
+}
+
+func (x *RecordMilestoneRequest) GetMilestone() string {
+	if x != nil {
+		return x.Milestone
+	}
+	return ""
+}
+
+type RecordMilestoneResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Pinged        bool                   `protobuf:"varint,1,opt,name=pinged,proto3" json:"pinged,omitempty"`
+	Counterparty  string                 `protobuf:"bytes,2,opt,name=counterparty,proto3" json:"counterparty,omitempty"` // escrow | title | lender
+	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`           // human-readable counterparty notification
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecordMilestoneResponse) Reset() {
+	*x = RecordMilestoneResponse{}
+	mi := &file_realestate_v1_realestate_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordMilestoneResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordMilestoneResponse) ProtoMessage() {}
+
+func (x *RecordMilestoneResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_realestate_v1_realestate_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordMilestoneResponse.ProtoReflect.Descriptor instead.
+func (*RecordMilestoneResponse) Descriptor() ([]byte, []int) {
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *RecordMilestoneResponse) GetPinged() bool {
+	if x != nil {
+		return x.Pinged
+	}
+	return false
+}
+
+func (x *RecordMilestoneResponse) GetCounterparty() string {
+	if x != nil {
+		return x.Counterparty
+	}
+	return ""
+}
+
+func (x *RecordMilestoneResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 type VisionFinding struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Kind            string                 `protobuf:"bytes,1,opt,name=kind,proto3" json:"kind,omitempty"`                                                // "feature" | "red_flag"
@@ -1755,7 +1867,7 @@ type VisionFinding struct {
 
 func (x *VisionFinding) Reset() {
 	*x = VisionFinding{}
-	mi := &file_realestate_v1_realestate_proto_msgTypes[20]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1767,7 +1879,7 @@ func (x *VisionFinding) String() string {
 func (*VisionFinding) ProtoMessage() {}
 
 func (x *VisionFinding) ProtoReflect() protoreflect.Message {
-	mi := &file_realestate_v1_realestate_proto_msgTypes[20]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1780,7 +1892,7 @@ func (x *VisionFinding) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VisionFinding.ProtoReflect.Descriptor instead.
 func (*VisionFinding) Descriptor() ([]byte, []int) {
-	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{20}
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *VisionFinding) GetKind() string {
@@ -1821,7 +1933,7 @@ type AnalyzePhotosRequest struct {
 
 func (x *AnalyzePhotosRequest) Reset() {
 	*x = AnalyzePhotosRequest{}
-	mi := &file_realestate_v1_realestate_proto_msgTypes[21]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1833,7 +1945,7 @@ func (x *AnalyzePhotosRequest) String() string {
 func (*AnalyzePhotosRequest) ProtoMessage() {}
 
 func (x *AnalyzePhotosRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_realestate_v1_realestate_proto_msgTypes[21]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1846,7 +1958,7 @@ func (x *AnalyzePhotosRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AnalyzePhotosRequest.ProtoReflect.Descriptor instead.
 func (*AnalyzePhotosRequest) Descriptor() ([]byte, []int) {
-	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{21}
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *AnalyzePhotosRequest) GetAddress() string {
@@ -1875,7 +1987,7 @@ type AnalyzePhotosResponse struct {
 
 func (x *AnalyzePhotosResponse) Reset() {
 	*x = AnalyzePhotosResponse{}
-	mi := &file_realestate_v1_realestate_proto_msgTypes[22]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1887,7 +1999,7 @@ func (x *AnalyzePhotosResponse) String() string {
 func (*AnalyzePhotosResponse) ProtoMessage() {}
 
 func (x *AnalyzePhotosResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_realestate_v1_realestate_proto_msgTypes[22]
+	mi := &file_realestate_v1_realestate_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1900,7 +2012,7 @@ func (x *AnalyzePhotosResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AnalyzePhotosResponse.ProtoReflect.Descriptor instead.
 func (*AnalyzePhotosResponse) Descriptor() ([]byte, []int) {
-	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{22}
+	return file_realestate_v1_realestate_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *AnalyzePhotosResponse) GetFindings() []*VisionFinding {
@@ -2091,7 +2203,14 @@ const file_realestate_v1_realestate_proto_rawDesc = "" +
 	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1f\n" +
 	"\vupl_blocked\x18\x06 \x01(\bR\n" +
 	"uplBlocked\x12%\n" +
-	"\x0ehandoff_reason\x18\a \x01(\tR\rhandoffReason\"\x85\x01\n" +
+	"\x0ehandoff_reason\x18\a \x01(\tR\rhandoffReason\"O\n" +
+	"\x16RecordMilestoneRequest\x12\x17\n" +
+	"\adeal_id\x18\x01 \x01(\tR\x06dealId\x12\x1c\n" +
+	"\tmilestone\x18\x02 \x01(\tR\tmilestone\"o\n" +
+	"\x17RecordMilestoneResponse\x12\x16\n" +
+	"\x06pinged\x18\x01 \x01(\bR\x06pinged\x12\"\n" +
+	"\fcounterparty\x18\x02 \x01(\tR\fcounterparty\x12\x18\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\"\x85\x01\n" +
 	"\rVisionFinding\x12\x12\n" +
 	"\x04kind\x18\x01 \x01(\tR\x04kind\x12\x14\n" +
 	"\x05label\x18\x02 \x01(\tR\x05label\x12\x1e\n" +
@@ -2125,9 +2244,10 @@ const file_realestate_v1_realestate_proto_rawDesc = "" +
 	"\n" +
 	"CreateLead\x12 .realestate.v1.CreateLeadRequest\x1a\x13.realestate.v1.Lead\x12U\n" +
 	"\x0eEnqueueHandoff\x12\x1c.realestate.v1.HandoffPacket\x1a%.realestate.v1.EnqueueHandoffResponse\x12F\n" +
-	"\vCreateOffer\x12!.realestate.v1.CreateOfferRequest\x1a\x14.realestate.v1.Offer2m\n" +
+	"\vCreateOffer\x12!.realestate.v1.CreateOfferRequest\x1a\x14.realestate.v1.Offer2\xcf\x01\n" +
 	"\x06Closer\x12c\n" +
-	"\x10GenerateContract\x12&.realestate.v1.GenerateContractRequest\x1a'.realestate.v1.GenerateContractResponse2d\n" +
+	"\x10GenerateContract\x12&.realestate.v1.GenerateContractRequest\x1a'.realestate.v1.GenerateContractResponse\x12`\n" +
+	"\x0fRecordMilestone\x12%.realestate.v1.RecordMilestoneRequest\x1a&.realestate.v1.RecordMilestoneResponse2d\n" +
 	"\x06Vision\x12Z\n" +
 	"\rAnalyzePhotos\x12#.realestate.v1.AnalyzePhotosRequest\x1a$.realestate.v1.AnalyzePhotosResponseBLZJgithub.com/airealestate/realestate/proto/gen/go/realestate/v1;realestatev1b\x06proto3"
 
@@ -2144,7 +2264,7 @@ func file_realestate_v1_realestate_proto_rawDescGZIP() []byte {
 }
 
 var file_realestate_v1_realestate_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_realestate_v1_realestate_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_realestate_v1_realestate_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_realestate_v1_realestate_proto_goTypes = []any{
 	(ClaimVerdict)(0),                // 0: realestate.v1.ClaimVerdict
 	(*PropertyFeatures)(nil),         // 1: realestate.v1.PropertyFeatures
@@ -2167,9 +2287,11 @@ var file_realestate_v1_realestate_proto_goTypes = []any{
 	(*Offer)(nil),                    // 18: realestate.v1.Offer
 	(*GenerateContractRequest)(nil),  // 19: realestate.v1.GenerateContractRequest
 	(*GenerateContractResponse)(nil), // 20: realestate.v1.GenerateContractResponse
-	(*VisionFinding)(nil),            // 21: realestate.v1.VisionFinding
-	(*AnalyzePhotosRequest)(nil),     // 22: realestate.v1.AnalyzePhotosRequest
-	(*AnalyzePhotosResponse)(nil),    // 23: realestate.v1.AnalyzePhotosResponse
+	(*RecordMilestoneRequest)(nil),   // 21: realestate.v1.RecordMilestoneRequest
+	(*RecordMilestoneResponse)(nil),  // 22: realestate.v1.RecordMilestoneResponse
+	(*VisionFinding)(nil),            // 23: realestate.v1.VisionFinding
+	(*AnalyzePhotosRequest)(nil),     // 24: realestate.v1.AnalyzePhotosRequest
+	(*AnalyzePhotosResponse)(nil),    // 25: realestate.v1.AnalyzePhotosResponse
 }
 var file_realestate_v1_realestate_proto_depIdxs = []int32{
 	1,  // 0: realestate.v1.GetValuationRequest.features:type_name -> realestate.v1.PropertyFeatures
@@ -2179,8 +2301,8 @@ var file_realestate_v1_realestate_proto_depIdxs = []int32{
 	7,  // 4: realestate.v1.VerifyMessageResponse.claims:type_name -> realestate.v1.VerifiedClaim
 	10, // 5: realestate.v1.OrchestrateResponse.claims:type_name -> realestate.v1.ReasoningClaim
 	11, // 6: realestate.v1.OrchestrateResponse.steps:type_name -> realestate.v1.ReasoningStep
-	21, // 7: realestate.v1.AnalyzePhotosResponse.findings:type_name -> realestate.v1.VisionFinding
-	21, // 8: realestate.v1.AnalyzePhotosResponse.needs_review:type_name -> realestate.v1.VisionFinding
+	23, // 7: realestate.v1.AnalyzePhotosResponse.findings:type_name -> realestate.v1.VisionFinding
+	23, // 8: realestate.v1.AnalyzePhotosResponse.needs_review:type_name -> realestate.v1.VisionFinding
 	3,  // 9: realestate.v1.Valuation.GetValuation:input_type -> realestate.v1.GetValuationRequest
 	6,  // 10: realestate.v1.Verification.VerifyMessage:input_type -> realestate.v1.VerifyMessageRequest
 	9,  // 11: realestate.v1.Conversation.Orchestrate:input_type -> realestate.v1.OrchestrateRequest
@@ -2188,17 +2310,19 @@ var file_realestate_v1_realestate_proto_depIdxs = []int32{
 	15, // 13: realestate.v1.Domain.EnqueueHandoff:input_type -> realestate.v1.HandoffPacket
 	17, // 14: realestate.v1.Domain.CreateOffer:input_type -> realestate.v1.CreateOfferRequest
 	19, // 15: realestate.v1.Closer.GenerateContract:input_type -> realestate.v1.GenerateContractRequest
-	22, // 16: realestate.v1.Vision.AnalyzePhotos:input_type -> realestate.v1.AnalyzePhotosRequest
-	5,  // 17: realestate.v1.Valuation.GetValuation:output_type -> realestate.v1.GetValuationResponse
-	8,  // 18: realestate.v1.Verification.VerifyMessage:output_type -> realestate.v1.VerifyMessageResponse
-	12, // 19: realestate.v1.Conversation.Orchestrate:output_type -> realestate.v1.OrchestrateResponse
-	14, // 20: realestate.v1.Domain.CreateLead:output_type -> realestate.v1.Lead
-	16, // 21: realestate.v1.Domain.EnqueueHandoff:output_type -> realestate.v1.EnqueueHandoffResponse
-	18, // 22: realestate.v1.Domain.CreateOffer:output_type -> realestate.v1.Offer
-	20, // 23: realestate.v1.Closer.GenerateContract:output_type -> realestate.v1.GenerateContractResponse
-	23, // 24: realestate.v1.Vision.AnalyzePhotos:output_type -> realestate.v1.AnalyzePhotosResponse
-	17, // [17:25] is the sub-list for method output_type
-	9,  // [9:17] is the sub-list for method input_type
+	21, // 16: realestate.v1.Closer.RecordMilestone:input_type -> realestate.v1.RecordMilestoneRequest
+	24, // 17: realestate.v1.Vision.AnalyzePhotos:input_type -> realestate.v1.AnalyzePhotosRequest
+	5,  // 18: realestate.v1.Valuation.GetValuation:output_type -> realestate.v1.GetValuationResponse
+	8,  // 19: realestate.v1.Verification.VerifyMessage:output_type -> realestate.v1.VerifyMessageResponse
+	12, // 20: realestate.v1.Conversation.Orchestrate:output_type -> realestate.v1.OrchestrateResponse
+	14, // 21: realestate.v1.Domain.CreateLead:output_type -> realestate.v1.Lead
+	16, // 22: realestate.v1.Domain.EnqueueHandoff:output_type -> realestate.v1.EnqueueHandoffResponse
+	18, // 23: realestate.v1.Domain.CreateOffer:output_type -> realestate.v1.Offer
+	20, // 24: realestate.v1.Closer.GenerateContract:output_type -> realestate.v1.GenerateContractResponse
+	22, // 25: realestate.v1.Closer.RecordMilestone:output_type -> realestate.v1.RecordMilestoneResponse
+	25, // 26: realestate.v1.Vision.AnalyzePhotos:output_type -> realestate.v1.AnalyzePhotosResponse
+	18, // [18:27] is the sub-list for method output_type
+	9,  // [9:18] is the sub-list for method input_type
 	9,  // [9:9] is the sub-list for extension type_name
 	9,  // [9:9] is the sub-list for extension extendee
 	0,  // [0:9] is the sub-list for field type_name
@@ -2215,7 +2339,7 @@ func file_realestate_v1_realestate_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_realestate_v1_realestate_proto_rawDesc), len(file_realestate_v1_realestate_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   23,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   6,
 		},

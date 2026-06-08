@@ -464,6 +464,11 @@ class CloserStub(object):
                 request_serializer=realestate_dot_v1_dot_realestate__pb2.GenerateContractRequest.SerializeToString,
                 response_deserializer=realestate_dot_v1_dot_realestate__pb2.GenerateContractResponse.FromString,
                 _registered_method=True)
+        self.RecordMilestone = channel.unary_unary(
+                '/realestate.v1.Closer/RecordMilestone',
+                request_serializer=realestate_dot_v1_dot_realestate__pb2.RecordMilestoneRequest.SerializeToString,
+                response_deserializer=realestate_dot_v1_dot_realestate__pb2.RecordMilestoneResponse.FromString,
+                _registered_method=True)
 
 
 class CloserServicer(object):
@@ -481,6 +486,12 @@ class CloserServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def RecordMilestone(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_CloserServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -488,6 +499,11 @@ def add_CloserServicer_to_server(servicer, server):
                     servicer.GenerateContract,
                     request_deserializer=realestate_dot_v1_dot_realestate__pb2.GenerateContractRequest.FromString,
                     response_serializer=realestate_dot_v1_dot_realestate__pb2.GenerateContractResponse.SerializeToString,
+            ),
+            'RecordMilestone': grpc.unary_unary_rpc_method_handler(
+                    servicer.RecordMilestone,
+                    request_deserializer=realestate_dot_v1_dot_realestate__pb2.RecordMilestoneRequest.FromString,
+                    response_serializer=realestate_dot_v1_dot_realestate__pb2.RecordMilestoneResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -523,6 +539,33 @@ class Closer(object):
             '/realestate.v1.Closer/GenerateContract',
             realestate_dot_v1_dot_realestate__pb2.GenerateContractRequest.SerializeToString,
             realestate_dot_v1_dot_realestate__pb2.GenerateContractResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def RecordMilestone(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/realestate.v1.Closer/RecordMilestone',
+            realestate_dot_v1_dot_realestate__pb2.RecordMilestoneRequest.SerializeToString,
+            realestate_dot_v1_dot_realestate__pb2.RecordMilestoneResponse.FromString,
             options,
             channel_credentials,
             insecure,

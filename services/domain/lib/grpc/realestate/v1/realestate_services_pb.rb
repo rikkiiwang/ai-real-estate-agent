@@ -97,6 +97,7 @@ module Realestate
         self.service_name = 'realestate.v1.Closer'
 
         rpc :GenerateContract, ::Realestate::V1::GenerateContractRequest, ::Realestate::V1::GenerateContractResponse
+        rpc :RecordMilestone, ::Realestate::V1::RecordMilestoneRequest, ::Realestate::V1::RecordMilestoneResponse
       end
 
       Stub = Service.rpc_stub_class

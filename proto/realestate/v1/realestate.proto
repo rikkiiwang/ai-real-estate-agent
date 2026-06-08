@@ -227,6 +227,7 @@ message Offer {
 // surfaced as a handoff — the agent never authors clause language (UPL line).
 service Closer {
   rpc GenerateContract(GenerateContractRequest) returns (GenerateContractResponse);
+  rpc RecordMilestone(RecordMilestoneRequest) returns (RecordMilestoneResponse);
 }
 
 message GenerateContractRequest {
@@ -250,6 +251,17 @@ message GenerateContractResponse {
   string status = 5;               // "awaiting_broker" when drafted
   bool upl_blocked = 6;            // true when a custom clause was requested
   string handoff_reason = 7;       // why it escalated (UPL or invalid facts)
+}
+
+message RecordMilestoneRequest {
+  string deal_id = 1;
+  string milestone = 2;            // inspection_cleared | earnest_deposited | title_cleared | funded
+}
+
+message RecordMilestoneResponse {
+  bool pinged = 1;
+  string counterparty = 2;         // escrow | title | lender
+  string message = 3;              // human-readable counterparty notification
 }
 
 // ── Vision (the "Brain") ─────────────────────────────────────────────────────
